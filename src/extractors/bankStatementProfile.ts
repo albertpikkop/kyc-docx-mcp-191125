@@ -124,7 +124,7 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
       }
     }
 
-    return profile || normalizedData;
+    return normalizedData;
 
   } catch (error) {
     console.error('Extraction failed:', error);

@@ -1,11 +1,19 @@
 {
   "name": "kyc-docx-mcp",
   "version": "1.0.0",
-  "description": "KYC document extractor using OpenAI GPT-5.1",
+  "description": "MCP server for extracting structured KYC data from Mexican business documents using OpenAI GPT-5.1. Supports Acta Constitutiva, SAT Constancia, FM2, Telmex, CFE, and Bank Statements. Includes profile building, validation, and reporting.",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
     "mx-kyc-mcp": "./dist/mcp/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/kyc-docx-mcp.git"
+  },
+  "homepage": "https://github.com/yourusername/kyc-docx-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/yourusername/kyc-docx-mcp/issues"
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -23,9 +31,25 @@
   },
   "keywords": [
     "kyc",
+    "know-your-customer",
     "document-extraction",
+    "mcp",
+    "model-context-protocol",
     "openai",
-    "gpt-5.1"
+    "gpt-5.1",
+    "typescript",
+    "mexican-documents",
+    "compliance",
+    "financial-services",
+    "document-processing",
+    "ai-extraction",
+    "structured-data",
+    "validation",
+    "profile-building",
+    "acta-constitutiva",
+    "sat-constancia",
+    "fm2",
+    "bank-statements"
   ],
   "author": "",
   "license": "ISC",
