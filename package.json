@@ -4,6 +4,9 @@
   "description": "KYC document extractor using OpenAI GPT-5.1",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "mx-kyc-mcp": "./dist/mcp/cli.js"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "check:model": "tsx src/index.ts",
@@ -12,6 +15,9 @@
     "test:bank": "tsx src/tests/testBankStatements.ts",
     "test:acta": "tsx src/tests/testActaCompanyIdentity.ts",
     "test:kyc-builder": "tsx src/tests/testKycProfileBuilder.ts",
+    "test:kyc-pfds": "tsx src/tests/testKycEndToEndPFDS.ts",
+    "test:kyc-report-pfds": "tsx src/tests/testKycReportPFDS.ts",
+    "test:mcp-pfds": "tsx src/tests/testMcpToolsPFDS.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -24,8 +30,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.5",
     "openai": "^4.77.0",
-    "dotenv": "^16.4.5"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.12",

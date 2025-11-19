@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
+import { normalizeEmptyToNull, sanitizeClabe } from '../kyc/validators.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
@@ -109,41 +110,21 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
 
     const data = JSON.parse(content);
     
-    // Strict Post-processing: Normalize empty strings to null
-    const normalizeEmptyToNull = (value: any): any => {
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === "" || trimmed === "/" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
-          return null;
-        }
-        return trimmed;
-      }
-      return value;
-    };
-
-    const deepNormalize = (obj: any): any => {
-        if (Array.isArray(obj)) {
-            return obj.map(deepNormalize);
-        } else if (obj !== null && typeof obj === 'object') {
-            for (const key in obj) {
-                obj[key] = deepNormalize(obj[key]);
-            }
-            return obj;
-        } else {
-            return normalizeEmptyToNull(obj);
-        }
-    };
-
-    const normalizedData = deepNormalize(data);
+    // Deep normalization of empty strings to null
+    const normalizedData = normalizeEmptyToNull(data);
 
     const profile = normalizedData.bank_account_profile;
     if (profile) {
       if (profile.address_on_statement) {
           profile.address_on_statement.country = "MX";
       }
+      // Sanitize CLABE
+      if (profile.clabe) {
+        profile.clabe = sanitizeClabe(profile.clabe);
+      }
     }
 
-    return normalizedData;
+    return profile || normalizedData;
 
   } catch (error) {
     console.error('Extraction failed:', error);

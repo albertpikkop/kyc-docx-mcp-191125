@@ -16,5 +16,3 @@ async function main() {
 }
 
 main();
-
-

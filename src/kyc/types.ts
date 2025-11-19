@@ -1,8 +1,11 @@
 /**
- * KYC Profile Types
+ * KYC Domain Types
  * 
- * These types represent the aggregated KYC profile built from multiple document sources.
+ * This module defines the core data structures for the multi-customer KYC SaaS.
+ * It includes domain entities (CompanyIdentity, TaxProfile) and system types (KycDocument, KycRun).
  */
+
+// --- Domain Data Types ---
 
 /**
  * Address type matching AddressSchema structure
@@ -54,19 +57,39 @@ export type ProofOfAddress = {
 };
 
 /**
- * Bank Account Profile (placeholder for future use)
+ * Bank Account Profile
  */
 export type BankAccountProfile = {
   bank_name: string | null;
+  account_holder_name: string | null;
   account_number: string | null;
-  account_type: string | null;
-  address?: Address;
-  // Add more fields as needed
+  clabe: string | null;
+  currency: string | null;
+  statement_period_start: string | null;
+  statement_period_end: string | null;
+  address_on_statement?: Address;
+};
+
+/**
+ * Immigration Profile from FM2/Residente card
+ */
+export type ImmigrationProfile = {
+  full_name: string | null;
+  nationality: string | null;
+  document_type: string | null;
+  document_number: string | null;
+  secondary_number: string | null;
+  date_of_birth: string | null;
+  curp: string | null;
+  sex: string | null;
+  issue_date: string | null;
+  expiry_date: string | null;
+  issuing_office: string | null;
+  issuer_country: string | null;
 };
 
 /**
  * Company Identity from Acta Constitutiva
- * Note: This is a simplified type - in production, import the full type from the extractor
  */
 export type CompanyIdentity = {
   razon_social: string;
@@ -117,7 +140,6 @@ export type CompanyIdentity = {
 
 /**
  * Company Tax Profile from SAT Constancia
- * Note: This is a simplified type - in production, import the full type from the extractor
  */
 export type CompanyTaxProfile = {
   rfc: string;
@@ -149,16 +171,64 @@ export type CompanyTaxProfile = {
   }>;
 };
 
+// --- KYC System Types ---
+
+export type DocumentType =
+  | "acta"
+  | "sat_constancia"
+  | "fm2"
+  | "telmex"
+  | "cfe"
+  | "bank_statement";
+
+export interface KycDocument {
+  id: string;                // uuid or hash
+  customerId: string;        // e.g. "pfds"
+  type: DocumentType;
+  fileUrl: string;           // path/url to the original file
+  extractedAt?: string;      // ISO datetime
+  extractedPayload?: unknown;// typed later at use sites
+  sourceName?: string;       // e.g. "CFE_AGOSTO.pdf"
+}
+
+export interface KycValidationFlag {
+  code: "ADDRESS_MISMATCH" | "REP_ID_MISMATCH" | "LOW_DOC_COVERAGE" | "OTHER";
+  level: "info" | "warning" | "critical";
+  message: string;
+}
+
+export interface KycValidationResult {
+  customerId: string;
+  score: number;               // 0–1
+  flags: KycValidationFlag[];
+  generatedAt: string;
+}
+
 /**
  * Complete KYC Profile aggregating all document sources
  */
-export type KycProfile = {
-  company_identity?: CompanyIdentity;
-  company_tax_profile?: CompanyTaxProfile;
-  proofs_of_address: ProofOfAddress[];
-  bank_accounts: BankAccountProfile[];
-  historical_addresses: HistoricalAddress[];
-  current_fiscal_address?: Address; // from SAT Constancia
-  current_operational_address?: Address; // from Telmex/CFE/bank, etc.
-};
+export interface KycProfile {
+  customerId: string;
+  companyIdentity?: CompanyIdentity;
+  companyTaxProfile?: CompanyTaxProfile;
+  representativeIdentity?: ImmigrationProfile;
+  
+  foundingAddress?: Address;             // from Acta (historical)
+  currentFiscalAddress?: Address;        // from SAT
+  currentOperationalAddress?: Address;   // from Telmex/CFE/Bank
+  
+  addressEvidence: ProofOfAddress[];     // all PoA docs
+  bankAccounts: BankAccountProfile[];    // one per CLABE/account
+  historical_addresses: HistoricalAddress[]; // keep track of all addresses found
+  
+  lastUpdatedAt: string;
+}
 
+export interface KycRun {
+  runId: string;
+  customerId: string;
+  createdAt: string;
+  documents: KycDocument[];
+  profile?: KycProfile;
+  validation?: KycValidationResult;
+}

@@ -87,12 +87,13 @@ async function main() {
   console.log("=== Testing KYC Profile Builder ===\n");
 
   const profile = buildKycProfile({
+    customerId: "pfds",
     companyIdentity: mockCompanyIdentity,
     companyTaxProfile: mockCompanyTaxProfile,
   });
 
   console.log("1. Company Identity (Acta):");
-  console.log(`   Founding Address: ${profile.company_identity?.founding_address.street} ${profile.company_identity?.founding_address.ext_number}`);
+  console.log(`   Founding Address: ${profile.companyIdentity?.founding_address.street} ${profile.companyIdentity?.founding_address.ext_number}`);
   console.log();
 
   console.log("2. Historical Addresses:");
@@ -104,9 +105,9 @@ async function main() {
   console.log();
 
   console.log("3. Current Fiscal Address (from SAT):");
-  if (profile.current_fiscal_address) {
-    console.log(`   ${profile.current_fiscal_address.street} ${profile.current_fiscal_address.ext_number}`);
-    console.log(`   ${profile.current_fiscal_address.colonia}, ${profile.current_fiscal_address.cp}`);
+  if (profile.currentFiscalAddress) {
+    console.log(`   ${profile.currentFiscalAddress.street} ${profile.currentFiscalAddress.ext_number}`);
+    console.log(`   ${profile.currentFiscalAddress.colonia}, ${profile.currentFiscalAddress.cp}`);
   }
   console.log();
 
@@ -119,4 +120,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-

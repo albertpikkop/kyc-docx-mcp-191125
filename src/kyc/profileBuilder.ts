@@ -19,20 +19,24 @@ import type {
   ProofOfAddress,
   BankAccountProfile,
   HistoricalAddress,
-  Address,
+  ImmigrationProfile,
 } from './types.js';
 
 /**
  * Builds a KYC profile from extracted document data
  */
 export class KycProfileBuilder {
-  private profile: KycProfile;
+  private profile: Partial<KycProfile>;
+  private customerId: string;
 
-  constructor() {
+  constructor(customerId: string) {
+    this.customerId = customerId;
     this.profile = {
-      proofs_of_address: [],
-      bank_accounts: [],
+      customerId,
+      addressEvidence: [],
+      bankAccounts: [],
       historical_addresses: [],
+      lastUpdatedAt: new Date().toISOString(),
     };
   }
 
@@ -41,7 +45,8 @@ export class KycProfileBuilder {
    * The founding_address is stored as a historical address only.
    */
   addCompanyIdentity(identity: CompanyIdentity): void {
-    this.profile.company_identity = identity;
+    this.profile.companyIdentity = identity;
+    this.profile.foundingAddress = identity.founding_address;
 
     // Acta domicilio is the original registered address at constitution.
     // It is treated as historical only and never overrides current fiscal/operational addresses.
@@ -51,8 +56,9 @@ export class KycProfileBuilder {
         address: identity.founding_address,
         date: identity.incorporation_date,
       };
-      this.profile.historical_addresses.push(historicalAddress);
+      this.profile.historical_addresses?.push(historicalAddress);
     }
+    this.updateTimestamp();
   }
 
   /**
@@ -60,11 +66,11 @@ export class KycProfileBuilder {
    * The fiscal_address becomes the canonical current_fiscal_address.
    */
   addCompanyTaxProfile(taxProfile: CompanyTaxProfile): void {
-    this.profile.company_tax_profile = taxProfile;
+    this.profile.companyTaxProfile = taxProfile;
 
     // SAT Constancia fiscal_address is the current fiscal address
     if (taxProfile.fiscal_address) {
-      this.profile.current_fiscal_address = taxProfile.fiscal_address;
+      this.profile.currentFiscalAddress = taxProfile.fiscal_address;
 
       // Also add as historical for tracking
       const historicalAddress: HistoricalAddress = {
@@ -72,8 +78,9 @@ export class KycProfileBuilder {
         address: taxProfile.fiscal_address,
         date: taxProfile.issue.issue_date,
       };
-      this.profile.historical_addresses.push(historicalAddress);
+      this.profile.historical_addresses?.push(historicalAddress);
     }
+    this.updateTimestamp();
   }
 
   /**
@@ -81,7 +88,7 @@ export class KycProfileBuilder {
    * Contributes to operational address resolution.
    */
   addProofOfAddress(proof: ProofOfAddress): void {
-    this.profile.proofs_of_address.push(proof);
+    this.profile.addressEvidence?.push(proof);
 
     if (proof.client_address) {
       // Add to historical tracking
@@ -90,11 +97,11 @@ export class KycProfileBuilder {
         address: proof.client_address,
         date: proof.date,
       };
-      this.profile.historical_addresses.push(historicalAddress);
+      this.profile.historical_addresses?.push(historicalAddress);
       
       // Address resolution logic is handled in build() or updateOperationalAddress()
-      // For now, we push to history and profile lists.
     }
+    this.updateTimestamp();
   }
 
   /**
@@ -102,7 +109,7 @@ export class KycProfileBuilder {
    * Bank statements are high-confidence operational address sources.
    */
   addBankAccount(bankAccount: BankAccountProfile): void {
-    this.profile.bank_accounts.push(bankAccount);
+    this.profile.bankAccounts?.push(bankAccount);
 
     if (bankAccount.address_on_statement) {
        const historicalAddress: HistoricalAddress = {
@@ -110,8 +117,21 @@ export class KycProfileBuilder {
         address: bankAccount.address_on_statement,
         date: bankAccount.statement_period_end || undefined,
       };
-      this.profile.historical_addresses.push(historicalAddress);
+      this.profile.historical_addresses?.push(historicalAddress);
     }
+    this.updateTimestamp();
+  }
+
+  /**
+   * Adds representative identity (Immigration/FM2)
+   */
+  addRepresentativeIdentity(identity: ImmigrationProfile): void {
+    this.profile.representativeIdentity = identity;
+    this.updateTimestamp();
+  }
+
+  private updateTimestamp() {
+    this.profile.lastUpdatedAt = new Date().toISOString();
   }
 
   /**
@@ -120,23 +140,22 @@ export class KycProfileBuilder {
    */
   private resolveOperationalAddress(): void {
     // 1. Try Bank Statements (most recent if possible, but for now any)
-    const bankAccount = this.profile.bank_accounts.find(acc => acc.address_on_statement);
+    const bankAccount = this.profile.bankAccounts?.find(acc => acc.address_on_statement);
     if (bankAccount?.address_on_statement) {
-      this.profile.current_operational_address = bankAccount.address_on_statement;
+      this.profile.currentOperationalAddress = bankAccount.address_on_statement;
       return;
     }
 
     // 2. Try Proof of Address (CFE/Telmex) - taking the last added (assuming order implies recency or logic outside)
-    // Ideally sorting by date would happen here.
-    const proof = this.profile.proofs_of_address.find(p => p.client_address);
+    const proof = this.profile.addressEvidence?.find(p => p.client_address);
     if (proof?.client_address) {
-      this.profile.current_operational_address = proof.client_address;
+      this.profile.currentOperationalAddress = proof.client_address;
       return;
     }
 
     // 3. Fallback to SAT Fiscal Address if no operational docs
-    if (this.profile.current_fiscal_address) {
-      this.profile.current_operational_address = this.profile.current_fiscal_address;
+    if (this.profile.currentFiscalAddress) {
+      this.profile.currentOperationalAddress = this.profile.currentFiscalAddress;
     }
   }
 
@@ -148,29 +167,28 @@ export class KycProfileBuilder {
     
     // Ensure strict rules
     // 1. Fiscal address ALWAYS from SAT if available
-    if (this.profile.company_tax_profile?.fiscal_address) {
-        this.profile.current_fiscal_address = this.profile.company_tax_profile.fiscal_address;
+    if (this.profile.companyTaxProfile?.fiscal_address) {
+        this.profile.currentFiscalAddress = this.profile.companyTaxProfile.fiscal_address;
     }
 
-    // 2. RFC Consistency - SAT overrides everything
-    const satRfc = this.profile.company_tax_profile?.rfc;
-    if (satRfc && this.profile.company_identity) {
-        // We don't overwrite source document data (extractor output), but the profile view could have a canonical identity.
-        // For this Builder, we return the profile as aggregation.
-        // The extractors have already been hardened to not invent RFCs.
-    }
-
-    return { ...this.profile };
+    // 2. RFC Consistency - SAT overrides everything (validated at schema level but good to keep in mind)
+    
+    return this.profile as KycProfile;
   }
 
   /**
    * Resets the builder to start fresh
    */
-  reset(): void {
+  reset(newCustomerId?: string): void {
+    if (newCustomerId) {
+      this.customerId = newCustomerId;
+    }
     this.profile = {
-      proofs_of_address: [],
-      bank_accounts: [],
+      customerId: this.customerId,
+      addressEvidence: [],
+      bankAccounts: [],
       historical_addresses: [],
+      lastUpdatedAt: new Date().toISOString(),
     };
   }
 }
@@ -179,12 +197,14 @@ export class KycProfileBuilder {
  * Convenience function to build a KYC profile from multiple sources
  */
 export function buildKycProfile(options: {
+  customerId: string;
   companyIdentity?: CompanyIdentity;
   companyTaxProfile?: CompanyTaxProfile;
   proofsOfAddress?: ProofOfAddress[];
   bankAccounts?: BankAccountProfile[];
+  representativeIdentity?: ImmigrationProfile;
 }): KycProfile {
-  const builder = new KycProfileBuilder();
+  const builder = new KycProfileBuilder(options.customerId);
 
   if (options.companyIdentity) {
     builder.addCompanyIdentity(options.companyIdentity);
@@ -204,6 +224,10 @@ export function buildKycProfile(options: {
     for (const account of options.bankAccounts) {
       builder.addBankAccount(account);
     }
+  }
+
+  if (options.representativeIdentity) {
+    builder.addRepresentativeIdentity(options.representativeIdentity);
   }
 
   return builder.build();

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankTransactionListSchema } from '../schemas/mx/bankTransaction.js';
+import { normalizeEmptyToNull } from '../kyc/validators.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
@@ -105,27 +106,12 @@ export async function extractBankStatementTransactions(fileUrl: string): Promise
 
     const data = JSON.parse(content);
     
-    // Strict Post-processing: Normalize empty strings to null
-    const normalizeEmptyToNull = (value: any): any => {
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === "" || trimmed === "/" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
-          return null;
-        }
-        return trimmed;
-      }
-      return value;
-    };
+    // Strict Post-processing using central validator
+    const normalizedData = normalizeEmptyToNull(data);
 
-    if (data.transactions && Array.isArray(data.transactions)) {
-        data.transactions = data.transactions.map((tx: any) => ({
-            ...tx,
-            counterparty_name: normalizeEmptyToNull(tx.counterparty_name),
-            category: normalizeEmptyToNull(tx.category)
-        }));
-    }
+    // No specific sanitization needed for transaction fields beyond normalization
 
-    return data;
+    return normalizedData;
 
   } catch (error) {
     console.error('Extraction failed:', error);
