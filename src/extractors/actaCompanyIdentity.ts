@@ -190,7 +190,7 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
          return {
            ...rep,
            can_sign_contracts: canSignContracts,
-           poder_scope: rep.poder_scope || [], // Ensure array
+           poder_scope: rep.poder_scope,
          };
        });
     }

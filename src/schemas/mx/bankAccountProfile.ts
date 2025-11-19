@@ -21,15 +21,9 @@ export const BankAccountProfileSchema = {
       required: [
         "bank_name",
         "account_holder_name",
-        "account_number",
-        "clabe",
-        "currency",
-        "statement_period_start",
-        "statement_period_end",
         "address_on_statement"
       ]
     }
   },
   required: ["bank_account_profile"]
 } as const;
-

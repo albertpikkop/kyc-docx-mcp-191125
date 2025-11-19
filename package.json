@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "check:model": "tsx src/index.ts",
+    "test": "npm run test:kyc-pfds && npm run test:kyc-report-pfds && npm run test:mcp-pfds",
     "test:constancia": "tsx src/tests/testConstancia.ts",
     "test:cfe": "tsx src/tests/testCfeProofOfAddress.ts",
     "test:bank": "tsx src/tests/testBankStatements.ts",

@@ -95,7 +95,7 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
         format: {
           type: "json_schema",
           name: "bank_account_profile",
-          strict: true,
+          strict: false,
           schema: BankAccountProfileSchema
         },
       },
