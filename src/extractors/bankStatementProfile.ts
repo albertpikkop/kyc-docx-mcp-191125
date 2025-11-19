@@ -1,0 +1,155 @@
+import OpenAI from 'openai';
+import * as fs from 'fs';
+import * as path from 'path';
+import { MODEL, validateModel, type GPT5Model } from '../model.js';
+import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
+
+const EXTRACTION_INSTRUCTIONS = `
+You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
+Your job is to extract the account profile information into the bank_account_profile object.
+
+GLOBAL HARDENING RULES:
+- Never infer or generate data not clearly printed.
+- If a field is not present, set to null. Do NOT use "N/A", "Unknown", "--", or empty strings.
+- Normalize all dates to YYYY-MM-DD.
+- Never invent account numbers, CLABEs, or names.
+
+EXTRACT:
+- Bank Name: (e.g. BBVA, Banorte, Santander).
+- Account Holder Name: Extract exactly as printed. Do NOT assume it is "PFDS" unless printed.
+- Account Number: Extract account/contract number.
+- CLABE: Extract 18-digit CLABE.
+- Currency: (e.g. MXN).
+- Statement Period: Start and End dates (YYYY-MM-DD).
+- Address: The registered address printed on the statement header. Split strictly into structured fields (street, ext_number, int_number, colonia, municipio, estado, cp). Set country="MX".
+
+Do NOT extract individual transactions here. Focus only on the header/profile info.
+Do not hallucinate missing fields.
+`;
+
+export async function extractBankStatementProfile(fileUrl: string): Promise<any> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not set in environment variables');
+  }
+
+  const client = new OpenAI({ apiKey });
+  const model: GPT5Model = validateModel(MODEL);
+
+  console.log(`Extracting Bank Statement Profile using model: ${model}`);
+  console.log(`Processing file: ${fileUrl}`);
+
+  const isUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://') || fileUrl.startsWith('data:');
+  let inputItem: any;
+
+  if (isUrl) {
+    inputItem = {
+      type: 'input_image',
+      image_url: fileUrl
+    };
+  } else {
+    const ext = path.extname(fileUrl).toLowerCase();
+    const isPdf = ext === '.pdf';
+    const isImage = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
+
+    if (!isPdf && !isImage) {
+       throw new Error(`Unsupported file type: ${ext}. Only PDF and Images are supported.`);
+    }
+
+    if (isPdf) {
+      console.log('Uploading PDF file...');
+      const fileStream = fs.createReadStream(fileUrl);
+      const uploadedFile = await client.files.create({
+        file: fileStream,
+        purpose: 'assistants',
+      });
+
+      inputItem = {
+        type: 'input_file',
+        file_id: uploadedFile.id,
+      };
+    } else {
+        // Fallback for images
+        const fileBuffer = fs.readFileSync(fileUrl);
+        const base64Data = fileBuffer.toString('base64');
+        const mimeType = ext === '.jpg' ? 'image/jpeg' : `image/${ext.substring(1)}`;
+        inputItem = {
+          type: 'input_image',
+          image_url: `data:${mimeType};base64,${base64Data}`
+        };
+    }
+  }
+
+  try {
+    const res = await client.responses.create({
+      model,
+      instructions: EXTRACTION_INSTRUCTIONS,
+      input: [
+        {
+          role: 'user',
+          content: [inputItem]
+        }
+      ],
+      text: {
+        format: {
+          type: "json_schema",
+          name: "bank_account_profile",
+          strict: true,
+          schema: BankAccountProfileSchema
+        },
+      },
+    } as any);
+
+    const outputItem = res.output?.[0] as any;
+    const content = outputItem?.content?.[0]?.text || (res as any).output_text;
+
+    if (!content) {
+      throw new Error('No content received from model');
+    }
+
+    const data = JSON.parse(content);
+    
+    // Strict Post-processing: Normalize empty strings to null
+    const normalizeEmptyToNull = (value: any): any => {
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === "" || trimmed === "/" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
+          return null;
+        }
+        return trimmed;
+      }
+      return value;
+    };
+
+    const deepNormalize = (obj: any): any => {
+        if (Array.isArray(obj)) {
+            return obj.map(deepNormalize);
+        } else if (obj !== null && typeof obj === 'object') {
+            for (const key in obj) {
+                obj[key] = deepNormalize(obj[key]);
+            }
+            return obj;
+        } else {
+            return normalizeEmptyToNull(obj);
+        }
+    };
+
+    const normalizedData = deepNormalize(data);
+
+    const profile = normalizedData.bank_account_profile;
+    if (profile) {
+      if (profile.address_on_statement) {
+          profile.address_on_statement.country = "MX";
+      }
+    }
+
+    return normalizedData;
+
+  } catch (error) {
+    console.error('Extraction failed:', error);
+    if (error instanceof Error) {
+      throw new Error(`Bank Statement Profile extraction failed: ${error.message}`);
+    }
+    throw error;
+  }
+}

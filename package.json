@@ -1,0 +1,35 @@
+{
+  "name": "kyc-docx-mcp",
+  "version": "1.0.0",
+  "description": "KYC document extractor using OpenAI GPT-5.1",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "check:model": "tsx src/index.ts",
+    "test:constancia": "tsx src/tests/testConstancia.ts",
+    "test:cfe": "tsx src/tests/testCfeProofOfAddress.ts",
+    "test:bank": "tsx src/tests/testBankStatements.ts",
+    "test:acta": "tsx src/tests/testActaCompanyIdentity.ts",
+    "test:kyc-builder": "tsx src/tests/testKycProfileBuilder.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "kyc",
+    "document-extraction",
+    "openai",
+    "gpt-5.1"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "openai": "^4.77.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.4"
+  }
+}
