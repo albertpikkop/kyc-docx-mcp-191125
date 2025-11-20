@@ -13,7 +13,7 @@ GLOBAL HARDENING RULES:
 - Convert amounts to numeric values (no currency symbols).
 
 EXTRACT:
-- Provider info: provider name (Telmex) and provider RFC.
+- Provider info: vendor_name (Telmex) and vendor_tax_id.
 - Holder info: the customer/contract holder name exactly as printed.
 - Service address: Split strictly into street, exterior number, interior number (if any), colonia, municipio/alcaldía, estado, CP, country="MX".
 - Service identifiers: phone number (service number) and account number.
@@ -51,4 +51,3 @@ export async function extractTelmexProofOfAddress(fileUrl: string): Promise<any>
     throw error;
   }
 }
-

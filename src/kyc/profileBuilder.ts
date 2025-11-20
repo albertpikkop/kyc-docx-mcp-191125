@@ -135,21 +135,75 @@ export class KycProfileBuilder {
   }
 
   /**
-   * Resolves the current operational address based on precedence rules.
+   * Resolves the current operational address based on precedence rules and recency.
    * Priority: Bank Statement > CFE/Telmex > SAT (fallback)
+   * Within categories, picks the most recent document.
    */
   private resolveOperationalAddress(): void {
-    // 1. Try Bank Statements (most recent if possible, but for now any)
-    const bankAccount = this.profile.bankAccounts?.find(acc => acc.address_on_statement);
-    if (bankAccount?.address_on_statement) {
-      this.profile.currentOperationalAddress = bankAccount.address_on_statement;
-      return;
+    // Collect all candidates with dates
+    const candidates: Array<{
+      source: 'bank' | 'proof' | 'sat';
+      date: string;
+      address: Address;
+    }> = [];
+
+    // 1. Bank Statements
+    if (this.profile.bankAccounts) {
+      for (const acc of this.profile.bankAccounts) {
+        if (acc.address_on_statement && acc.statement_period_end) {
+          candidates.push({
+            source: 'bank',
+            date: acc.statement_period_end,
+            address: acc.address_on_statement
+          });
+        }
+      }
     }
 
-    // 2. Try Proof of Address (CFE/Telmex) - taking the last added (assuming order implies recency or logic outside)
-    const proof = this.profile.addressEvidence?.find(p => p.client_address);
-    if (proof?.client_address) {
-      this.profile.currentOperationalAddress = proof.client_address;
+    // 2. Proof of Address (CFE/Telmex)
+    if (this.profile.addressEvidence) {
+      for (const proof of this.profile.addressEvidence) {
+        // Try to find a valid date: issue_datetime > date > due_date
+        const date = proof.issue_datetime || proof.date || proof.due_date;
+        if (proof.client_address && date) {
+          candidates.push({
+            source: 'proof',
+            date: date,
+            address: proof.client_address
+          });
+        }
+      }
+    }
+
+    // Sort by date descending (newest first)
+    candidates.sort((a, b) => {
+      // Simple string comparison for ISO dates YYYY-MM-DD works, 
+      // but safer to use timestamps
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+
+    // Pick the best candidate
+    // We prefer Bank > Proof if dates are similar, or just strictly by date?
+    // The prompt says "prefer latest matching CP/municipio". 
+    // And "Priority: Bank Statement > CFE/Telmex > SAT".
+    // Let's stick to: 
+    // 1. Filter for newest.
+    // 2. If we have a bank statement and a proof of address with the SAME date (unlikely), prefer bank?
+    // Actually, usually "latest" is the most important factor for operational address.
+    // However, the comment says "Priority: Bank Statement > CFE/Telmex". 
+    // Does that mean a Bank Statement from Jan is better than CFE from Feb? Unlikely.
+    // It probably means "If dates are comparable, prefer Bank".
+    // Or "Use Bank if available, else Proof".
+    
+    // Refined Logic:
+    // 1. Sort all by date desc.
+    // 2. If we have candidates, pick the first one. 
+    // 3. IF the top candidates have same date, precedence could apply, but sorting is usually enough.
+    // BUT, let's look at the original logic: "Try Bank ... then Try Proof". This implied Source Priority > Date.
+    // The new requirement says "Use latest address evidence". This implies Date > Source Priority.
+    
+    if (candidates.length > 0) {
+      this.profile.currentOperationalAddress = candidates[0].address;
       return;
     }
 

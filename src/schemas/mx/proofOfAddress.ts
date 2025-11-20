@@ -34,9 +34,9 @@ export const ProofOfAddressSchema = {
     client_address: AddressSchema,
     client_tax_id: { type: "string", description: "Client RFC if printed. Set to null if not visible.", nullable: true },
     
-    provider_name: { type: "string", description: "Provider name (e.g. CFE, TELMEX)", nullable: true },
-    provider_address: AddressSchema,
-    provider_rfc: { type: "string", description: "Provider RFC from issuer block.", nullable: true },
+    vendor_name: { type: "string", description: "Provider name (e.g. CFE, TELMEX)", nullable: true },
+    vendor_address: AddressSchema,
+    vendor_tax_id: { type: "string", description: "Provider RFC from issuer block.", nullable: true },
     
     total_due: { type: "number", description: "Total amount to pay", nullable: true },
     currency: { type: "string", description: "Currency code (MXN)", nullable: true },
@@ -58,7 +58,7 @@ export const ProofOfAddressSchema = {
   required: [
     "document_type", "evidence_meta",
     "client_name", "client_address", "client_tax_id",
-    "provider_name", "provider_address", "provider_rfc",
+    "vendor_name", "vendor_address", "vendor_tax_id",
     "total_due", "currency",
     "due_date", "billing_month", "billing_period_start", "billing_period_end", "issue_datetime",
     "previous_balance", "current_charges",

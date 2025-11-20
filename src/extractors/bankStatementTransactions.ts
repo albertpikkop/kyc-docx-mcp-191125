@@ -30,6 +30,39 @@ Rules:
 - Focus on the "Movimientos" or "Detalle de Movimientos" section.
 `;
 
+/**
+ * deterministic category normalization based on description keywords.
+ * This overrides LLM variance to ensure consistency across documents.
+ */
+function normalizeTransactionCategory(description: string, llmCategory: string | null): string | null {
+  const desc = description.toUpperCase();
+  
+  if (desc.includes("COMISION") || desc.includes("COMISIÓN") || desc.includes("TIMBRADO")) {
+    return "fee";
+  }
+  if (desc.includes("IVA ")) {
+    return "tax";
+  }
+  if (desc.includes("INTERES") || desc.includes("RENDIMIENTO")) {
+    return "interest";
+  }
+  if (desc.includes("RENTA")) {
+    return "rent";
+  }
+  if (desc.includes("TELMEX") || desc.includes("IZZI") || desc.includes("TOTALPLAY")) {
+    return "telecom";
+  }
+  if (desc.includes("CFE") || desc.includes("ELECTRICIDAD")) {
+    return "utilities";
+  }
+  if (desc.includes("SPEI") || desc.includes("TRASPASO")) {
+    // If it's a transfer but hasn't matched specific types above, default to transfer
+    return "transfer";
+  }
+
+  return llmCategory;
+}
+
 export async function extractBankStatementTransactions(fileUrl: string): Promise<any> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -109,7 +142,13 @@ export async function extractBankStatementTransactions(fileUrl: string): Promise
     // Strict Post-processing using central validator
     const normalizedData = normalizeEmptyToNull(data);
 
-    // No specific sanitization needed for transaction fields beyond normalization
+    if (normalizedData.transactions && Array.isArray(normalizedData.transactions)) {
+        normalizedData.transactions = normalizedData.transactions.map((tx: any) => ({
+            ...tx,
+            counterparty_name: tx.counterparty_name, // Already normalized by normalizeEmptyToNull
+            category: normalizeTransactionCategory(tx.description || "", tx.category)
+        }));
+    }
 
     return normalizedData;
 

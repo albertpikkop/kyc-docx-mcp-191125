@@ -16,7 +16,7 @@ GLOBAL HARDENING RULES:
 - Never invent service numbers, RFCs, or names.
 
 EXTRACT:
-- Provider info: provider name (CFE) and provider RFC from the issuer block.
+- Provider info: vendor_name (CFE) and vendor_tax_id from the issuer block.
 - Holder info: the customer/contract holder name exactly as printed. Do NOT assume it is "PFDS".
 - Service address: Split strictly into street, exterior number, interior number (if any), colonia, municipio/alcaldía, estado, CP, country="MX". Include cross streets if printed.
 - Service identifiers: service or contract number / account number printed on the bill.
@@ -147,8 +147,8 @@ export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
       normalizedProof.client_address.country = "MX";
     }
 
-    if (normalizedProof.provider_address) {
-      normalizedProof.provider_address.country = "MX";
+    if (normalizedProof.vendor_address) {
+      normalizedProof.vendor_address.country = "MX";
     }
 
     return normalizedProof;

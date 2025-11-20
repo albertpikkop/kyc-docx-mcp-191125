@@ -1,9 +1,36 @@
 import OpenAI from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
+import { z } from 'zod';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
 import { normalizeEmptyToNull, sanitizeClabe } from '../kyc/validators.js';
+
+// Zod definition matching BankAccountProfileSchema for runtime validation
+const AddressZodSchema = z.object({
+  street: z.string().nullable(),
+  ext_number: z.string().nullable(),
+  int_number: z.string().nullable(),
+  colonia: z.string().nullable(),
+  municipio: z.string().nullable(),
+  estado: z.string().nullable(),
+  cp: z.string().nullable(),
+  cross_streets: z.string().nullable(),
+  country: z.string().optional().default("MX")
+});
+
+const BankAccountProfileZodSchema = z.object({
+  bank_account_profile: z.object({
+    bank_name: z.string(),
+    account_holder_name: z.string(),
+    account_number: z.string().nullable().optional(),
+    clabe: z.string().nullable().optional(),
+    currency: z.string().nullable().optional(),
+    statement_period_start: z.string().nullable().optional(),
+    statement_period_end: z.string().nullable().optional(),
+    address_on_statement: AddressZodSchema.nullable().optional()
+  })
+});
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
@@ -113,7 +140,20 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
     // Deep normalization of empty strings to null
     const normalizedData = normalizeEmptyToNull(data);
 
-    const profile = normalizedData.bank_account_profile;
+    // Runtime Validation against Zod Schema
+    const validationResult = BankAccountProfileZodSchema.safeParse(normalizedData);
+    
+    if (!validationResult.success) {
+        console.warn("Bank Statement Schema Validation Failed:", validationResult.error);
+        // We can throw or return partial data. Strict requirements imply we should probably fail or sanitize further.
+        // For now, let's throw to ensure bad data doesn't propagate silently, or return a minimal valid object.
+        // Let's throw for safety as this is a KYC system.
+        throw new Error(`Validation Error: ${validationResult.error.message}`);
+    }
+
+    const validatedData = validationResult.data;
+    const profile = validatedData.bank_account_profile;
+
     if (profile) {
       if (profile.address_on_statement) {
           profile.address_on_statement.country = "MX";
@@ -124,7 +164,7 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
       }
     }
 
-    return normalizedData;
+    return validatedData; // Return the validated wrapper object
 
   } catch (error) {
     console.error('Extraction failed:', error);

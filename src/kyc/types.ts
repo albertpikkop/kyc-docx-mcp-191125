@@ -36,7 +36,7 @@ export type HistoricalAddress = {
  */
 export type ProofOfAddress = {
   document_type: string;
-  date: string; // YYYY-MM-DD
+  // date field removed as it is not in schema
   vendor_name: string | null;
   vendor_address: Address;
   vendor_tax_id: string | null;

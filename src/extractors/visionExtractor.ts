@@ -130,8 +130,8 @@ export async function extractDocument(filePath: string, schema: any, instruction
     const normalizedData = deepNormalize(data);
 
     // Sanitize specific fields if they exist in the schema/data
-    if (normalizedData.provider_rfc) {
-      normalizedData.provider_rfc = sanitizeRfc(normalizedData.provider_rfc);
+    if (normalizedData.vendor_tax_id) {
+      normalizedData.vendor_tax_id = sanitizeRfc(normalizedData.vendor_tax_id);
     }
     if (normalizedData.client_tax_id) {
       normalizedData.client_tax_id = sanitizeRfc(normalizedData.client_tax_id);

@@ -164,7 +164,7 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
             return obj;
         } else {
             return normalizeEmptyToNull(obj);
-        }
+      }
     };
 
     // Apply normalization to the entire identity object
@@ -188,7 +188,7 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
             canSignContracts = rep.has_poder === true; 
          }
          return {
-           ...rep,
+         ...rep,
            can_sign_contracts: canSignContracts,
            poder_scope: rep.poder_scope,
          };
