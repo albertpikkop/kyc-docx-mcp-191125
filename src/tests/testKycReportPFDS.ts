@@ -13,7 +13,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Building Report...");
+  console.log("Building Standard Report (No Trace)...");
   const report = buildKycReport(run.profile, run.validation);
 
   console.log("\n========================================================");
@@ -26,10 +26,28 @@ async function main() {
     console.log(section.body);
     console.log("--------------------------------------------------------\n");
   });
+  
+  // Verify Section IV is missing by default
+  if (report.sections.some(s => s.title.includes("TRAZA"))) {
+      console.error("FAIL: Trace section appeared when not requested.");
+      process.exit(1);
+  }
 
-  console.log("\n=== JSON OUTPUT ===");
-  console.log(JSON.stringify(report, null, 2));
+  console.log("\n--- Building Traceability Report (With Trace) ---");
+  const traceReport = buildKycReport(run.profile, run.validation, { includeTrace: true });
+  
+  const traceSection = traceReport.sections.find(s => s.title.includes("TRAZA"));
+  if (!traceSection) {
+      console.error("FAIL: Trace section missing when requested.");
+      process.exit(1);
+  }
+  
+  console.log(`## ${traceSection.title}\n`);
+  console.log(traceSection.body);
+  console.log("--------------------------------------------------------\n");
+
+  console.log("\n=== JSON OUTPUT (Trace Report) ===");
+  console.log(JSON.stringify(traceReport, null, 2));
 }
 
 main().catch(console.error);
-

@@ -1,5 +1,5 @@
 import { KycProfile, KycValidationResult } from "./types.js";
-import { resolveUbo, resolveSignatories, checkFreshness } from "./validation.js";
+import { resolveUbo, resolveSignatories, checkFreshness, buildTrace } from "./validation.js";
 
 export interface KycReportSection {
   title: string;
@@ -10,6 +10,11 @@ export interface KycReport {
   customerId: string;
   generatedAt: string;
   sections: KycReportSection[];
+}
+
+export interface ReportOptions {
+  redacted?: boolean;
+  includeTrace?: boolean;
 }
 
 /**
@@ -31,11 +36,12 @@ function formatAddress(addr: any): string {
 }
 
 /**
- * Builds a structured KYC report (Hechos + Conclusiones)
+ * Builds a structured KYC report (Hechos + Conclusiones + Traza)
  */
 export function buildKycReport(
   profile: KycProfile,
-  validation: KycValidationResult
+  validation: KycValidationResult,
+  options: ReportOptions = {}
 ): KycReport {
   
   const sections: KycReportSection[] = [];
@@ -175,10 +181,86 @@ export function buildKycReport(
       body: flagsBody
   });
 
+  // --- SECTION IV: TRAZA Y JUSTIFICACIÓN (Optional) ---
+  if (options.includeTrace) {
+      const trace = buildTrace(profile);
+      const lines: string[] = [];
+      
+      // UBO trace
+      if (trace.ubos && trace.ubos.length > 0) {
+          lines.push("### 1. Propietarios Beneficiarios – Cálculo de Porcentajes");
+          lines.push("");
+          lines.push("| Accionista | Acciones | Total Acciones | % Calculado | Umbral UBO | Es UBO |");
+          lines.push("|-----------|----------|----------------|-------------|------------|--------|");
+          for (const u of trace.ubos) {
+              const pct = u.computedPercentage != null ? `${u.computedPercentage.toFixed(2)}%` : "-";
+              const thr = u.thresholdApplied != null ? `${u.thresholdApplied}%` : "-";
+              const isUboLabel = u.isUbo ? "Sí" : "No";
+              lines.push(`| ${u.name} | ${u.shares ?? "-"} | ${u.totalShares ?? "-"} | ${pct} | ${thr} | ${isUboLabel} |`);
+          }
+          lines.push("");
+      }
+      
+      // Address evidence trace
+      if (trace.addressEvidence && trace.addressEvidence.length > 0) {
+          lines.push("### 2. Evidencia de Domicilio");
+          for (const a of trace.addressEvidence) {
+              lines.push(`- **Rol:** ${a.role}`);
+              if (a.address) {
+                  lines.push(`  - Dirección: ${formatAddress(a.address)}`);
+              }
+              if (a.sources && a.sources.length > 0) {
+                  lines.push("  - Fuentes:");
+                  for (const s of a.sources) {
+                      lines.push(`    - ${s.type}${s.description ? ` – ${s.description}` : ""}`);
+                  }
+              }
+          }
+          lines.push("");
+      }
+      
+      // Powers trace
+      if (trace.powers && trace.powers.length > 0) {
+          lines.push("### 3. Facultades / Poderes – Justificación");
+          for (const p of trace.powers) {
+              lines.push(`- **${p.personName}** (${p.role}) – Alcance: ${p.scope}`);
+              if (p.matchedPhrases?.length) {
+                  lines.push(`  - Frases clave detectadas: ${p.matchedPhrases.join(", ")}`);
+              }
+              if (p.sourceReference) {
+                  lines.push(`  - Fuente: ${p.sourceReference}`);
+              }
+          }
+          lines.push("");
+      }
+      
+      // Freshness trace
+      if (trace.freshness && trace.freshness.length > 0) {
+          lines.push("### 4. Vigencia de Documentos – Detalle");
+          for (const f of trace.freshness) {
+              lines.push(`- **Tipo:** ${f.docType}`);
+              lines.push(`  - Última fecha: ${f.latestDate ?? "-"}`);
+              lines.push(`  - Antigüedad (días): ${f.ageInDays ?? "-"}`);
+              lines.push(`  - Dentro del umbral: ${f.withinThreshold ? "Sí" : "No"}`);
+              if (f.supportingDocuments?.length) {
+                  lines.push("  - Documentos utilizados:");
+                  for (const s of f.supportingDocuments) {
+                      lines.push(`    - ${s.type}${s.date ? ` (${s.date})` : ""}${s.description ? ` – ${s.description}` : ""}`);
+                  }
+              }
+          }
+          lines.push("");
+      }
+      
+      sections.push({
+          title: "IV. TRAZA Y JUSTIFICACIÓN",
+          body: lines.join("\n")
+      });
+  }
+
   return {
       customerId: profile.customerId,
       generatedAt: new Date().toISOString(),
       sections
   };
 }
-
