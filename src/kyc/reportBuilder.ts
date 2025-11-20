@@ -89,7 +89,7 @@ export function buildKycReport(
   });
   hechosBody += `- **Comprobantes de Domicilio:** ${profile.addressEvidence.length} documentos\n`;
   profile.addressEvidence.forEach(doc => {
-      hechosBody += `  - ${doc.provider_name} (${doc.date || doc.issue_datetime})\n`;
+      hechosBody += `  - ${doc.vendor_name} (${doc.issue_datetime || doc.due_date})\n`;
   });
 
   sections.push({

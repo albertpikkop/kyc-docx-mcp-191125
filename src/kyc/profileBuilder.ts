@@ -95,7 +95,7 @@ export class KycProfileBuilder {
       const historicalAddress: HistoricalAddress = {
         source: 'proof_of_address',
         address: proof.client_address,
-        date: proof.date,
+        date: proof.issue_datetime || proof.due_date,
       };
       this.profile.historical_addresses?.push(historicalAddress);
       

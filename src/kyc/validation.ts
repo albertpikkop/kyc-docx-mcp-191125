@@ -161,7 +161,7 @@ export function checkFreshness(profile: KycProfile, asOf: Date = new Date()): Fr
 
   // 1. Proof of Address (Telmex/CFE)
   const poaDates = profile.addressEvidence
-      .map(d => d.issue_datetime || d.date || d.due_date)
+      .map(d => d.issue_datetime || d.due_date)
       .filter(d => d !== null) as string[];
   
   let maxAgePoa: number | null = null;
