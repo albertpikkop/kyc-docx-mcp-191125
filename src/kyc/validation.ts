@@ -1,4 +1,4 @@
-import { KycProfile, KycValidationResult, KycValidationFlag } from './types.js';
+import { KycProfile, KycValidationResult, KycValidationFlag, TraceSection, UboTrace, AddressEvidenceTrace, PowerTrace, FreshnessTrace } from './types.js';
 import { differenceInDays } from "date-fns";
 
 // --- 1. Address Resolution ---
@@ -154,6 +154,8 @@ export interface SignatoryInfo {
   name: string;
   role: string;
   scope: "full" | "limited" | "none";
+  matchedPhrases?: string[];
+  sourceReference?: string;
 }
 
 // Strict Regex Patterns for Mexican Powers
@@ -172,6 +174,7 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
 
   return profile.companyIdentity.legal_representatives.map(rep => {
       let scope: "full" | "limited" | "none" = "none";
+      const matchedPhrases: string[] = [];
       
       const roleUpper = rep.role.toUpperCase();
       // Combine all power scopes into one string for regex matching
@@ -181,6 +184,11 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       const hasAdmin = POWER_PATTERNS.administracion.test(powersText);
       const hasDomino = POWER_PATTERNS.dominio.test(powersText);
       const hasTitulos = POWER_PATTERNS.titulosCredito.test(powersText);
+
+      if (hasPleitos) matchedPhrases.push("PLEITOS Y COBRANZAS");
+      if (hasAdmin) matchedPhrases.push("ACTOS DE ADMINISTRACIÓN");
+      if (hasDomino) matchedPhrases.push("ACTOS DE DOMINIO");
+      if (hasTitulos) matchedPhrases.push("TÍTULOS DE CRÉDITO");
       
       if (rep.can_sign_contracts) {
           // STRICT DEFINITION OF FULL POWERS:
@@ -214,7 +222,9 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       return {
           name: rep.name,
           role: rep.role,
-          scope
+          scope,
+          matchedPhrases,
+          sourceReference: null
       };
   });
 }
@@ -378,4 +388,165 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     flags,
     generatedAt: new Date().toISOString()
   };
+}
+
+// --- 6. Traceability Helper ---
+
+export function buildTrace(profile: KycProfile): TraceSection {
+  const trace: TraceSection = {};
+
+  // 1) UBO trace
+  const ubos = resolveUbo(profile); // existing helper returning UboInfo[]
+  if (profile.companyIdentity?.shareholders && profile.companyIdentity.shareholders.length > 0) {
+    const totalShares = profile.companyIdentity.shareholders
+      .map(s => s.shares || 0)
+      .reduce((a, b) => a + b, 0);
+    
+    trace.ubos = profile.companyIdentity.shareholders.map(sh => {
+      const shares = sh.shares ?? null;
+      const percentage = shares && totalShares ? (shares / totalShares) * 100 : null;
+      const isUbo = ubos.some(u => u.name === sh.name);
+      const uboThreshold = 25;
+
+      return {
+        name: sh.name,
+        shares,
+        totalShares,
+        computedPercentage: percentage ? Number(percentage.toFixed(2)) : (sh.percentage ?? null), // Fallback to explicit percentage if share calc fails
+        thresholdApplied: uboThreshold,
+        isUbo,
+      } as UboTrace;
+    });
+  }
+
+  // 2) Address evidence trace
+  // Ensure addresses are resolved
+  // (Ideally profile is already resolved, but we can re-check)
+  
+  const addressEvidence: AddressEvidenceTrace[] = [];
+  
+  // Founding Address (from Acta)
+  if (profile.foundingAddress) {
+      addressEvidence.push({
+          role: "founding",
+          address: profile.foundingAddress,
+          sources: [{ type: "acta", description: "Acta Constitutiva (Domicilio Social)" }]
+      });
+  }
+  
+  // Fiscal Address (from SAT)
+  if (profile.currentFiscalAddress) {
+       addressEvidence.push({
+          role: "fiscal",
+          address: profile.currentFiscalAddress,
+          sources: [{ type: "sat_constancia", description: "Constancia de Situación Fiscal" }]
+      });
+  }
+  
+  // Operational Address (from Bank/PoA)
+  if (profile.currentOperationalAddress) {
+      const sources: AddressEvidenceTrace["sources"] = [];
+      
+      // Find matching PoAs
+      profile.addressEvidence.forEach(poa => {
+          // Check if this PoA matches operational address logic (simple check: is it the same object or matching zip?)
+          // Since resolveAddresses picks one, we can list all valid PoAs as sources for "Operational" if they are roughly consistent.
+          // Or just list the ones that are present.
+          const dateStr = poa.issue_datetime || poa.due_date || "N/A";
+          sources.push({
+              type: poa.document_type === "cfe_receipt" ? "cfe" : (poa.document_type === "telmex_bill" ? "telmex" : "other"),
+              description: `${poa.vendor_name} (${dateStr}) - ${poa.client_address?.street} ${poa.client_address?.ext_number}`
+          });
+      });
+
+      // Find matching Bank Accounts
+      profile.bankAccounts.forEach(bank => {
+          if (bank.address_on_statement) {
+             sources.push({
+                 type: "bank_statement",
+                 description: `${bank.bank_name} - ${bank.address_on_statement.street} ${bank.address_on_statement.ext_number}`
+             });
+          }
+      });
+      
+      addressEvidence.push({
+          role: "operational",
+          address: profile.currentOperationalAddress,
+          sources: sources.length > 0 ? sources : [{ type: "other", description: "Inferred from Fiscal/Other" }]
+      });
+  }
+  
+  trace.addressEvidence = addressEvidence;
+
+  // 3) Powers trace
+  const signers = resolveSignatories(profile);
+  trace.powers = signers.map(s => {
+    return {
+      personName: s.name,
+      role: s.role,
+      scope: s.scope,
+      matchedPhrases: s.matchedPhrases ?? [],
+      sourceReference: s.sourceReference
+    } as PowerTrace;
+  });
+
+  // 4) Freshness trace
+  const freshness = checkFreshness(profile, new Date());
+  trace.freshness = freshness.map(f => {
+      // Gather supporting docs for this type
+      const docs: { type: string; date?: string; description?: string }[] = [];
+      
+      if (f.type === "proof_of_address") {
+          profile.addressEvidence.forEach(d => {
+              docs.push({
+                  type: d.document_type,
+                  date: d.issue_datetime || d.due_date || undefined,
+                  description: d.vendor_name || undefined
+              });
+          });
+      } else if (f.type === "bank_statement") {
+          profile.bankAccounts.forEach(b => {
+              docs.push({
+                  type: "bank_statement",
+                  date: b.statement_period_end || undefined,
+                  description: b.bank_name || undefined
+              });
+          });
+      } else if (f.type === "sat_constancia") {
+           if (profile.companyTaxProfile?.issue?.issue_date) {
+               docs.push({
+                   type: "sat_constancia",
+                   date: profile.companyTaxProfile.issue.issue_date,
+                   description: "Fecha de emisión de Constancia"
+               });
+           }
+      }
+
+      return {
+        docType: f.type,
+        latestDate: null, // We didn't return exact date in checkFreshness, could infer from docs or update helper. For now leaving null or inferring.
+        // Actually we can infer from the docs we just collected
+        ageInDays: f.maxAgeDays,
+        withinThreshold: f.maxAgeDays !== null ? f.maxAgeDays <= 90 : false,
+        thresholdDays: 90,
+        supportingDocuments: docs
+      } as FreshnessTrace;
+  });
+
+  // Backfill latestDate for freshness trace from docs
+  trace.freshness.forEach(t => {
+      if (t.supportingDocuments.length > 0) {
+          // Sort docs by date desc
+          const dates = t.supportingDocuments
+             .map(d => d.date)
+             .filter(d => !!d)
+             .sort()
+             .reverse();
+          if (dates.length > 0) {
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
 }

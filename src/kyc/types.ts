@@ -243,3 +243,48 @@ export interface KycRun {
   profile?: KycProfile;
   validation?: KycValidationResult;
 }
+
+// --- Traceability Types ---
+
+export interface UboTrace {
+  name: string;
+  shares: number | null;
+  totalShares: number | null;
+  computedPercentage: number | null;
+  thresholdApplied: number | null; // e.g. 25
+  isUbo: boolean;
+}
+
+export interface AddressEvidenceTrace {
+  role: "founding" | "fiscal" | "operational";
+  address: Address | null;
+  sources: {
+    type: "acta" | "sat_constancia" | "cfe" | "telmex" | "bank_statement" | "other";
+    documentId?: string;
+    description?: string; // e.g. "CFE Agosto 2025 – GUTENBERG 60..."
+  }[];
+}
+
+export interface PowerTrace {
+  personName: string;
+  role: string;
+  scope: "full" | "limited" | "none";
+  matchedPhrases: string[];   // e.g. ["PLEITOS Y COBRANZAS", "ACTOS DE ADMINISTRACIÓN"]
+  sourceReference?: string;   // e.g. "Acta, cláusula quinta, pág. 12"
+}
+
+export interface FreshnessTrace {
+  docType: "proof_of_address" | "sat_constancia" | "bank_statement";
+  latestDate: string | null;  // ISO date string
+  ageInDays: number | null;
+  withinThreshold: boolean;
+  thresholdDays: number | null;
+  supportingDocuments: { type: string; date?: string; description?: string }[];
+}
+
+export interface TraceSection {
+  ubos?: UboTrace[];
+  addressEvidence?: AddressEvidenceTrace[];
+  powers?: PowerTrace[];
+  freshness?: FreshnessTrace[];
+}
