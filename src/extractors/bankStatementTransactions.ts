@@ -4,6 +4,8 @@ import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankTransactionListSchema } from '../schemas/mx/bankTransaction.js';
 import { normalizeEmptyToNull, sanitizeDate, sanitizeCurrency } from '../kyc/validators.js';
+import { withRetry } from '../utils/retry.js';
+import { logExtractorError } from '../utils/logging.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
@@ -111,24 +113,26 @@ export async function extractBankStatementTransactions(fileUrl: string): Promise
   }
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: EXTRACTION_INSTRUCTIONS,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "bank_transactions",
-          strict: true,
-          schema: BankTransactionListSchema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: EXTRACTION_INSTRUCTIONS,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "bank_transactions",
+            strict: true,
+            schema: BankTransactionListSchema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -159,7 +163,7 @@ export async function extractBankStatementTransactions(fileUrl: string): Promise
     return normalizedData;
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("bank_statement_transactions", fileUrl, error);
     if (error instanceof Error) {
       throw new Error(`Bank Transaction extraction failed: ${error.message}`);
     }

@@ -43,7 +43,7 @@ export function resolveAddresses(profile: KycProfile): KycProfile {
 
 export interface UboInfo {
   name: string;
-  percentage: number;
+  percentage: number | null;
 }
 
 export function resolveUbo(profile: KycProfile): UboInfo[] {
@@ -61,24 +61,18 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
   
   for (const s of shareholders) {
       let isUbo = false;
-      let pct = 0;
+      let pct: number | null = null;
 
-      if (s.percentage !== null && s.percentage !== undefined) {
-          // Handle percentage. If extraction normalized 0.92 as 92%, handle both?
-          // Usually extractors normalize to number. If > 1, assume percentage (e.g. 92). If < 1, assume decimal (0.92).
-          // For safety, let's assume extractors output raw numbers.
-          // The prompt said > 25%.
-          pct = s.percentage;
-          // Heuristic: if < 1.00 and sum of all is approx 1.0, then 0.25 is the threshold.
-          // If sum is > 1.0, then 25 is the threshold.
-          // Let's assume standard 0-100 scale for now or checking relative weight.
-          // Actually, looking at Acta output: "percentage": 0.9215686275
-          // So it's 0-1 scale.
-          
-          if (pct > 0.25) {
-              isUbo = true;
-          }
-      } else if (s.is_beneficial_owner) {
+    if (s.percentage !== null && s.percentage !== undefined) {
+        let fraction = s.percentage;
+        if (fraction > 1) {
+            fraction = fraction / 100;
+        }
+        if (fraction > 0.25) {
+            isUbo = true;
+        }
+        pct = fraction * 100;
+    } else if (s.is_beneficial_owner) {
           isUbo = true;
       }
 

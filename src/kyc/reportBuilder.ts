@@ -1,4 +1,4 @@
-import { KycProfile, KycValidationResult, KycValidationFlag } from "./types.js";
+import { KycProfile, KycValidationResult } from "./types.js";
 import { resolveUbo, resolveSignatories, checkFreshness } from "./validation.js";
 
 export interface KycReportSection {
@@ -119,7 +119,8 @@ export function buildKycReport(
   const ubos = resolveUbo(profile);
   if (ubos.length > 0) {
       ubos.forEach(ubo => {
-          conclusionesBody += `- **${ubo.name}:** ${ubo.percentage}%\n`;
+          const pctText = ubo.percentage !== null ? `${ubo.percentage.toFixed(2)}%` : "Porcentaje no declarado";
+          conclusionesBody += `- **${ubo.name}:** ${pctText}\n`;
       });
   } else {
       conclusionesBody += "- *No se detectaron accionistas con >25% de participación directa.*\n";

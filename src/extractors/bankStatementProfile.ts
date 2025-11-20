@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
 import { normalizeEmptyToNull, sanitizeClabe } from '../kyc/validators.js';
+import { withRetry } from '../utils/retry.js';
+import { logExtractorError } from '../utils/logging.js';
 
 // Zod definition matching BankAccountProfileSchema for runtime validation
 const AddressZodSchema = z.object({
@@ -109,24 +111,26 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
   }
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: EXTRACTION_INSTRUCTIONS,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "bank_account_profile",
-          strict: false,
-          schema: BankAccountProfileSchema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: EXTRACTION_INSTRUCTIONS,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "bank_account_profile",
+            strict: false,
+            schema: BankAccountProfileSchema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -167,7 +171,7 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
     return validatedData; // Return the validated wrapper object
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("bank_statement_profile", fileUrl, error);
     if (error instanceof Error) {
       throw new Error(`Bank Statement Profile extraction failed: ${error.message}`);
     }

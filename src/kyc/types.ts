@@ -36,7 +36,11 @@ export type HistoricalAddress = {
  */
 export type ProofOfAddress = {
   document_type: string;
-  // date field removed as it is not in schema
+  evidence_meta?: {
+    issuer_country: string | null;
+    original_filename: string | null;
+    pages: number | null;
+  } | null;
   vendor_name: string | null;
   vendor_address: Address;
   vendor_tax_id: string | null;
@@ -45,12 +49,17 @@ export type ProofOfAddress = {
   client_tax_id: string | null;
   total_due: number | null;
   currency: string | null;
-  due_date: string | null; // YYYY-MM-DD
+  due_date: string | null;
   billing_month: string | null;
+  billing_period_start?: string | null;
+  billing_period_end?: string | null;
   issue_datetime: string | null;
+  previous_balance?: number | null;
+  current_charges?: number | null;
   service?: {
     category: string | null;
     telephone_number: string | null;
+    service_number: string | null;
   };
   account_reference: string | null;
   invoice_number: string | null;
@@ -173,13 +182,15 @@ export type CompanyTaxProfile = {
 
 // --- KYC System Types ---
 
-export type DocumentType =
+export type ImportableDocumentType =
   | "acta"
   | "sat_constancia"
   | "fm2"
   | "telmex"
   | "cfe"
   | "bank_statement";
+
+export type DocumentType = ImportableDocumentType | "bank_statement_transactions";
 
 export interface KycDocument {
   id: string;                // uuid or hash

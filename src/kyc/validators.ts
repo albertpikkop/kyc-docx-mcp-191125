@@ -115,8 +115,14 @@ export function sanitizeCurrency(value: string | null | undefined): string | nul
   if (!value) return null;
   const upper = value.trim().toUpperCase();
   if (VALID_CURRENCIES.has(upper)) return upper;
-  
-  // Heuristic fallback or null? Strict KYC prefers null or explicit "MXN" default in extractor.
-  // Let's return null and let extractor default if needed.
+
+  // Common Mexican peso shorthands
+  const cleaned = upper.replace(/\./g, "").replace(/\s+/g, "");
+  if (cleaned === "MN" || cleaned === "MNX" || cleaned === "MXP" || cleaned === "MXNMN") {
+    return "MXN";
+  }
+  if (cleaned.includes("PESO")) {
+    return "MXN";
+  }
   return null;
 }

@@ -11,6 +11,21 @@ This document describes all MCP tools exposed by the KYC Document Extractor serv
 
 ## Tools
 
+> **Response Envelope**  
+> All tools respond with a uniform JSON structure:
+> - Success: `{ "ok": true, "data": { ... } }`
+> - Error: `{ "ok": false, "error_code": "...", "message": "..." }`
+
+Example client-side pattern:
+
+```typescript
+const payload = JSON.parse(result.content[0].text);
+if (!payload.ok) {
+  throw new Error(payload.message);
+}
+const data = payload.data;
+```
+
 ### 1. `list_supported_doc_types`
 
 Lists all supported document types and their descriptions.
@@ -22,32 +37,35 @@ None
 #### Response
 
 ```json
-[
-  {
-    "type": "acta",
-    "description": "Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers"
-  },
-  {
-    "type": "sat_constancia",
-    "description": "SAT Constancia de Situación Fiscal - Extracts Tax Profile"
-  },
-  {
-    "type": "fm2",
-    "description": "FM2 / Residente Card - Extracts Immigration Profile"
-  },
-  {
-    "type": "telmex",
-    "description": "Telmex Bill - Extracts Proof of Address"
-  },
-  {
-    "type": "cfe",
-    "description": "CFE Electricity Bill - Extracts Proof of Address"
-  },
-  {
-    "type": "bank_statement",
-    "description": "Bank Statement - Extracts Profile & Transactions"
-  }
-]
+{
+  "ok": true,
+  "data": [
+    {
+      "type": "acta",
+      "description": "Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers"
+    },
+    {
+      "type": "sat_constancia",
+      "description": "SAT Constancia de Situación Fiscal - Extracts Tax Profile"
+    },
+    {
+      "type": "fm2",
+      "description": "FM2 / Residente Card - Extracts Immigration Profile"
+    },
+    {
+      "type": "telmex",
+      "description": "Telmex Bill - Extracts Proof of Address"
+    },
+    {
+      "type": "cfe",
+      "description": "CFE Electricity Bill - Extracts Proof of Address"
+    },
+    {
+      "type": "bank_statement",
+      "description": "Bank Statement - Extracts Profile & Transactions"
+    }
+  ]
+}
 ```
 
 #### Example Usage
@@ -76,23 +94,28 @@ Imports a KYC document, extracts structured data, and stores it in a customer ru
 
 ```json
 {
-  "customer_id": "pfds",
-  "run_id": "64ebd4d5-b2dc-408f-92ab-38808ec7de01",
-  "doc_id": "fea5e097-bf7a-4de9-a928-d6681938feb2",
-  "doc_type": "sat_constancia",
-  "status": "imported"
+  "ok": true,
+  "data": {
+    "customer_id": "pfds",
+    "run_id": "64ebd4d5-b2dc-408f-92ab-38808ec7de01",
+    "doc_id": "fea5e097-bf7a-4de9-a928-d6681938feb2",
+    "doc_type": "sat_constancia",
+    "supplemental_doc_ids": [],
+    "status": "imported"
+  }
 }
 ```
+
+Additional fields:
+- `supplemental_doc_ids`: For documents that spawn extra records (e.g., bank statement transactions), this array lists the newly created document IDs.
 
 #### Response (Error)
 
 ```json
 {
-  "content": [{
-    "type": "text",
-    "text": "Extraction failed: Invalid document format"
-  }],
-  "isError": true
+  "ok": false,
+  "error_code": "EXTRACTION_FAILED",
+  "message": "Invalid document format"
 }
 ```
 
@@ -148,32 +171,35 @@ Returns the complete `KycProfile` object:
 
 ```json
 {
-  "customerId": "customer-123",
-  "companyIdentity": {
-    "razon_social": "Example Corp",
-    "rfc": "EXC123456789",
-    "incorporation_date": "2020-01-15",
-    "founding_address": { ... },
-    "legal_representatives": [ ... ],
-    "shareholders": [ ... ],
-    ...
-  },
-  "companyTaxProfile": {
-    "rfc": "EXC123456789",
-    "razon_social": "Example Corp",
-    "tax_regime": "General",
-    "fiscal_address": { ... },
-    "economic_activities": [ ... ],
-    ...
-  },
-  "representativeIdentity": { ... },
-  "currentFiscalAddress": { ... },
-  "currentOperationalAddress": { ... },
-  "foundingAddress": { ... },
-  "addressEvidence": [ ... ],
-  "bankAccounts": [ ... ],
-  "historical_addresses": [ ... ],
-  "lastUpdatedAt": "2024-01-15T10:30:00Z"
+  "ok": true,
+  "data": {
+    "customerId": "customer-123",
+    "companyIdentity": {
+      "razon_social": "Example Corp",
+      "rfc": "EXC123456789",
+      "incorporation_date": "2020-01-15",
+      "founding_address": { ... },
+      "legal_representatives": [ ... ],
+      "shareholders": [ ... ],
+      ...
+    },
+    "companyTaxProfile": {
+      "rfc": "EXC123456789",
+      "razon_social": "Example Corp",
+      "tax_regime": "General",
+      "fiscal_address": { ... },
+      "economic_activities": [ ... ],
+      ...
+    },
+    "representativeIdentity": { ... },
+    "currentFiscalAddress": { ... },
+    "currentOperationalAddress": { ... },
+    "foundingAddress": { ... },
+    "addressEvidence": [ ... ],
+    "bankAccounts": [ ... ],
+    "historical_addresses": [ ... ],
+    "lastUpdatedAt": "2024-01-15T10:30:00Z"
+  }
 }
 ```
 
@@ -181,11 +207,9 @@ Returns the complete `KycProfile` object:
 
 ```json
 {
-  "content": [{
-    "type": "text",
-    "text": "No run found for customer customer-123"
-  }],
-  "isError": true
+  "ok": false,
+  "error_code": "NO_RUN_FOR_CUSTOMER",
+  "message": "No run found for customer customer-123"
 }
 ```
 
@@ -225,21 +249,24 @@ Validates a KYC profile and generates validation results with scores and flags.
 
 ```json
 {
-  "customerId": "customer-123",
-  "score": 0.85,
-  "flags": [
-    {
-      "code": "ADDRESS_MISMATCH",
-      "level": "warning",
-      "message": "Fiscal address differs from operational address"
-    },
-    {
-      "code": "LOW_DOC_COVERAGE",
-      "level": "info",
-      "message": "Missing bank statement"
-    }
-  ],
-  "generatedAt": "2024-01-15T10:35:00Z"
+  "ok": true,
+  "data": {
+    "customerId": "customer-123",
+    "score": 0.85,
+    "flags": [
+      {
+        "code": "ADDRESS_MISMATCH",
+        "level": "warning",
+        "message": "Fiscal address differs from operational address"
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "info",
+        "message": "Missing bank statement"
+      }
+    ],
+    "generatedAt": "2024-01-15T10:35:00Z"
+  }
 }
 ```
 
@@ -260,11 +287,9 @@ Validates a KYC profile and generates validation results with scores and flags.
 
 ```json
 {
-  "content": [{
-    "type": "text",
-    "text": "No run found for customer customer-123"
-  }],
-  "isError": true
+  "ok": false,
+  "error_code": "NO_RUN_FOR_CUSTOMER",
+  "message": "No run found for customer customer-123"
 }
 ```
 
@@ -306,29 +331,31 @@ Generates a comprehensive KYC report combining profile and validation data.
 ```json
 {
   "ok": true,
-  "customerId": "customer-123",
-  "generatedAt": "2024-01-15T10:40:00Z",
-  "profile": {
-    "companyIdentity": { ... },
-    "companyTaxProfile": { ... },
-    "currentFiscalAddress": { ... },
-    "currentOperationalAddress": { ... },
-    ...
-  },
-  "validation": {
-    "score": 0.85,
-    "flags": [ ... ]
-  },
-  "summary": {
-    "companyName": "Example Corp",
-    "rfc": "EXC123456789",
-    "hasCompleteProfile": true,
-    "documentCount": 3,
-    "addressesFound": 2
-  },
-  "recommendations": [
-    "Consider adding bank statement for operational address verification"
-  ]
+  "data": {
+    "customerId": "customer-123",
+    "generatedAt": "2024-01-15T10:40:00Z",
+    "profile": {
+      "companyIdentity": { ... },
+      "companyTaxProfile": { ... },
+      "currentFiscalAddress": { ... },
+      "currentOperationalAddress": { ... },
+      ...
+    },
+    "validation": {
+      "score": 0.85,
+      "flags": [ ... ]
+    },
+    "summary": {
+      "companyName": "Example Corp",
+      "rfc": "EXC123456789",
+      "hasCompleteProfile": true,
+      "documentCount": 3,
+      "addressesFound": 2
+    },
+    "recommendations": [
+      "Consider adding bank statement for operational address verification"
+    ]
+  }
 }
 ```
 
@@ -337,7 +364,8 @@ Generates a comprehensive KYC report combining profile and validation data.
 ```json
 {
   "ok": false,
-  "error_code": "NO_RUN_FOR_CUSTOMER"
+  "error_code": "NO_RUN_FOR_CUSTOMER",
+  "message": "No run found for customer customer-123"
 }
 ```
 
@@ -426,20 +454,20 @@ All tools return errors in a consistent format:
 
 ```json
 {
-  "content": [{
-    "type": "text",
-    "text": "Error message here"
-  }],
-  "isError": true
+  "ok": false,
+  "error_code": "EXTRACTION_FAILED",
+  "message": "Error message here"
 }
 ```
 
-Common error scenarios:
-- Invalid document type
-- Document extraction failure
-- Missing customer run
-- Invalid file URL
-- Schema validation failure
+Common error scenarios / codes:
+- `INVALID_DOC_TYPE`
+- `EXTRACTION_FAILED`
+- `NO_RUN_FOR_CUSTOMER`
+- `PROFILE_BUILD_FAILED`
+- `FAILED_TO_GENERATE_PROFILE_OR_VALIDATION`
+- `INVALID_FILE_URL`
+- `SCHEMA_VALIDATION_FAILED`
 
 ## Rate Limiting
 

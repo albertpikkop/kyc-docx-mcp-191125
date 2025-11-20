@@ -3,6 +3,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { ProofOfAddressSchema } from '../schemas/mx/proofOfAddress.js';
+import {
+  normalizeEmptyToNull,
+  sanitizeRfc,
+  sanitizeInvoiceNumber,
+  sanitizeCurrency,
+} from '../kyc/validators.js';
+import { withRetry } from '../utils/retry.js';
+import { logExtractorError } from '../utils/logging.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican CFE electricity bills (comprobantes de domicilio).
@@ -79,24 +87,26 @@ export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
   }
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: EXTRACTION_INSTRUCTIONS,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "proof_of_address",
-          strict: true,
-          schema: ProofOfAddressSchema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: EXTRACTION_INSTRUCTIONS,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "proof_of_address",
+            strict: true,
+            schema: ProofOfAddressSchema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -106,36 +116,9 @@ export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
     }
 
     const data = JSON.parse(content);
-    
-    // Extract proof_of_address if nested
+
     const proofOfAddress = data.proof_of_address || data;
-
-    // Strict Post-processing: Normalize empty strings to null
-    const normalizeEmptyToNull = (value: any): any => {
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === "" || trimmed === "/" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
-          return null;
-        }
-        return trimmed;
-      }
-      return value;
-    };
-
-    const deepNormalize = (obj: any): any => {
-        if (Array.isArray(obj)) {
-            return obj.map(deepNormalize);
-        } else if (obj !== null && typeof obj === 'object') {
-            for (const key in obj) {
-                obj[key] = deepNormalize(obj[key]);
-            }
-            return obj;
-        } else {
-            return normalizeEmptyToNull(obj);
-        }
-    };
-
-    const normalizedProof = deepNormalize(proofOfAddress);
+    const normalizedProof = normalizeEmptyToNull(proofOfAddress);
 
     // Add filename to metadata if available and not set
     if (normalizedProof.evidence_meta && !normalizedProof.evidence_meta.original_filename) {
@@ -151,10 +134,26 @@ export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
       normalizedProof.vendor_address.country = "MX";
     }
 
+    if (normalizedProof.vendor_tax_id) {
+      normalizedProof.vendor_tax_id = sanitizeRfc(normalizedProof.vendor_tax_id);
+    }
+    if (normalizedProof.client_tax_id) {
+      normalizedProof.client_tax_id = sanitizeRfc(normalizedProof.client_tax_id);
+    }
+    if (normalizedProof.invoice_number) {
+      normalizedProof.invoice_number = sanitizeInvoiceNumber(normalizedProof.invoice_number);
+    }
+    if (normalizedProof.account_reference) {
+      normalizedProof.account_reference = sanitizeInvoiceNumber(normalizedProof.account_reference);
+    }
+    if (normalizedProof.currency) {
+      normalizedProof.currency = sanitizeCurrency(normalizedProof.currency) || normalizedProof.currency;
+    }
+
     return normalizedProof;
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("cfe", fileUrl, error);
     if (error instanceof Error) {
       throw new Error(`CFE Proof of Address extraction failed: ${error.message}`);
     }

@@ -4,6 +4,8 @@ import path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
 import { normalizeEmptyToNull, sanitizeRfc } from '../kyc/validators.js';
+import { withRetry } from '../utils/retry.js';
+import { logExtractorError } from '../utils/logging.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican SAT Constancias (Persona Moral).
@@ -80,24 +82,26 @@ export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
   }
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: EXTRACTION_INSTRUCTIONS,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "company_tax_profile",
-          strict: true,
-          schema: CompanyTaxProfileSchema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: EXTRACTION_INSTRUCTIONS,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "company_tax_profile",
+            strict: true,
+            schema: CompanyTaxProfileSchema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -127,7 +131,7 @@ export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
     return normalizedProfile;
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("sat_constancia", fileUrl, error);
     if (error instanceof Error) {
       throw new Error(`Company tax profile extraction failed: ${error.message}`);
     }

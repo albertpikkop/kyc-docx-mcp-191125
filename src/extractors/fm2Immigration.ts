@@ -4,6 +4,8 @@ import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { ImmigrationProfileSchema } from '../schemas/mx/immigrationProfile.js';
 import { normalizeEmptyToNull, sanitizeCurp } from '../kyc/validators.js';
+import { withRetry } from '../utils/retry.js';
+import { logExtractorError } from '../utils/logging.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican immigration cards (FM2 / Residente Temporal / Residente Permanente).
@@ -87,24 +89,26 @@ export async function extractImmigrationProfile(fileUrl: string): Promise<any> {
   }
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: EXTRACTION_INSTRUCTIONS,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "immigration_profile",
-          strict: true,
-          schema: ImmigrationProfileSchema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: EXTRACTION_INSTRUCTIONS,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "immigration_profile",
+            strict: true,
+            schema: ImmigrationProfileSchema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -139,7 +143,7 @@ export async function extractImmigrationProfile(fileUrl: string): Promise<any> {
     return normalizedProfile;
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("fm2", fileUrl, error);
     if (error instanceof SyntaxError) {
       throw new Error(`Invalid JSON response from model: ${error.message}`);
     }

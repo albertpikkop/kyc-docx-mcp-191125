@@ -120,6 +120,8 @@ npm run build && ./dist/mcp/cli.js
 
 The server exposes 5 MCP tools:
 
+> **Response format:** Each tool returns `{ "ok": true, "data": { ... } }` on success and `{ "ok": false, "error_code": "...", "message": "..." }` on failure. Parse the JSON and inspect the `ok` flag before using `data`.
+
 ### 1. `list_supported_doc_types`
 
 Lists all supported document types and their descriptions.
@@ -237,6 +239,9 @@ npm run test:kyc-pfds
 # Test KYC report generation
 npm run test:kyc-report-pfds
 ```
+
+> **Fixture Paths**  
+> Integration tests expect real PDF fixtures. Set `KYC_FIXTURES_DIR` to the directory containing your documents (e.g. `export KYC_FIXTURES_DIR=/path/to/pfds/docs`). If the variable is unset the tests look for a local `fixtures/` directory and will fail with a descriptive error if the files are missing.
 
 ## Data Flow
 

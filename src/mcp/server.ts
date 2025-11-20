@@ -7,9 +7,8 @@ import * as path from 'path';
 // Domain imports
 import { 
   DocumentType, 
-  KycRun, 
+  ImportableDocumentType,
   KycDocument, 
-  KycProfile,
   CompanyIdentity,
   CompanyTaxProfile,
   ImmigrationProfile,
@@ -30,31 +29,55 @@ import { extractCfeProofOfAddress } from "../extractors/cfeProofOfAddress.js";
 import { extractBankStatementProfile } from "../extractors/bankStatementProfile.js";
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
 
+type McpToolResponse = {
+  content: Array<{ type: "text"; text: string }>;
+  isError?: boolean;
+};
+
+function okResponse(data: unknown): McpToolResponse {
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify({ ok: true, data }, null, 2)
+      }
+    ]
+  };
+}
+
+function errorResponse(error_code: string, message: string): McpToolResponse {
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify({ ok: false, error_code, message }, null, 2)
+      }
+    ],
+    isError: true
+  };
+}
+
 // --- Exported Handlers for Direct Usage / Testing ---
 
-export async function handleListSupportedDocTypes() {
+export async function handleListSupportedDocTypes(): Promise<McpToolResponse> {
   const docs = Object.entries(SUPPORTED_DOCS).map(([type, desc]) => ({
     type,
     description: desc
   }));
-  
-  return {
-    content: [{
-      type: "text",
-      text: JSON.stringify(docs, null, 2)
-    }]
-  };
+
+  return okResponse(docs);
 }
 
 export async function handleImportKycDocument({ customer_id, doc_type, file_url, source_name }: { 
   customer_id: string; 
-  doc_type: DocumentType; 
+  doc_type: ImportableDocumentType; 
   file_url: string; 
   source_name?: string;
-}) {
+}): Promise<McpToolResponse> {
   console.error(`Processing ${doc_type} for ${customer_id} from ${file_url}`);
 
   let extractedPayload: any = null;
+  const supplementalDocs: KycDocument[] = [];
 
   try {
     switch (doc_type) {
@@ -74,30 +97,26 @@ export async function handleImportKycDocument({ customer_id, doc_type, file_url,
         extractedPayload = await extractCfeProofOfAddress(file_url);
         break;
       case "bank_statement":
-        const profile = await extractBankStatementProfile(file_url);
-        const txs = await extractBankStatementTransactions(file_url);
-        
-        if (profile.bank_account_profile) {
-           extractedPayload = {
-               ...profile.bank_account_profile,
-               transactions: txs.transactions || []
-           };
-        } else {
-           // Fallback if profile extraction fails but structure exists
-           extractedPayload = { bank_account_profile: null, transactions: txs.transactions };
-        }
+        const profileResult = await extractBankStatementProfile(file_url);
+        const txResult = await extractBankStatementTransactions(file_url);
+
+        extractedPayload = profileResult.bank_account_profile ?? null;
+
+        supplementalDocs.push({
+          id: crypto.randomUUID(),
+          customerId: customer_id,
+          type: "bank_statement_transactions",
+          fileUrl: file_url,
+          extractedAt: new Date().toISOString(),
+          extractedPayload: txResult.transactions || [],
+          sourceName: source_name || path.basename(file_url)
+        });
         break;
       default:
         throw new Error(`Unsupported document type: ${doc_type}`);
     }
   } catch (error: any) {
-    return {
-      content: [{
-        type: "text",
-        text: `Extraction failed: ${error.message}`
-      }],
-      isError: true
-    };
+    return errorResponse("EXTRACTION_FAILED", error?.message || "Unknown extraction error");
   }
 
   // Load existing run or create new
@@ -125,31 +144,25 @@ export async function handleImportKycDocument({ customer_id, doc_type, file_url,
 
   // Append and save
   run.documents.push(newDoc);
+  supplementalDocs.forEach((doc) => run.documents.push(doc));
   
   await saveRun(run);
 
-  return {
-    content: [{
-      type: "text",
-      text: JSON.stringify({
-        customer_id,
-        run_id: run.runId,
-        doc_id: newDoc.id,
-        doc_type,
-        status: "imported"
-      }, null, 2)
-    }]
-  };
+  return okResponse({
+    customer_id,
+    run_id: run.runId,
+    doc_id: newDoc.id,
+    doc_type,
+    supplemental_doc_ids: supplementalDocs.map(doc => doc.id),
+    status: "imported"
+  });
 }
 
-export async function handleBuildKycProfile({ customer_id }: { customer_id: string }) {
+export async function handleBuildKycProfile({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
   const run = await loadLatestRun(customer_id);
   
   if (!run) {
-    return {
-      content: [{ type: "text", text: `No run found for customer ${customer_id}` }],
-      isError: true
-    };
+    return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
   }
 
   // Aggregate data from documents
@@ -179,7 +192,12 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
         proofsOfAddress.push(payload);
         break;
       case "bank_statement":
-        bankAccounts.push(payload);
+        if (payload) {
+          bankAccounts.push(payload);
+        }
+        break;
+      case "bank_statement_transactions":
+        // Reserved for future transaction analytics
         break;
     }
   }
@@ -196,22 +214,14 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
   run.profile = profile;
   await saveRun(run);
 
-  return {
-    content: [{
-      type: "text",
-      text: JSON.stringify(profile, null, 2)
-    }]
-  };
+  return okResponse(profile);
 }
 
-export async function handleValidateKycProfile({ customer_id }: { customer_id: string }) {
+export async function handleValidateKycProfile({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
   const run = await loadLatestRun(customer_id);
   
   if (!run) {
-     return {
-      content: [{ type: "text", text: `No run found for customer ${customer_id}` }],
-      isError: true
-    };
+     return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
   }
 
   if (!run.profile) {
@@ -222,10 +232,7 @@ export async function handleValidateKycProfile({ customer_id }: { customer_id: s
       if (reloadedRun && reloadedRun.profile) {
           run.profile = reloadedRun.profile;
       } else {
-          return {
-            content: [{ type: "text", text: `Failed to build profile for customer ${customer_id}` }],
-            isError: true
-          };
+          return errorResponse("PROFILE_BUILD_FAILED", `Failed to build profile for customer ${customer_id}`);
       }
   }
 
@@ -234,22 +241,14 @@ export async function handleValidateKycProfile({ customer_id }: { customer_id: s
   
   await saveRun(run);
 
-  return {
-    content: [{
-      type: "text",
-      text: JSON.stringify(validation, null, 2)
-    }]
-  };
+  return okResponse(validation);
 }
 
-export async function handleGetKycReport({ customer_id }: { customer_id: string }) {
+export async function handleGetKycReport({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
   const run = await loadLatestRun(customer_id);
   
   if (!run) {
-     return {
-      content: [{ type: "text", text: JSON.stringify({ ok: false, error_code: "NO_RUN_FOR_CUSTOMER" }) }],
-      isError: true
-    };
+     return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
   }
 
   let profile = run.profile;
@@ -263,20 +262,12 @@ export async function handleGetKycReport({ customer_id }: { customer_id: string 
   }
 
   if (!profile || !validation) {
-      return {
-          content: [{ type: "text", text: JSON.stringify({ ok: false, error_code: "FAILED_TO_GENERATE_PROFILE_OR_VALIDATION" }) }],
-          isError: true
-      };
+      return errorResponse("FAILED_TO_GENERATE_PROFILE_OR_VALIDATION", "Unable to build profile or validation for report");
   }
 
   const report = buildKycReport(profile, validation);
 
-  return {
-    content: [{
-      type: "text",
-      text: JSON.stringify(report, null, 2)
-    }]
-  };
+  return okResponse(report);
 }
 
 // --- MCP Server Setup ---
@@ -288,7 +279,7 @@ const server = new McpServer({
 });
 
 // Supported doc types map for listing
-const SUPPORTED_DOCS: Record<DocumentType, string> = {
+const SUPPORTED_DOCS: Record<ImportableDocumentType, string> = {
   "acta": "Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers",
   "sat_constancia": "SAT Constancia de Situación Fiscal - Extracts Tax Profile",
   "fm2": "FM2 / Residente Card - Extracts Immigration Profile",
@@ -300,8 +291,8 @@ const SUPPORTED_DOCS: Record<DocumentType, string> = {
 // Wire tools to handlers
 server.tool(
   "list_supported_doc_types",
-  {},
-  handleListSupportedDocTypes
+  "Lists all supported document types",
+  () => handleListSupportedDocTypes()
 );
 
 server.tool(

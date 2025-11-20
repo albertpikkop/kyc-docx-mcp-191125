@@ -2,7 +2,14 @@ import OpenAI from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
-import { sanitizeRfc, sanitizeInvoiceNumber } from '../utils/sanitize.js';
+import {
+  normalizeEmptyToNull,
+  sanitizeRfc,
+  sanitizeInvoiceNumber,
+  sanitizeCurrency,
+} from '../kyc/validators.js';
+import { withRetry } from '../utils/retry.js';
+import { logExtractorError } from '../utils/logging.js';
 
 // Base instruction for generic document extraction if no specific instructions are provided
 const BASE_INSTRUCTIONS = `
@@ -74,24 +81,26 @@ export async function extractDocument(filePath: string, schema: any, instruction
     : BASE_INSTRUCTIONS;
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: finalInstructions,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "document_extraction",
-          strict: true,
-          schema: schema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: finalInstructions,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "document_extraction",
+            strict: true,
+            schema: schema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -101,48 +110,31 @@ export async function extractDocument(filePath: string, schema: any, instruction
     }
 
     const data = JSON.parse(content);
+    const normalizedData = normalizeEmptyToNull(data);
 
-    // Strict Post-processing
-    const normalizeEmptyToNull = (value: any): any => {
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === "" || trimmed === "/" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
-          return null;
-        }
-        return trimmed;
+    const applySanitizers = (value: any) => {
+      if (Array.isArray(value)) {
+        value.forEach(applySanitizers);
+        return;
       }
-      return value;
-    };
-
-    const deepNormalize = (obj: any): any => {
-        if (Array.isArray(obj)) {
-            return obj.map(deepNormalize);
-        } else if (obj !== null && typeof obj === 'object') {
-            for (const key in obj) {
-                obj[key] = deepNormalize(obj[key]);
+      if (value && typeof value === 'object') {
+        for (const key of Object.keys(value)) {
+          const current = value[key];
+          if (/tax_id$/i.test(key) || key === 'rfc' || key === 'vendor_tax_id' || key === 'client_tax_id') {
+            value[key] = sanitizeRfc(current);
+          } else if (key === 'invoice_number' || key === 'account_reference') {
+            value[key] = sanitizeInvoiceNumber(current);
+          } else if (key === 'currency') {
+            const sanitized = sanitizeCurrency(current);
+            if (sanitized) {
+              value[key] = sanitized;
             }
-            return obj;
-        } else {
-            return normalizeEmptyToNull(obj);
+          }
+          applySanitizers(value[key]);
         }
+      }
     };
-
-    const normalizedData = deepNormalize(data);
-
-    // Sanitize specific fields if they exist in the schema/data
-    if (normalizedData.vendor_tax_id) {
-      normalizedData.vendor_tax_id = sanitizeRfc(normalizedData.vendor_tax_id);
-    }
-    if (normalizedData.client_tax_id) {
-      normalizedData.client_tax_id = sanitizeRfc(normalizedData.client_tax_id);
-    }
-
-    if (normalizedData.invoice_number) {
-      normalizedData.invoice_number = sanitizeInvoiceNumber(normalizedData.invoice_number);
-    }
-    if (normalizedData.account_reference) {
-      normalizedData.account_reference = sanitizeInvoiceNumber(normalizedData.account_reference);
-    }
+    applySanitizers(normalizedData);
 
     // Ensure country fields are normalized if present in address objects
     // This is generic traversal for keys ending in 'address'
@@ -164,9 +156,8 @@ export async function extractDocument(filePath: string, schema: any, instruction
     return normalizedData;
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("document_extraction", filePath, error);
     if (error instanceof Error) {
-        // Enhance error message if it's a schema validation error from OpenAI
         throw new Error(`Document extraction failed: ${error.message}`);
     }
     throw error;

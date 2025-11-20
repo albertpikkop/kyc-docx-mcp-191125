@@ -8,6 +8,7 @@ import { KycRun } from './types.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_ROOT = path.resolve(__dirname, '../../data');
+const writeQueues = new Map<string, Promise<void>>();
 
 /**
  * Helper to get customer directory path
@@ -29,24 +30,27 @@ function getRunFilePath(customerId: string, runId: string): string {
  * Overwrites the file if it already exists for the same runId.
  */
 export async function saveRun(run: KycRun): Promise<void> {
-  try {
-    if (!run.customerId || !run.runId) {
-      throw new Error('Run must have customerId and runId');
-    }
-
-    const customerDir = getCustomerDir(run.customerId);
-    
-    // Ensure directory exists
-    await fs.mkdir(customerDir, { recursive: true });
-
-    const filePath = getRunFilePath(run.customerId, run.runId);
-    const content = JSON.stringify(run, null, 2);
-
-    await fs.writeFile(filePath, content, 'utf-8');
-  } catch (error) {
-    console.error(`Failed to save run ${run.runId} for customer ${run.customerId}:`, error);
-    throw error;
+  if (!run.customerId || !run.runId) {
+    throw new Error('Run must have customerId and runId');
   }
+
+  const customerDir = getCustomerDir(run.customerId);
+  const write = async () => {
+    try {
+      await fs.mkdir(customerDir, { recursive: true });
+      const filePath = getRunFilePath(run.customerId, run.runId);
+      const content = JSON.stringify(run, null, 2);
+      await fs.writeFile(filePath, content, 'utf-8');
+    } catch (error) {
+      console.error(`Failed to save run ${run.runId} for customer ${run.customerId}:`, error);
+      throw error;
+    }
+  };
+
+  const existing = writeQueues.get(run.customerId) ?? Promise.resolve();
+  const writeTask = existing.then(write);
+  writeQueues.set(run.customerId, writeTask.catch(() => {}));
+  await writeTask;
 }
 
 /**
@@ -98,6 +102,14 @@ export async function listRuns(customerId: string): Promise<KycRun[]> {
  * Returns null if no runs exist.
  */
 export async function loadLatestRun(customerId: string): Promise<KycRun | null> {
+  const pendingWrite = writeQueues.get(customerId);
+  if (pendingWrite) {
+    try {
+      await pendingWrite;
+    } catch {
+      // Ignore write errors here; they will have been logged during save
+    }
+  }
   const runs = await listRuns(customerId);
   if (runs.length === 0) {
     return null;

@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
+import { logExtractorError } from '../utils/logging.js';
+import { withRetry } from '../utils/retry.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Acta Constitutiva (Incorporation Deeds).
@@ -110,24 +112,26 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
   }
 
   try {
-    const res = await client.responses.create({
-      model,
-      instructions: EXTRACTION_INSTRUCTIONS,
-      input: [
-        {
-          role: 'user',
-          content: [inputItem]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "company_identity",
-          strict: true,
-          schema: CompanyIdentitySchema
+    const res = await withRetry(() =>
+      client.responses.create({
+        model,
+        instructions: EXTRACTION_INSTRUCTIONS,
+        input: [
+          {
+            role: 'user',
+            content: [inputItem]
+          }
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "company_identity",
+            strict: true,
+            schema: CompanyIdentitySchema
+          },
         },
-      },
-    } as any);
+      } as any)
+    );
 
     const outputItem = res.output?.[0] as any;
     const content = outputItem?.content?.[0]?.text || (res as any).output_text;
@@ -198,7 +202,7 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
     return normalizedIdentity;
 
   } catch (error) {
-    console.error('Extraction failed:', error);
+    logExtractorError("acta", fileUrl, error);
     if (error instanceof Error) {
       throw new Error(`Acta Constitutiva extraction failed: ${error.message}`);
     }

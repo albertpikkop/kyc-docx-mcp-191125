@@ -20,6 +20,7 @@ import type {
   BankAccountProfile,
   HistoricalAddress,
   ImmigrationProfile,
+  Address,
 } from './types.js';
 
 /**
@@ -92,10 +93,13 @@ export class KycProfileBuilder {
 
     if (proof.client_address) {
       // Add to historical tracking
-      const historicalAddress: HistoricalAddress = {
+const historicalAddress: HistoricalAddress = {
         source: 'proof_of_address',
         address: proof.client_address,
-        date: proof.issue_datetime || proof.due_date,
+        date: (proof.issue_datetime ||
+          proof.due_date ||
+          proof.billing_period_end ||
+          proof.billing_period_start) || undefined,
       };
       this.profile.historical_addresses?.push(historicalAddress);
       
@@ -163,8 +167,11 @@ export class KycProfileBuilder {
     // 2. Proof of Address (CFE/Telmex)
     if (this.profile.addressEvidence) {
       for (const proof of this.profile.addressEvidence) {
-        // Try to find a valid date: issue_datetime > date > due_date
-        const date = proof.issue_datetime || proof.date || proof.due_date;
+        const date =
+          proof.issue_datetime ||
+          proof.due_date ||
+          proof.billing_period_end ||
+          proof.billing_period_start;
         if (proof.client_address && date) {
           candidates.push({
             source: 'proof',

@@ -11,20 +11,32 @@ import { validateKycProfile, resolveUbo, resolveSignatories, checkFreshness } fr
 import { saveRun } from "../kyc/storage.js";
 import { KycRun, KycDocument, DocumentType } from "../kyc/types.js";
 import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const customerId = "pfds";
-const basePath = "/Users/ashishpunj/Desktop/MCP-Docx/MCP";
+const fixtureRoot = process.env.KYC_FIXTURES_DIR ?? path.resolve(process.cwd(), "fixtures");
+
+function resolveFixture(fileName: string): string {
+  const fullPath = path.resolve(fixtureRoot, fileName);
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(
+      `Fixture not found: ${fullPath}. Set KYC_FIXTURES_DIR env var to your document folder.`
+    );
+  }
+  return fullPath;
+}
 
 const docs = [
-  { type: "acta" as DocumentType,           fileUrl: `${basePath}/Acta_Constitutiva_PFDS_SAPI.pdf` },
-  { type: "sat_constancia" as DocumentType, fileUrl: `${basePath}/Constancia_PFDS.pdf` },
-  { type: "fm2" as DocumentType,            fileUrl: `${basePath}/FM2 (1).pdf` },
-  { type: "telmex" as DocumentType,         fileUrl: `${basePath}/Recibo-Oct (2).pdf` },
-  { type: "cfe" as DocumentType,            fileUrl: `${basePath}/CFE_AGOSTO.pdf` },
-  { type: "cfe" as DocumentType,            fileUrl: `${basePath}/CFE_OCTUBRE.pdf` },
-  { type: "bank_statement" as DocumentType, fileUrl: `${basePath}/Esatdo_De_Cuenta_Agosto_2025.pdf` },
-  { type: "bank_statement" as DocumentType, fileUrl: `${basePath}/Esatdo_De_Cuenta_Septiembre_2025.pdf` },
-  { type: "bank_statement" as DocumentType, fileUrl: `${basePath}/Esatdo_De_Cuenta_Octubre_2025.pdf` }
+  { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_PFDS_SAPI.pdf") },
+  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS.pdf") },
+  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2 (1).pdf") },
+  { type: "telmex" as DocumentType,         fileUrl: resolveFixture("Recibo-Oct (2).pdf") },
+  { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_AGOSTO.pdf") },
+  { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_OCTUBRE.pdf") },
+  { type: "bank_statement" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Agosto_2025.pdf") },
+  { type: "bank_statement" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Septiembre_2025.pdf") },
+  { type: "bank_statement" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Octubre_2025.pdf") }
 ];
 
 async function main() {
@@ -68,12 +80,18 @@ async function main() {
           const profile = await extractBankStatementProfile(doc.fileUrl);
           const txs = await extractBankStatementTransactions(doc.fileUrl);
           if (profile.bank_account_profile) {
-             extractedPayload = {
-                 ...profile.bank_account_profile,
-                 transactions: txs.transactions
-             };
+             extractedPayload = profile.bank_account_profile;
              bankAccounts.push(profile.bank_account_profile);
           }
+          kycDocuments.push({
+            id: crypto.randomUUID(),
+            customerId,
+            type: "bank_statement_transactions",
+            fileUrl: doc.fileUrl,
+            extractedAt: new Date().toISOString(),
+            extractedPayload: txs.transactions,
+            sourceName: doc.fileUrl.split('/').pop()
+          });
           break;
       }
 
