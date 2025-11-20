@@ -1,0 +1,3218 @@
+{
+  "runId": "c5a7e441-8ce2-4bf2-bbeb-a70476728543",
+  "customerId": "pfds",
+  "createdAt": "2025-11-20T04:26:21.232Z",
+  "documents": [
+    {
+      "id": "1de1b793-dea9-40b1-96a6-dc528c609a0b",
+      "customerId": "pfds",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Acta_Constitutiva_PFDS_SAPI.pdf",
+      "extractedAt": "2025-11-20T04:24:22.610Z",
+      "extractedPayload": {
+        "razon_social": "\"PFDS\", SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2021-08-30",
+        "founding_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "44",
+          "int_number": "102",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "Distrito Federal",
+          "cp": "11390",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Presidente del Consejo de Administración y Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes generales o especiales"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "role": "Secretario del Consejo de Administración",
+            "has_poder": false,
+            "can_sign_contracts": false,
+            "poder_scope": [],
+            "joint_signature_required": true
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "role": "Vocal del Consejo de Administración y Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes generales o especiales"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "ARTURO DE LA PEÑA LOREDO",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Gestiones ante autoridades fiscales (Registro Federal de Contribuyentes, declaraciones, pagos y devoluciones)"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "role": "Comisario",
+            "has_poder": false,
+            "can_sign_contracts": false,
+            "poder_scope": [],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ASHISH PUNJ",
+            "shares": 94,
+            "percentage": 91.84,
+            "class": "Serie Uno (Capital fijo)",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "shares": 6,
+            "percentage": 5.87,
+            "class": "Serie Uno (Capital fijo)",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "shares": 1,
+            "percentage": 0.98,
+            "class": "Serie Tres (Capital variable)",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "shares": 1,
+            "percentage": 0.98,
+            "class": "Serie Tres (Capital variable)",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "Comercialización de toda clase de productos mediante plataformas electrónicas o cualquier otro medio digital",
+          "Comercialización, distribución, producción, fabricación, importación y exportación de toda clase de productos y prestación de servicios de logística",
+          "Prestación y recepción de servicios a empresas y entidades gubernamentales en México y en el extranjero, incluyendo estudio, desarrollo e integración de planes, programas, métodos y sistemas",
+          "Prestación de programas de capacitación y desarrollo, así como investigaciones científicas y profesionales para desarrollo tecnológico o investigaciones en materias requeridas por clientes",
+          "Obtención, adquisición, registro, uso y disposición de patentes, marcas, diseños industriales, derechos de autor y demás derechos de propiedad intelectual y de propiedad industrial, en México y en el extranjero",
+          "Obtención por cualquier título de concesiones, permisos, autorizaciones o licencias, así como celebración de contratos con la administración pública federal, local o con particulares",
+          "Otorgamiento y recepción de préstamos con o sin garantía, emisión y suscripción de títulos de crédito y otros valores, así como constitución de garantías",
+          "Otorgamiento de avales y obligaciones solidarias y constitución de garantías a favor de terceros",
+          "Participación directa o indirecta en otras sociedades o asociaciones e intervención en sus asuntos y derechos relacionados",
+          "Establecimiento de sucursales, oficinas, subsidiarias y agencias y actuación como representante o agente de empresas en compraventa de bienes y servicios",
+          "Adquisición, arrendamiento, administración, venta o disposición de bienes muebles e inmuebles y derechos reales o personales sobre ellos",
+          "Contratación de personal necesario para cumplir el objeto social",
+          "Celebración de toda clase de contratos civiles, mercantiles o de cualquier naturaleza relacionados con el objeto social"
+        ],
+        "notary": {
+          "name": "MAURICIO GÁLVEZ MUÑOZ",
+          "notary_number": "39",
+          "protocol_number": "96053",
+          "protocol_date": "2021-08-30",
+          "office_location": "Ciudad de México"
+        },
+        "registry": {
+          "fme": "N-2021074811",
+          "nci": "202100237911",
+          "unique_doc_number": "2021002379110064",
+          "registration_city": "Ciudad de México",
+          "registration_date": "2021-10-11",
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Consejo de Administración",
+          "quorum_rules": "Para asamblea general ordinaria se requiere representación de al menos 50% del capital social con derecho a voto y las resoluciones se aprueban por mayoría de votos presentes; para asamblea general extraordinaria se requiere en primera o ulterior convocatoria al menos 75% del capital social con derecho a voto y las resoluciones se aprueban por mayoría del 51% de las acciones con derecho a voto representadas.",
+          "voting_rights": "Cada acción ordinaria confiere un voto; el Presidente del Consejo de Administración tiene voto de calidad en caso de empate en el Consejo.",
+          "share_transfer_rules": "Accionistas no podrán transmitir acciones sin autorización; transmisiones sujetas a restricciones y derechos de preferencia, incluyendo transmisiones permitidas a afiliadas, derecho de tanto y derechos de Tag Along y Drag Along regulados en los estatutos.",
+          "capital_rules": "Capital social mínimo fijo de 10,000 pesos representado por 100 acciones Serie Uno de 100 pesos cada una; parte variable inicialmente 200 pesos representados por 2 acciones Serie Tres de 100 pesos cada una; aumentos y disminuciones de capital acordados en asamblea general extraordinaria de accionistas conforme a la Ley General de Sociedades Mercantiles, con derecho preferente de suscripción para accionistas."
+        },
+        "modifications": []
+      },
+      "sourceName": "Acta_Constitutiva_PFDS_SAPI.pdf"
+    },
+    {
+      "id": "1a46a1f0-6dbc-4651-a3e1-3ab7f773270f",
+      "customerId": "pfds",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Constancia_PFDS.pdf",
+      "extractedAt": "2025-11-20T04:24:29.162Z",
+      "extractedPayload": {
+        "rfc": "PFD210830KQ7",
+        "razon_social": "PFDS",
+        "commercial_name": "PFDS",
+        "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2021-08-30",
+        "status": "ACTIVO",
+        "last_status_change": "2021-08-30",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-10-14"
+        },
+        "fiscal_address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de mensajería y paquetería local",
+            "percentage": 60,
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 40,
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2022-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ]
+      },
+      "sourceName": "Constancia_PFDS.pdf"
+    },
+    {
+      "id": "af4d7730-f5c6-461c-9557-9f27044a3bb7",
+      "customerId": "pfds",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/FM2 (1).pdf",
+      "extractedAt": "2025-11-20T04:24:34.115Z",
+      "extractedPayload": {
+        "full_name": "Ashish Punj",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "0000000445543",
+        "secondary_number": "10495074",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": null,
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX"
+      },
+      "sourceName": "FM2 (1).pdf"
+    },
+    {
+      "id": "7578f1b4-5e7a-45a7-981b-e4a70bd91373",
+      "customerId": "pfds",
+      "type": "telmex",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Recibo-Oct (2).pdf",
+      "extractedAt": "2025-11-20T04:24:41.259Z",
+      "extractedPayload": {
+        "document_type": "telmex_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ":user_upload:",
+          "pages": 4
+        },
+        "client_name": "PFDS",
+        "client_address": {
+          "street": "CLL GUTENBERG",
+          "ext_number": "60",
+          "int_number": ": HERODOTO Y CIRCUITO INT",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": ": HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "TELMEX",
+        "vendor_address": {
+          "street": "Parque Via 198, Col. Cuauhtemoc",
+          "ext_number": ": Parque Via 198",
+          "int_number": ": DV 2",
+          "colonia": "Col. Cuauhtemoc",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "06500",
+          "cross_streets": ": Parque Via 198",
+          "country": "MX"
+        },
+        "vendor_tax_id": "TME840315KT6",
+        "total_due": 1198,
+        "currency": "MXN",
+        "due_date": "2025-11-05",
+        "billing_month": "Octubre 2025",
+        "billing_period_start": "2025-09-01",
+        "billing_period_end": "2025-09-30",
+        "issue_datetime": "2025-10-15T05:18:05",
+        "previous_balance": 1198,
+        "current_charges": 598.99,
+        "service": {
+          "category": "telecom",
+          "telephone_number": "5552607741",
+          "service_number": "5552607741"
+        },
+        "account_reference": null,
+        "invoice_number": null
+      },
+      "sourceName": "Recibo-Oct (2).pdf"
+    },
+    {
+      "id": "e72af4d7-1b5f-4bb1-b123-8d479308d5f5",
+      "customerId": "pfds",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/CFE_AGOSTO.pdf",
+      "extractedAt": "2025-11-20T04:24:47.966Z",
+      "extractedPayload": {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ".",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": ":",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": ":",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 139,
+        "currency": "MXN",
+        "due_date": "2025-08-22",
+        "billing_month": ":",
+        "billing_period_start": "2025-06-05",
+        "billing_period_end": "2025-08-05",
+        "issue_datetime": "2025-11-19T10:21:59",
+        "previous_balance": 0,
+        "current_charges": 138.7,
+        "service": {
+          "category": "electricity",
+          "telephone_number": ":",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": "000225639660"
+      },
+      "sourceName": "CFE_AGOSTO.pdf"
+    },
+    {
+      "id": "3dd651a0-368e-453e-86fc-26c132c2f12d",
+      "customerId": "pfds",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/CFE_OCTUBRE.pdf",
+      "extractedAt": "2025-11-20T04:24:56.373Z",
+      "extractedPayload": {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "/mnt/data/0_0.png",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": "/mnt/data/0_0.png",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": "/mnt/data/0_0.png",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 300,
+        "currency": "MXN",
+        "due_date": "2025-10-23",
+        "billing_month": "/mnt/data/0_0.png",
+        "billing_period_start": "2025-08-05",
+        "billing_period_end": "2025-10-06",
+        "issue_datetime": "2025-10-14T15:24:33",
+        "previous_balance": 300.07,
+        "current_charges": 300.07,
+        "service": {
+          "category": "electricity",
+          "telephone_number": "/mnt/data/0_0.png",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null
+      },
+      "sourceName": "CFE_OCTUBRE.pdf"
+    },
+    {
+      "id": "f061a3fe-5165-4ecf-a712-8282d44fd427",
+      "customerId": "pfds",
+      "type": "bank_statement_transactions",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Agosto_2025.pdf",
+      "extractedAt": "2025-11-20T04:25:22.326Z",
+      "extractedPayload": [
+        {
+          "date": "2025-08-08",
+          "direction": "debit",
+          "amount": 7500,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ": 001906810022",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-08",
+          "direction": "debit",
+          "amount": 599,
+          "currency": "MXN",
+          "description": "PAGO SERVICIO TELMEX",
+          "counterparty_name": "TELMEX",
+          "category": "telecom"
+        },
+        {
+          "date": "2025-08-11",
+          "direction": "debit",
+          "amount": 17600,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | ARRENDADORA GUTEMBERG DATO NO VERIFICADO POR ESTA INSTITUCION | 072180005874471640 | 136-11/08/2025/11-0019372948 | 9372948 | RENTA AGOSTO | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "ARRENDADORA GUTEMBERG",
+          "category": "rent"
+        },
+        {
+          "date": "2025-08-11",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-11",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-12",
+          "direction": "debit",
+          "amount": 967.24,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ": 001906810022",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-14",
+          "direction": "debit",
+          "amount": 1043.34,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ": 001906810022",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-15",
+          "direction": "debit",
+          "amount": 339491,
+          "currency": "MXN",
+          "description": "ENVIO SPEI HSBC | ASHIS PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | 136-15/08/2025/15-0019415618 | 9415618 | TRASPASO ENTRE CUENTAS | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "ASHIS PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 1200,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | DAVID SANCHEZ DATO NO VERIFICADO POR ESTA INSTITUCION | 072180004947406556 | 136-27/08/2025/27-0019496990 | 9496990 | VERIFICACION | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "DAVID SANCHEZ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 10000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BBVA MEXICO | JESUS GONZALEZ DATO NO VERIFICADO POR ESTA INSTITUCION | 4152313992842240 | 136-27/08/2025/27-0019500278 | 9500278 | CONTADOR | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "JESUS GONZALEZ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "credit",
+          "amount": 114.83,
+          "currency": "MXN",
+          "description": "INTERES",
+          "counterparty_name": null,
+          "category": "interest"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "debit",
+          "amount": 76.35,
+          "currency": "MXN",
+          "description": "ISR",
+          "counterparty_name": null,
+          "category": "tax"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "debit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "COMISIÓN POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "credit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "DESCUENTO POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        }
+      ],
+      "sourceName": "Esatdo_De_Cuenta_Agosto_2025.pdf"
+    },
+    {
+      "id": "a146a1f1-4d66-4e0e-8220-d6ef84a39e3b",
+      "customerId": "pfds",
+      "type": "bank_statement",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Agosto_2025.pdf",
+      "extractedAt": "2025-11-20T04:25:22.326Z",
+      "extractedPayload": {
+        "bank_name": "INTERCAM Banco",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "136180018411900135",
+        "currency": "MXN",
+        "statement_period_start": "2025-08-01",
+        "statement_period_end": "2025-08-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Agosto_2025.pdf"
+    },
+    {
+      "id": "04c133a1-19b5-40f1-b897-bbfa4849109c",
+      "customerId": "pfds",
+      "type": "bank_statement_transactions",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Septiembre_2025.pdf",
+      "extractedAt": "2025-11-20T04:25:43.139Z",
+      "extractedPayload": [
+        {
+          "date": "2025-09-01",
+          "direction": "debit",
+          "amount": 4000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | DAVID SANCHEZ DATO NO VERIFICADO POR ESTA INSTITUCION | 072180004947406556 | 136-01/09/2025/01-0011005844 | 1005844 | VIATICOS | AUTOFIN | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "DAVID SANCHEZ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-01",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-01",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-12",
+          "direction": "debit",
+          "amount": 4800,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": null,
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "credit",
+          "amount": 10,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC232942 | 0180925 | PRUEBA | AUTOFIN | ABCD | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "credit",
+          "amount": 10,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC282418 | 0180920 | PRUEBA | AUTOFIN | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "credit",
+          "amount": 44000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC299031 | 0180925 | PAGOS | AUTOFIN | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 17600,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | ARRENDADORA GUTEMBERG DATO NO VERIFICADO POR ESTA INSTITUCION | 072180005874471640 | 136-18/09/2025/18-0011116190 | 1116190 | RENTA SEPTIEMBRE | AUTOFIN | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "ARRENDADORA GUTEMBERG",
+          "category": "rent"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 599,
+          "currency": "MXN",
+          "description": "PAGO SERVICIO TELMEX",
+          "counterparty_name": null,
+          "category": "telecom"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 25000,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": null,
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "credit",
+          "amount": 1.29,
+          "currency": "MXN",
+          "description": "INTERES",
+          "counterparty_name": null,
+          "category": "interest"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "debit",
+          "amount": 0.87,
+          "currency": "MXN",
+          "description": "ISR",
+          "counterparty_name": null,
+          "category": "tax"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "debit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "COMISIÓN POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "credit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "DESCUENTO POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        }
+      ],
+      "sourceName": "Esatdo_De_Cuenta_Septiembre_2025.pdf"
+    },
+    {
+      "id": "1f2afc26-7023-4888-973d-8bb54967585c",
+      "customerId": "pfds",
+      "type": "bank_statement",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Septiembre_2025.pdf",
+      "extractedAt": "2025-11-20T04:25:43.139Z",
+      "extractedPayload": {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-09-01",
+        "statement_period_end": "2025-09-30",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Septiembre_2025.pdf"
+    },
+    {
+      "id": "6e9e0dec-28c0-4e11-8012-3b86c2921c11",
+      "customerId": "pfds",
+      "type": "bank_statement_transactions",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Octubre_2025.pdf",
+      "extractedAt": "2025-11-20T04:26:21.227Z",
+      "extractedPayload": [
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 5000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC321009 | 0151025 | PRUEBA | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 5000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI SCOTIABANK | PFDS DATO NO VERIFICADO POR ESTA INSTITUCION | 044180256010190821 | 136-15/10/2025/15-0011304202 | 1304202 | TRASPASO ENTRE CUENTAS | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130",
+          "counterparty_name": "PFDS",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 200,
+          "currency": "MXN",
+          "description": "ENVIO SPEI HSBC | ASHIS PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | 136-15/10/2025/15-0011304239 | 1304239 | PRUEBA | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130",
+          "counterparty_name": "ASHIS PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 5000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC328440 | 1510125 | CONSULTORIA | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 10000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC329612 | 1511025 | CONSULTORIA | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 10000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC331135 | 0151025 | CONSULTORIA | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 400000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC513738 | 0151025 | GASTOS PERSONALES | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 400000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI SCOTIABANK | PFDS DATO NO VERIFICADO POR ESTA INSTITUCION | 044180256010190821 | 136-15/10/2025/15-0011307389 | 1307389 | TRASPASO ENTRE CUENTAS | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130",
+          "counterparty_name": "PFDS",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 17600,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | ARRENDADORA GUTEMBERG DATO NO VERIFICADO POR ESTA INSTITUCION | 072180005874471640 | 136-16/10/2025/16-0011314385 | 1314385 | RENTA OCTUBRE | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130",
+          "counterparty_name": "ARRENDADORA GUTEMBERG",
+          "category": "rent"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 599,
+          "currency": "MXN",
+          "description": "PAGO SERVICIO TELMEX",
+          "counterparty_name": ": TELMEX",
+          "category": "telecom"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 7300,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ": 001906810022",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "credit",
+          "amount": 3000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC389197 | 0161025 | GASTOS | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-20",
+          "direction": "debit",
+          "amount": 2000,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ": 001906810022",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-27",
+          "direction": "credit",
+          "amount": 20000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSB5677514 | 0271025 | GASTOS | KAPITAL | PFDS SAPI DE CV | 128180018411900130",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-27",
+          "direction": "debit",
+          "amount": 18000,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ": 001906810022",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "credit",
+          "amount": 1.47,
+          "currency": "MXN",
+          "description": "INTERES",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "interest"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "debit",
+          "amount": 1,
+          "currency": "MXN",
+          "description": "ISR",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "tax"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "debit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "COMISIÓN POR TIMBRADO FISCAL",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "credit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "DESCUENTO POR TIMBRADO FISCAL",
+          "counterparty_name": ": PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        }
+      ],
+      "sourceName": "Esatdo_De_Cuenta_Octubre_2025.pdf"
+    },
+    {
+      "id": "4ac7114c-159d-40bd-bcd5-1fa6cf8f5474",
+      "customerId": "pfds",
+      "type": "bank_statement",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Octubre_2025.pdf",
+      "extractedAt": "2025-11-20T04:26:21.227Z",
+      "extractedPayload": {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Octubre_2025.pdf"
+    },
+    {
+      "id": "62f1e280-9be2-4beb-bde8-d38bff2e42c6",
+      "customerId": "pfds",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Acta_Constitutiva_PFDS_SAPI.pdf",
+      "extractedAt": "2025-11-20T04:27:24.307Z",
+      "extractedPayload": {
+        "razon_social": "\"PFDS\", SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": "96053",
+        "incorporation_date": "2021-08-30",
+        "founding_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "44",
+          "int_number": "102",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MÉXICO",
+          "cp": "11390",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Representación laboral y ante autoridades laborales",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Representación laboral y ante autoridades laborales",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "ARTURO DE LA PEÑA LOREDO",
+            "role": "Apoderado especial",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio limitados a trámites fiscales y administrativos",
+              "Gestiones ante autoridades fiscales (Registro Federal de Contribuyentes, SAT, etc.)"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Presidente del Consejo de Administración",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Facultades generales del Consejo de Administración para pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Representación laboral y ante autoridades laborales",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "role": "Secretario del Consejo de Administración",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Facultades generales del Consejo de Administración para pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Representación laboral y ante autoridades laborales",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "role": "Vocal del Consejo de Administración",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Facultades generales del Consejo de Administración para pleitos y cobranzas",
+              "Actos de administración",
+              "Actos de dominio",
+              "Títulos de crédito",
+              "Representación laboral y ante autoridades laborales",
+              "Apertura y cancelación de cuentas bancarias y firma de cheques",
+              "Otorgar y revocar poderes"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ASHISH PUNJ",
+            "shares": 94,
+            "percentage": 92.16,
+            "class": "Serie Uno (Capital fijo)",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "shares": 6,
+            "percentage": 5.88,
+            "class": "Serie Uno (Capital fijo)",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "shares": 1,
+            "percentage": 0.98,
+            "class": "Serie Tres (Capital variable)",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "shares": 1,
+            "percentage": 0.98,
+            "class": "Serie Tres (Capital variable)",
+            "is_beneficial_owner": true
+          }
+        ],
+        "corporate_purpose": [
+          "Comercialización de toda clase de productos mediante plataformas electrónicas o cualquier otro medio digital",
+          "Comercialización, distribución, producción, fabricación, importación y exportación de toda clase de productos y prestación de servicios de logística",
+          "Prestación y recepción de toda clase de servicios de empresas y entidades gubernamentales en México y en el extranjero",
+          "Estudio, desarrollo e integración de planes, programas, métodos y sistemas de capacitación y asesoría",
+          "Realización de investigaciones científicas y profesionales para desarrollo tecnológico o investigaciones que requieran las personas físicas o morales a quienes la sociedad preste servicios",
+          "Obtención, adquisición, registro, uso y disposición de patentes, marcas, nombres comerciales, diseños, modelos industriales, derechos de autor y demás derechos de propiedad intelectual",
+          "Obtención por cualquier título de concesiones, permisos, autorizaciones o licencias y celebración de contratos con la administración pública federal, estatal o local",
+          "Otorgar y recibir préstamos con o sin garantía y emitir, aceptar o avalar toda clase de títulos de crédito",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros",
+          "Participar directa o indirectamente en otras sociedades o asociaciones e intervenir en sus asuntos y derechos",
+          "Establecer sucursales, oficinas, subsidiarias y agencias y actuar como representante o agente intermediar en la venta de bienes y servicios",
+          "Adquirir, poseer, usar, arrendar, administrar, vender o disponer de bienes muebles e inmuebles y derechos reales o personales sobre ellos",
+          "Contratar al personal necesario para cumplir el objeto social",
+          "Celebrar toda clase de contratos civiles, mercantiles o de cualquier naturaleza relacionados con el objeto social"
+        ],
+        "notary": {
+          "name": "MAURICIO GÁLVEZ MUÑOZ",
+          "notary_number": "39",
+          "protocol_number": "96053",
+          "protocol_date": "2021-08-30",
+          "office_location": "Ciudad de México"
+        },
+        "registry": {
+          "fme": "N-2021074811",
+          "nci": "202100237911",
+          "unique_doc_number": "2021002379110064",
+          "registration_city": "Ciudad de México",
+          "registration_date": "2021-10-11",
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Consejo de Administración",
+          "quorum_rules": "Para asamblea general ordinaria se requiere representación de al menos el 50% del capital social con derecho a voto; las resoluciones se toman por mayoría de votos presentes. Para asamblea general extraordinaria se requiere en primera o ulterior convocatoria al menos el 75% del capital social con derecho a voto y las resoluciones se adoptan por el 75% de dicho capital; para ciertos asuntos de resolución unánime se requiere unanimidad de votos de los accionistas con derecho a voto.",
+          "voting_rights": "Cada acción confiere un voto; en el Consejo de Administración las resoluciones se toman por mayoría de los miembros presentes, teniendo el Presidente voto de calidad.",
+          "share_transfer_rules": "Restricción general: ningún accionista puede transmitir, vender, ceder, pignorarse o gravar sus acciones sin autorización de la Asamblea Extraordinaria de Accionistas por unanimidad de los accionistas con derecho a voto. Existen transmisiones permitidas a afiliadas, ascendientes, descendientes y ciertos terceros. Se establece derecho de preferencia (derecho de tanto) y derechos de Tag Along y Drag Along en caso de transmisión.",
+          "capital_rules": "Capital mínimo fijo de 10,000 pesos representado por 100 acciones Serie Uno; parte variable inicial de 200 pesos representada por 2 acciones Serie Tres, sin límite máximo. El capital puede aumentarse por aportaciones, suscripción de nuevas acciones o capitalización de utilidades y disminuye por pérdidas, reembolso, cancelación o amortización de acciones; aumentos y disminuciones requieren resolución de asamblea general extraordinaria y se inscriben en el Registro Público de Comercio."
+        },
+        "modifications": []
+      },
+      "sourceName": "Acta_Constitutiva_PFDS_SAPI.pdf"
+    },
+    {
+      "id": "a51fdfbb-74d9-4608-bbd0-44504e498566",
+      "customerId": "pfds",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Constancia_PFDS.pdf",
+      "extractedAt": "2025-11-20T04:27:31.440Z",
+      "extractedPayload": {
+        "rfc": "PFD210830KQ7",
+        "razon_social": "PFDS",
+        "commercial_name": "PFDS",
+        "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2021-08-30",
+        "status": "ACTIVO",
+        "last_status_change": "2021-08-30",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-10-14"
+        },
+        "fiscal_address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de mensajería y paquetería local",
+            "percentage": 60,
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 40,
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2022-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ]
+      },
+      "sourceName": "Constancia_PFDS.pdf"
+    },
+    {
+      "id": "0469ed6d-5641-4bde-b026-a1294163d3ea",
+      "customerId": "pfds",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/FM2 (1).pdf",
+      "extractedAt": "2025-11-20T04:27:35.237Z",
+      "extractedPayload": {
+        "full_name": "Ashish Punj",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "0000000445543",
+        "secondary_number": "10495074",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": "/",
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX"
+      },
+      "sourceName": "FM2 (1).pdf"
+    },
+    {
+      "id": "5cfe965a-c239-4e87-8c0e-3b0fa21577ad",
+      "customerId": "pfds",
+      "type": "telmex",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Recibo-Oct (2).pdf",
+      "extractedAt": "2025-11-20T04:27:44.247Z",
+      "extractedPayload": {
+        "document_type": "telmex_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ":user_upload:telmex_bill",
+          "pages": 4
+        },
+        "client_name": "PFDS",
+        "client_address": {
+          "street": "CLL GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "TELMEX",
+        "vendor_address": {
+          "street": "Parque Via",
+          "ext_number": "198",
+          "int_number": "COL. Cuauhtemoc",
+          "colonia": null,
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "06500",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "TME840315KT6",
+        "total_due": 1198,
+        "currency": "MXN",
+        "due_date": "2025-11-05",
+        "billing_month": "Octubre 2025",
+        "billing_period_start": null,
+        "billing_period_end": null,
+        "issue_datetime": "2025-10-15",
+        "previous_balance": 1198,
+        "current_charges": 598.99,
+        "service": {
+          "category": "telecom",
+          "telephone_number": "5552607741",
+          "service_number": "5552607741"
+        },
+        "account_reference": null,
+        "invoice_number": null
+      },
+      "sourceName": "Recibo-Oct (2).pdf"
+    },
+    {
+      "id": "21884202-b885-45c0-864b-3293de4c4215",
+      "customerId": "pfds",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/CFE_AGOSTO.pdf",
+      "extractedAt": "2025-11-20T04:27:50.211Z",
+      "extractedPayload": {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ":",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": ":",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": ":",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 139,
+        "currency": "MXN",
+        "due_date": "2025-08-22",
+        "billing_month": ":",
+        "billing_period_start": "2025-06-05",
+        "billing_period_end": "2025-08-05",
+        "issue_datetime": "2025-11-19T10:21:59",
+        "previous_balance": 0,
+        "current_charges": 138.7,
+        "service": {
+          "category": "electricity",
+          "telephone_number": ":",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null
+      },
+      "sourceName": "CFE_AGOSTO.pdf"
+    },
+    {
+      "id": "13d92f33-5256-4f50-a7d6-7b6ee895fd96",
+      "customerId": "pfds",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/CFE_OCTUBRE.pdf",
+      "extractedAt": "2025-11-20T04:27:55.818Z",
+      "extractedPayload": {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ".",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": ".",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": ".",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 300,
+        "currency": "MXN",
+        "due_date": "2025-10-23",
+        "billing_month": ".",
+        "billing_period_start": "2025-08-05",
+        "billing_period_end": "2025-10-06",
+        "issue_datetime": "2025-10-14T15:24:33",
+        "previous_balance": 0,
+        "current_charges": 300.07,
+        "service": {
+          "category": "electricity",
+          "telephone_number": ".",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null
+      },
+      "sourceName": "CFE_OCTUBRE.pdf"
+    },
+    {
+      "id": "83f4328e-439a-42f4-8e27-31295b38b51c",
+      "customerId": "pfds",
+      "type": "bank_statement",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Agosto_2025.pdf",
+      "extractedAt": "2025-11-20T04:28:21.136Z",
+      "extractedPayload": {
+        "bank_name": "INTERCAM Banco",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "136180018411900135",
+        "currency": "MXN",
+        "statement_period_start": "2025-08-01",
+        "statement_period_end": "2025-08-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Agosto_2025.pdf"
+    },
+    {
+      "id": "3d791246-4c08-4af3-9651-e63c20a69629",
+      "customerId": "pfds",
+      "type": "bank_statement_transactions",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Agosto_2025.pdf",
+      "extractedAt": "2025-11-20T04:28:21.119Z",
+      "extractedPayload": [
+        {
+          "date": "2025-08-08",
+          "direction": "debit",
+          "amount": 7500,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": null,
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-08",
+          "direction": "debit",
+          "amount": 599,
+          "currency": "MXN",
+          "description": "PAGO SERVICIO TELMEX",
+          "counterparty_name": null,
+          "category": "telecom"
+        },
+        {
+          "date": "2025-08-11",
+          "direction": "debit",
+          "amount": 17600,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | ARRENDADORA GUTEMBERG DATO NO VERIFICADO POR ESTA INSTITUCION | 072180005874471640 | 136-11/08/2025/11-0019372948 | 9372948 | RENTA AGOSTO | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "ARRENDADORA GUTEMBERG",
+          "category": "rent"
+        },
+        {
+          "date": "2025-08-11",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-11",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-12",
+          "direction": "debit",
+          "amount": 967.24,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": null,
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-14",
+          "direction": "debit",
+          "amount": 1043.34,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": null,
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-15",
+          "direction": "debit",
+          "amount": 339491,
+          "currency": "MXN",
+          "description": "ENVIO SPEI HSBC | ASHIS PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | 136-15/08/2025/15-0019415618 | 9415618 | TRASPASO ENTRE CUENTAS | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "ASHIS PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 1200,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | DAVID SANCHEZ DATO NO VERIFICADO POR ESTA INSTITUCION | 072180004947406556 | 136-27/08/2025/27-0019496990 | 9496990 | VERIFICACION | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "DAVID SANCHEZ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 10000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BBVA MEXICO | JESUS GONZALEZ DATO NO VERIFICADO POR ESTA INSTITUCION | 4152313992842240 | 136-27/08/2025/27-0019500278 | 9500278 | CONTADOR | INTERCAM BANCO | PFDS S.A.P.I. DE C.V. | 136180018411900135 |",
+          "counterparty_name": "JESUS GONZALEZ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-27",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "credit",
+          "amount": 114.83,
+          "currency": "MXN",
+          "description": "INTERES",
+          "counterparty_name": null,
+          "category": "interest"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "debit",
+          "amount": 76.35,
+          "currency": "MXN",
+          "description": "ISR",
+          "counterparty_name": null,
+          "category": "tax"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "debit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "COMISIÓN POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-08-29",
+          "direction": "credit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "DESCUENTO POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        }
+      ],
+      "sourceName": "Esatdo_De_Cuenta_Agosto_2025.pdf"
+    },
+    {
+      "id": "902e5b43-b003-415a-a156-9edf5456f4c4",
+      "customerId": "pfds",
+      "type": "bank_statement",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Septiembre_2025.pdf",
+      "extractedAt": "2025-11-20T04:28:41.666Z",
+      "extractedPayload": {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-09-01",
+        "statement_period_end": "2025-09-30",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "SN",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Septiembre_2025.pdf"
+    },
+    {
+      "id": "deca3435-4a96-4629-bd88-cb3b757b45e9",
+      "customerId": "pfds",
+      "type": "bank_statement_transactions",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Septiembre_2025.pdf",
+      "extractedAt": "2025-11-20T04:28:41.651Z",
+      "extractedPayload": [
+        {
+          "date": "2025-09-01",
+          "direction": "debit",
+          "amount": 4000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | DAVID SANCHEZ DATO NO VERIFICADO POR ESTA INSTITUCION | 072180004947406556 | 136-01/09/2025/01-0011005844 | 1005844 | VIATICOS | AUTOFIN | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "DAVID SANCHEZ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-01",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-01",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-12",
+          "direction": "debit",
+          "amount": 4800,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": "PFDS",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "credit",
+          "amount": 10,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC232942 | 0180925 | PRUEBA | AUTOFIN | ABCD | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "credit",
+          "amount": 10,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC282418 | 0180920 | PRUEBA | AUTOFIN | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "credit",
+          "amount": 44000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC299031 | 0180925 | PAGOS | AUTOFIN | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 17600,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | ARRENDADORA GUTEMBERG DATO NO VERIFICADO POR ESTA INSTITUCION | 072180005874471640 | 136-18/09/2025/18-0011116190 | 1116190 | RENTA SEPTIEMBRE | AUTOFIN | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "ARRENDADORA GUTEMBERG",
+          "category": "rent"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": "PFDS S.A.P.I. DE C.V.",
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 599,
+          "currency": "MXN",
+          "description": "PAGO SERVICIO TELMEX",
+          "counterparty_name": "TELMEX",
+          "category": "telecom"
+        },
+        {
+          "date": "2025-09-18",
+          "direction": "debit",
+          "amount": 25000,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": "PFDS",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "credit",
+          "amount": 1.29,
+          "currency": "MXN",
+          "description": "INTERES",
+          "counterparty_name": null,
+          "category": "interest"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "debit",
+          "amount": 0.87,
+          "currency": "MXN",
+          "description": "ISR",
+          "counterparty_name": null,
+          "category": "tax"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "debit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "COMISIÓN POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        },
+        {
+          "date": "2025-09-30",
+          "direction": "credit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "DESCUENTO POR TIMBRADO FISCAL",
+          "counterparty_name": null,
+          "category": "fee"
+        }
+      ],
+      "sourceName": "Esatdo_De_Cuenta_Septiembre_2025.pdf"
+    },
+    {
+      "id": "0d9c9ffc-8e6c-4185-b1bf-6d7430fb6d09",
+      "customerId": "pfds",
+      "type": "bank_statement",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Octubre_2025.pdf",
+      "extractedAt": "2025-11-20T04:29:12.517Z",
+      "extractedPayload": {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Octubre_2025.pdf"
+    },
+    {
+      "id": "0096b6f7-bfe5-4aa5-8968-e1520e514def",
+      "customerId": "pfds",
+      "type": "bank_statement_transactions",
+      "fileUrl": "/Users/ashishpunj/kyc-docx-mcp-191125/fixtures/Esatdo_De_Cuenta_Octubre_2025.pdf",
+      "extractedAt": "2025-11-20T04:29:12.499Z",
+      "extractedPayload": [
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 5000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC321009 | 0151025 | PRUEBA | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 5000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI SCOTIABANK | PFDS DATO NO VERIFICADO POR ESTA INSTITUCION | 044180256010190821 | 136-15/10/2025/15-0011304202 | 1304202 | TRASPASO ENTRE CUENTAS | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "PFDS",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 200,
+          "currency": "MXN",
+          "description": "ENVIO SPEI HSBC | ASHIS PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | 136-15/10/2025/15-0011304239 | 1304239 | PRUEBA | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "ASHIS PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 5000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC328440 | 1510125 | CONSULTORIA | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 10000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC329612 | 1511025 | CONSULTORIA | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 10000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC331135 | 0151025 | CONSULTORIA | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "credit",
+          "amount": 400000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC513738 | 0151025 | GASTOS PERSONALES | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 400000,
+          "currency": "MXN",
+          "description": "ENVIO SPEI SCOTIABANK | PFDS DATO NO VERIFICADO POR ESTA INSTITUCION | 044180256010190821 | 136-15/10/2025/15-0011307389 | 1307389 | TRASPASO ENTRE CUENTAS | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "PFDS",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-15",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 17600,
+          "currency": "MXN",
+          "description": "ENVIO SPEI BANORTE | ARRENDADORA GUTEMBERG DATO NO VERIFICADO POR ESTA INSTITUCION | 072180005874471640 | 136-16/10/2025/16-0011314385 | 1314385 | RENTA OCTUBRE | KAPITAL | PFDS S.A.P.I. DE C.V. | 128180018411900130 |",
+          "counterparty_name": "ARRENDADORA GUTEMBERG",
+          "category": "rent"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 6,
+          "currency": "MXN",
+          "description": "COMISION POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 0.96,
+          "currency": "MXN",
+          "description": "IVA DE COMISIÓN POR SPEI ENVIADO A CARGO DE PFDS S.A.P.I. DE C.V.",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 599,
+          "currency": "MXN",
+          "description": "PAGO SERVICIO TELMEX",
+          "counterparty_name": ",",
+          "category": "telecom"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "debit",
+          "amount": 7300,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ",",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-16",
+          "direction": "credit",
+          "amount": 3000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSBC389197 | 0161025 | GASTOS | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-20",
+          "direction": "debit",
+          "amount": 2000,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ",",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-27",
+          "direction": "credit",
+          "amount": 20000,
+          "currency": "MXN",
+          "description": "RECEPCION SPEI | HSBC | ASHISH PUNJ DATO NO VERIFICADO POR ESTA INSTITUCION | 021180040406307253 | HSB5677514 | 0271025 | GASTOS | KAPITAL | PFDS SAPI DE CV | 128180018411900130 |",
+          "counterparty_name": "ASHISH PUNJ",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-27",
+          "direction": "debit",
+          "amount": 18000,
+          "currency": "MXN",
+          "description": "(BE)TRASPASO A CUENTA: 001906810022",
+          "counterparty_name": ",",
+          "category": "transfer"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "credit",
+          "amount": 1.47,
+          "currency": "MXN",
+          "description": "INTERES",
+          "counterparty_name": ",",
+          "category": "interest"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "debit",
+          "amount": 1,
+          "currency": "MXN",
+          "description": "ISR",
+          "counterparty_name": ",",
+          "category": "tax"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "debit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "COMISIÓN POR TIMBRADO FISCAL",
+          "counterparty_name": ",",
+          "category": "fee"
+        },
+        {
+          "date": "2025-10-31",
+          "direction": "credit",
+          "amount": 0.01,
+          "currency": "MXN",
+          "description": "DESCUENTO POR TIMBRADO FISCAL",
+          "counterparty_name": ",",
+          "category": "fee"
+        }
+      ],
+      "sourceName": "Esatdo_De_Cuenta_Octubre_2025.pdf"
+    }
+  ],
+  "profile": {
+    "customerId": "pfds",
+    "addressEvidence": [
+      {
+        "document_type": "telmex_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ":user_upload:",
+          "pages": 4
+        },
+        "client_name": "PFDS",
+        "client_address": {
+          "street": "CLL GUTENBERG",
+          "ext_number": "60",
+          "int_number": ": HERODOTO Y CIRCUITO INT",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": ": HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "TELMEX",
+        "vendor_address": {
+          "street": "Parque Via 198, Col. Cuauhtemoc",
+          "ext_number": ": Parque Via 198",
+          "int_number": ": DV 2",
+          "colonia": "Col. Cuauhtemoc",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "06500",
+          "cross_streets": ": Parque Via 198",
+          "country": "MX"
+        },
+        "vendor_tax_id": "TME840315KT6",
+        "total_due": 1198,
+        "currency": "MXN",
+        "due_date": "2025-11-05",
+        "billing_month": "Octubre 2025",
+        "billing_period_start": "2025-09-01",
+        "billing_period_end": "2025-09-30",
+        "issue_datetime": "2025-10-15T05:18:05",
+        "previous_balance": 1198,
+        "current_charges": 598.99,
+        "service": {
+          "category": "telecom",
+          "telephone_number": "5552607741",
+          "service_number": "5552607741"
+        },
+        "account_reference": null,
+        "invoice_number": null
+      },
+      {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ".",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": ":",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": ":",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 139,
+        "currency": "MXN",
+        "due_date": "2025-08-22",
+        "billing_month": ":",
+        "billing_period_start": "2025-06-05",
+        "billing_period_end": "2025-08-05",
+        "issue_datetime": "2025-11-19T10:21:59",
+        "previous_balance": 0,
+        "current_charges": 138.7,
+        "service": {
+          "category": "electricity",
+          "telephone_number": ":",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": "000225639660"
+      },
+      {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "/mnt/data/0_0.png",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": "/mnt/data/0_0.png",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": "/mnt/data/0_0.png",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 300,
+        "currency": "MXN",
+        "due_date": "2025-10-23",
+        "billing_month": "/mnt/data/0_0.png",
+        "billing_period_start": "2025-08-05",
+        "billing_period_end": "2025-10-06",
+        "issue_datetime": "2025-10-14T15:24:33",
+        "previous_balance": 300.07,
+        "current_charges": 300.07,
+        "service": {
+          "category": "electricity",
+          "telephone_number": "/mnt/data/0_0.png",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null
+      },
+      {
+        "document_type": "telmex_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ":user_upload:telmex_bill",
+          "pages": 4
+        },
+        "client_name": "PFDS",
+        "client_address": {
+          "street": "CLL GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "TELMEX",
+        "vendor_address": {
+          "street": "Parque Via",
+          "ext_number": "198",
+          "int_number": "COL. Cuauhtemoc",
+          "colonia": null,
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "06500",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "TME840315KT6",
+        "total_due": 1198,
+        "currency": "MXN",
+        "due_date": "2025-11-05",
+        "billing_month": "Octubre 2025",
+        "billing_period_start": null,
+        "billing_period_end": null,
+        "issue_datetime": "2025-10-15",
+        "previous_balance": 1198,
+        "current_charges": 598.99,
+        "service": {
+          "category": "telecom",
+          "telephone_number": "5552607741",
+          "service_number": "5552607741"
+        },
+        "account_reference": null,
+        "invoice_number": null
+      },
+      {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ":",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": ":",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": ":",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 139,
+        "currency": "MXN",
+        "due_date": "2025-08-22",
+        "billing_month": ":",
+        "billing_period_start": "2025-06-05",
+        "billing_period_end": "2025-08-05",
+        "issue_datetime": "2025-11-19T10:21:59",
+        "previous_balance": 0,
+        "current_charges": 138.7,
+        "service": {
+          "category": "electricity",
+          "telephone_number": ":",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null
+      },
+      {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": ".",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": ".",
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": ".",
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 300,
+        "currency": "MXN",
+        "due_date": "2025-10-23",
+        "billing_month": ".",
+        "billing_period_start": "2025-08-05",
+        "billing_period_end": "2025-10-06",
+        "issue_datetime": "2025-10-14T15:24:33",
+        "previous_balance": 0,
+        "current_charges": 300.07,
+        "service": {
+          "category": "electricity",
+          "telephone_number": ".",
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null
+      }
+    ],
+    "bankAccounts": [
+      {
+        "bank_name": "INTERCAM Banco",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "136180018411900135",
+        "currency": "MXN",
+        "statement_period_start": "2025-08-01",
+        "statement_period_end": "2025-08-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-09-01",
+        "statement_period_end": "2025-09-30",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      {
+        "bank_name": "INTERCAM Banco",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "136180018411900135",
+        "currency": "MXN",
+        "statement_period_start": "2025-08-01",
+        "statement_period_end": "2025-08-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-09-01",
+        "statement_period_end": "2025-09-30",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "SN",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      }
+    ],
+    "historical_addresses": [
+      {
+        "source": "acta",
+        "address": {
+          "street": "GUTEMBERG",
+          "ext_number": "44",
+          "int_number": "102",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MÉXICO",
+          "cp": "11390",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2021-08-30"
+      },
+      {
+        "source": "sat",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+          "country": "MX"
+        },
+        "date": "2025-10-14"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "CLL GUTENBERG",
+          "ext_number": "60",
+          "int_number": ": HERODOTO Y CIRCUITO INT",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": ": HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "date": "2025-10-15T05:18:05"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "date": "2025-11-19T10:21:59"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "date": "2025-10-14T15:24:33"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "CLL GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "date": "2025-10-15"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "date": "2025-11-19T10:21:59"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "date": "2025-10-14T15:24:33"
+      },
+      {
+        "source": "other",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-08-31"
+      },
+      {
+        "source": "other",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-09-30"
+      },
+      {
+        "source": "other",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-10-31"
+      },
+      {
+        "source": "other",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-08-31"
+      },
+      {
+        "source": "other",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "SN",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-09-30"
+      },
+      {
+        "source": "other",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-10-31"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-20T04:29:12.531Z",
+    "companyIdentity": {
+      "razon_social": "\"PFDS\", SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+      "rfc": null,
+      "registro_mercantil": "96053",
+      "incorporation_date": "2021-08-30",
+      "founding_address": {
+        "street": "GUTEMBERG",
+        "ext_number": "44",
+        "int_number": "102",
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MÉXICO",
+        "cp": "11390",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "legal_representatives": [
+        {
+          "name": "ASHISH PUNJ",
+          "role": "Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Pleitos y cobranzas",
+            "Actos de administración",
+            "Actos de dominio",
+            "Títulos de crédito",
+            "Representación laboral y ante autoridades laborales",
+            "Apertura y cancelación de cuentas bancarias y firma de cheques",
+            "Otorgar y revocar poderes"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "LUCAS JOHN INTRONE",
+          "role": "Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Pleitos y cobranzas",
+            "Actos de administración",
+            "Actos de dominio",
+            "Títulos de crédito",
+            "Representación laboral y ante autoridades laborales",
+            "Apertura y cancelación de cuentas bancarias y firma de cheques",
+            "Otorgar y revocar poderes"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "ARTURO DE LA PEÑA LOREDO",
+          "role": "Apoderado especial",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Pleitos y cobranzas",
+            "Actos de administración",
+            "Actos de dominio limitados a trámites fiscales y administrativos",
+            "Gestiones ante autoridades fiscales (Registro Federal de Contribuyentes, SAT, etc.)"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "ASHISH PUNJ",
+          "role": "Presidente del Consejo de Administración",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Facultades generales del Consejo de Administración para pleitos y cobranzas",
+            "Actos de administración",
+            "Actos de dominio",
+            "Títulos de crédito",
+            "Representación laboral y ante autoridades laborales",
+            "Apertura y cancelación de cuentas bancarias y firma de cheques",
+            "Otorgar y revocar poderes"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "MOISES GABRIEL GONZALEZ RANGEL",
+          "role": "Secretario del Consejo de Administración",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Facultades generales del Consejo de Administración para pleitos y cobranzas",
+            "Actos de administración",
+            "Actos de dominio",
+            "Títulos de crédito",
+            "Representación laboral y ante autoridades laborales",
+            "Apertura y cancelación de cuentas bancarias y firma de cheques",
+            "Otorgar y revocar poderes"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "LUCAS JOHN INTRONE",
+          "role": "Vocal del Consejo de Administración",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Facultades generales del Consejo de Administración para pleitos y cobranzas",
+            "Actos de administración",
+            "Actos de dominio",
+            "Títulos de crédito",
+            "Representación laboral y ante autoridades laborales",
+            "Apertura y cancelación de cuentas bancarias y firma de cheques",
+            "Otorgar y revocar poderes"
+          ],
+          "joint_signature_required": false
+        }
+      ],
+      "shareholders": [
+        {
+          "name": "ASHISH PUNJ",
+          "shares": 94,
+          "percentage": 92.16,
+          "class": "Serie Uno (Capital fijo)",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "LUCAS JOHN INTRONE",
+          "shares": 6,
+          "percentage": 5.88,
+          "class": "Serie Uno (Capital fijo)",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "JOSE RODOLFO CERDAN LEON",
+          "shares": 1,
+          "percentage": 0.98,
+          "class": "Serie Tres (Capital variable)",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "MOISES GABRIEL GONZALEZ RANGEL",
+          "shares": 1,
+          "percentage": 0.98,
+          "class": "Serie Tres (Capital variable)",
+          "is_beneficial_owner": true
+        }
+      ],
+      "corporate_purpose": [
+        "Comercialización de toda clase de productos mediante plataformas electrónicas o cualquier otro medio digital",
+        "Comercialización, distribución, producción, fabricación, importación y exportación de toda clase de productos y prestación de servicios de logística",
+        "Prestación y recepción de toda clase de servicios de empresas y entidades gubernamentales en México y en el extranjero",
+        "Estudio, desarrollo e integración de planes, programas, métodos y sistemas de capacitación y asesoría",
+        "Realización de investigaciones científicas y profesionales para desarrollo tecnológico o investigaciones que requieran las personas físicas o morales a quienes la sociedad preste servicios",
+        "Obtención, adquisición, registro, uso y disposición de patentes, marcas, nombres comerciales, diseños, modelos industriales, derechos de autor y demás derechos de propiedad intelectual",
+        "Obtención por cualquier título de concesiones, permisos, autorizaciones o licencias y celebración de contratos con la administración pública federal, estatal o local",
+        "Otorgar y recibir préstamos con o sin garantía y emitir, aceptar o avalar toda clase de títulos de crédito",
+        "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros",
+        "Participar directa o indirectamente en otras sociedades o asociaciones e intervenir en sus asuntos y derechos",
+        "Establecer sucursales, oficinas, subsidiarias y agencias y actuar como representante o agente intermediar en la venta de bienes y servicios",
+        "Adquirir, poseer, usar, arrendar, administrar, vender o disponer de bienes muebles e inmuebles y derechos reales o personales sobre ellos",
+        "Contratar al personal necesario para cumplir el objeto social",
+        "Celebrar toda clase de contratos civiles, mercantiles o de cualquier naturaleza relacionados con el objeto social"
+      ],
+      "notary": {
+        "name": "MAURICIO GÁLVEZ MUÑOZ",
+        "notary_number": "39",
+        "protocol_number": "96053",
+        "protocol_date": "2021-08-30",
+        "office_location": "Ciudad de México"
+      },
+      "registry": {
+        "fme": "N-2021074811",
+        "nci": "202100237911",
+        "unique_doc_number": "2021002379110064",
+        "registration_city": "Ciudad de México",
+        "registration_date": "2021-10-11",
+        "folio": null
+      },
+      "governance": {
+        "board_type": "Consejo de Administración",
+        "quorum_rules": "Para asamblea general ordinaria se requiere representación de al menos el 50% del capital social con derecho a voto; las resoluciones se toman por mayoría de votos presentes. Para asamblea general extraordinaria se requiere en primera o ulterior convocatoria al menos el 75% del capital social con derecho a voto y las resoluciones se adoptan por el 75% de dicho capital; para ciertos asuntos de resolución unánime se requiere unanimidad de votos de los accionistas con derecho a voto.",
+        "voting_rights": "Cada acción confiere un voto; en el Consejo de Administración las resoluciones se toman por mayoría de los miembros presentes, teniendo el Presidente voto de calidad.",
+        "share_transfer_rules": "Restricción general: ningún accionista puede transmitir, vender, ceder, pignorarse o gravar sus acciones sin autorización de la Asamblea Extraordinaria de Accionistas por unanimidad de los accionistas con derecho a voto. Existen transmisiones permitidas a afiliadas, ascendientes, descendientes y ciertos terceros. Se establece derecho de preferencia (derecho de tanto) y derechos de Tag Along y Drag Along en caso de transmisión.",
+        "capital_rules": "Capital mínimo fijo de 10,000 pesos representado por 100 acciones Serie Uno; parte variable inicial de 200 pesos representada por 2 acciones Serie Tres, sin límite máximo. El capital puede aumentarse por aportaciones, suscripción de nuevas acciones o capitalización de utilidades y disminuye por pérdidas, reembolso, cancelación o amortización de acciones; aumentos y disminuciones requieren resolución de asamblea general extraordinaria y se inscriben en el Registro Público de Comercio."
+      },
+      "modifications": []
+    },
+    "foundingAddress": {
+      "street": "GUTEMBERG",
+      "ext_number": "44",
+      "int_number": "102",
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MÉXICO",
+      "cp": "11390",
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "companyTaxProfile": {
+      "rfc": "PFD210830KQ7",
+      "razon_social": "PFDS",
+      "commercial_name": "PFDS",
+      "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+      "tax_regime": "Régimen General de Ley Personas Morales",
+      "start_of_operations": "2021-08-30",
+      "status": "ACTIVO",
+      "last_status_change": "2021-08-30",
+      "issue": {
+        "place_municipio": "MIGUEL HIDALGO",
+        "place_estado": "CIUDAD DE MEXICO",
+        "issue_date": "2025-10-14"
+      },
+      "fiscal_address": {
+        "street": "CALLE GUTENBERG",
+        "ext_number": "60",
+        "int_number": "6",
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "11300",
+        "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+        "country": "MX"
+      },
+      "economic_activities": [
+        {
+          "order": 1,
+          "description": "Servicios de mensajería y paquetería local",
+          "percentage": 60,
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "order": 2,
+          "description": "Servicios de consultoría en computación",
+          "percentage": 40,
+          "start_date": "2024-06-01",
+          "end_date": null
+        }
+      ],
+      "tax_obligations": [
+        {
+          "description": "Pago definitivo mensual de IVA.",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Declaración anual de ISR del ejercicio Personas morales.",
+          "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Declaración de proveedores de IVA",
+          "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Pago provisional mensual de ISR personas morales régimen general",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2022-04-01",
+          "end_date": null
+        },
+        {
+          "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2024-06-01",
+          "end_date": null
+        }
+      ]
+    },
+    "currentFiscalAddress": {
+      "street": "CALLE GUTENBERG",
+      "ext_number": "60",
+      "int_number": "6",
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MEXICO",
+      "cp": "11300",
+      "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+      "country": "MX"
+    },
+    "representativeIdentity": {
+      "full_name": "Ashish Punj",
+      "nationality": "India",
+      "document_type": "RESIDENTE PERMANENTE",
+      "document_number": "0000000445543",
+      "secondary_number": "10495074",
+      "date_of_birth": "1975-03-16",
+      "curp": "PUXA750316HNENXS02",
+      "sex": "Hombre",
+      "issue_date": "2014-05-15",
+      "expiry_date": "/",
+      "issuing_office": "Delegación Federal en Distrito Federal",
+      "issuer_country": "MX"
+    },
+    "currentOperationalAddress": {
+      "street": "GUTEMBERG",
+      "ext_number": "60",
+      "int_number": "6",
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CDMX",
+      "cp": "11300",
+      "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+      "country": "MX"
+    }
+  },
+  "validation": {
+    "customerId": "pfds",
+    "score": 1,
+    "flags": [],
+    "generatedAt": "2025-11-20T04:29:12.543Z"
+  }
+}
