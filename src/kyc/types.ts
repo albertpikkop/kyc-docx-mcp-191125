@@ -203,7 +203,7 @@ export interface KycDocument {
 }
 
 export interface KycValidationFlag {
-  code: "ADDRESS_MISMATCH" | "REP_ID_MISMATCH" | "LOW_DOC_COVERAGE" | "OTHER";
+  code: "ADDRESS_MISMATCH" | "REP_ID_MISMATCH" | "LOW_DOC_COVERAGE" | "EQUITY_INCONSISTENT" | "EQUITY_NEAR_100" | "OTHER";
   level: "info" | "warning" | "critical";
   message: string;
 }

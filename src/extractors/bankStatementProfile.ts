@@ -4,7 +4,7 @@ import * as path from 'path';
 import { z } from 'zod';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
-import { normalizeEmptyToNull, sanitizeClabe } from '../kyc/validators.js';
+import { normalizeEmptyToNull, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 import { withRetry } from '../utils/retry.js';
 import { logExtractorError } from '../utils/logging.js';
 
@@ -27,7 +27,7 @@ const BankAccountProfileZodSchema = z.object({
     account_holder_name: z.string(),
     account_number: z.string().nullable().optional(),
     clabe: z.string().nullable().optional(),
-    currency: z.string().nullable().optional(),
+    currency: z.enum(["MXN", "USD"]).nullable().optional(),
     statement_period_start: z.string().nullable().optional(),
     statement_period_end: z.string().nullable().optional(),
     address_on_statement: AddressZodSchema.nullable().optional()
@@ -49,7 +49,7 @@ EXTRACT:
 - Account Holder Name: Extract exactly as printed. Do NOT assume it is "PFDS" unless printed.
 - Account Number: Extract account/contract number.
 - CLABE: Extract 18-digit CLABE.
-- Currency: (e.g. MXN).
+- Currency: Assume "MXN" for Mexican documents unless the document explicitly uses "USD", "US$", "DÓLARES", or "DLS", in which case set to "USD". Never treat "$" alone as USD; in this context "$" means pesos (MXN).
 - Statement Period: Start and End dates (YYYY-MM-DD).
 - Address: The registered address printed on the statement header. Split strictly into structured fields (street, ext_number, int_number, colonia, municipio, estado, cp). Set country="MX".
 
@@ -165,6 +165,9 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
       // Sanitize CLABE
       if (profile.clabe) {
         profile.clabe = sanitizeClabe(profile.clabe);
+      }
+      if (profile.currency) {
+        profile.currency = sanitizeCurrency(profile.currency);
       }
     }
 

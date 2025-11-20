@@ -27,7 +27,7 @@ const ShareholderSchema = {
   properties: {
     name: { type: "string", description: "Full name of shareholder" },
     shares: { type: "number", description: "Number of shares/equity units", nullable: true },
-    percentage: { type: "number", description: "Percentage of ownership", nullable: true },
+    percentage: { type: "number", description: "Percentage of ownership (0-100 scale, e.g. 50.5 for 50.5%)", minimum: 0, maximum: 100, nullable: true },
     class: { type: "string", description: "Class of shares (e.g. Series A, Fixed Capital)", nullable: true },
     is_beneficial_owner: { type: "boolean", description: "Whether this person is a beneficial owner (>25% usually)", nullable: true }
   },

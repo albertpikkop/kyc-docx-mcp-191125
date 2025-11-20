@@ -46,6 +46,63 @@ export interface UboInfo {
   percentage: number | null;
 }
 
+export interface EquityConsistencyResult {
+  totalSharesFromActa: number | null;
+  sumOfSharesFromHolders: number;
+  sumOfPercentages: number;
+  deviationFrom100: number;
+}
+
+export function checkEquityConsistency(profile: KycProfile): EquityConsistencyResult | null {
+    if (!profile.companyIdentity || !profile.companyIdentity.shareholders || profile.companyIdentity.shareholders.length === 0) {
+        return null;
+    }
+    
+    const shareholders = profile.companyIdentity.shareholders;
+    let sumOfSharesFromHolders = 0;
+    let sumOfPercentages = 0;
+    let hasShares = false;
+    let hasPct = false;
+
+    for (const s of shareholders) {
+        if (s.shares !== null && s.shares !== undefined) {
+            sumOfSharesFromHolders += s.shares;
+            hasShares = true;
+        }
+        if (s.percentage !== null && s.percentage !== undefined) {
+            sumOfPercentages += s.percentage;
+            hasPct = true;
+        }
+    }
+    
+    // If we don't have percentage data, try to compute from shares if possible
+    if (!hasPct && hasShares && sumOfSharesFromHolders > 0) {
+         // Re-calc percentages? Not strictly needed for this check unless we backfill
+         // But we return sumOfPercentages as 0 or implicit 100 if we trust shares?
+         // If we only have shares, we can't check deviation from 100% unless we assume total shares = sum
+         // Deviation check is mainly for when we HAVE percentages.
+    }
+
+    // If we have NO percentage data, we can't validate 100% sum.
+    if (!hasPct) {
+        return null;
+    }
+
+    const deviationFrom100 = Math.abs(sumOfPercentages - 100);
+    
+    // Note: totalSharesFromActa isn't directly in the schema as a top-level field in CompanyIdentitySchema
+    // It might be inferred or we'd need to look at capital rules. 
+    // For now we set it to null as the schema doesn't explicitly carry "Total Authorized Shares" separately from shareholders.
+    const totalSharesFromActa = null;
+
+    return {
+        totalSharesFromActa,
+        sumOfSharesFromHolders,
+        sumOfPercentages,
+        deviationFrom100
+    };
+}
+
 export function resolveUbo(profile: KycProfile): UboInfo[] {
   if (!profile.companyIdentity || !profile.companyIdentity.shareholders) {
     return [];
@@ -59,14 +116,8 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
   
     const ubos: UboInfo[] = [];
   
-    // Detect scale: If any percentage is > 1.0, assume 0-100 scale for ALL.
-    // Otherwise assume 0-1 scale (decimals).
-    const validPercentages = shareholders
-        .map(s => s.percentage)
-        .filter((p): p is number => p !== null && p !== undefined);
-        
-    const maxPct = validPercentages.length > 0 ? Math.max(...validPercentages) : 0;
-    const isScale100 = maxPct > 1.0;
+    // Detect scale: Removed legacy guessing logic. We now rely on strict schema/prompt enforcement (0-100).
+    // const validPercentages = ... (removed)
     
     for (const s of shareholders) {
         let isUbo = false;
@@ -75,10 +126,11 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
         if (s.percentage !== null && s.percentage !== undefined) {
             let val = s.percentage;
             
-            // Normalize to 0-100 scale if it seems to be 0-1
-            if (!isScale100) {
-                val = val * 100;
-            }
+            // PRODUCTION GRADE FIX: 
+            // We now strictly enforce 0-100 scale in the LLM prompt and Schema.
+            // Any value <= 1.0 is considered either a very small percentage (valid) or an extraction error,
+            // but we do NOT auto-convert it anymore to avoid ambiguity (e.g. 1.0 could be 1% or 100%).
+            // We treat the value as-is (on 0-100 scale).
             
             if (val > 25) {
                 isUbo = true;
@@ -104,6 +156,15 @@ export interface SignatoryInfo {
   scope: "full" | "limited" | "none";
 }
 
+// Strict Regex Patterns for Mexican Powers
+const POWER_PATTERNS = {
+  pleitos: /PLEITOS? Y COBRANZAS?/i,
+  administracion: /ACTOS? DE ADMINISTRACI[ÓO]N/i,
+  dominio: /ACTOS? DE DOMINIO/i,
+  titulosCredito: /T[ÍI]TULOS? DE CR[ÉE]DITO/i,
+  // laborales: /(PODERES|FACULTADES).+LABORALES?/i // Optional depending on strictness
+};
+
 export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
   if (!profile.companyIdentity || !profile.companyIdentity.legal_representatives) {
     return [];
@@ -113,28 +174,31 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       let scope: "full" | "limited" | "none" = "none";
       
       const roleUpper = rep.role.toUpperCase();
-      const powers = (rep.poder_scope || []).join(' ').toUpperCase();
+      // Combine all power scopes into one string for regex matching
+      const powersText = (rep.poder_scope || []).join(' ').toUpperCase();
       
-      // Heuristics for scope
-      const hasDomino = powers.includes("DOMINIO");
-      const hasAdmin = powers.includes("ADMINISTRACIÓN") || powers.includes("ADMINISTRACION");
-      const hasPleitos = powers.includes("PLEITOS");
-      const hasTitulos = powers.includes("TÍTULOS") || powers.includes("TITULOS");
+      const hasPleitos = POWER_PATTERNS.pleitos.test(powersText);
+      const hasAdmin = POWER_PATTERNS.administracion.test(powersText);
+      const hasDomino = POWER_PATTERNS.dominio.test(powersText);
+      const hasTitulos = POWER_PATTERNS.titulosCredito.test(powersText);
       
       if (rep.can_sign_contracts) {
-          if (hasDomino && hasAdmin && hasPleitos) {
+          // STRICT DEFINITION OF FULL POWERS:
+          // Must have Admin + Dominio + Pleitos (General Powers)
+          // Títulos de crédito is often included but Admin+Dominio is the core high-risk set.
+          // User specified: "scope = 'full' if pleitos + administracion + dominio + titulosCredito present"
+          
+          if (hasPleitos && hasAdmin && hasDomino && hasTitulos) {
               scope = "full";
+          } else if (hasPleitos && hasAdmin && hasDomino) {
+              // Almost full, but missing titulos. Usually treated as full for corporate acts.
+              // Strict per user request: "limited" if only some present.
+              // But practically, Admin+Dominio is the highest power level.
+              // We will stick to the strict 4-set if user requested, or reasonable 3-set.
+              // User example: "scope = 'full' if pleitos + administracion + dominio + titulosCredito present;"
+              scope = "limited"; 
           } else if (hasAdmin || hasPleitos || roleUpper.includes("APODERADO")) {
-              scope = "limited"; // Or full? Prompt says "limited" for fiscal/admin tasks only.
-              // Let's match prompt rules:
-              // scope = "full" for general powers (pleitos, administración, dominio, títulos de crédito, laborales).
-              // scope = "limited" for powers restricted to fiscal/administrative tasks.
-              
-              if (hasDomino && hasTitulos) {
-                   scope = "full";
-              } else {
-                   scope = "limited";
-              }
+              scope = "limited";
           } else {
               scope = "limited";
           }
@@ -224,6 +288,27 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
           message: "No UBOs (>25%) detected from shareholder structure."
       });
       score -= 0.1;
+  }
+
+  // Equity Consistency Check
+  const equityCheck = checkEquityConsistency(profile);
+  if (equityCheck) {
+      if (equityCheck.deviationFrom100 > 2) {
+          flags.push({ 
+              code: "EQUITY_INCONSISTENT", 
+              level: "critical", 
+              message: `Share percentages sum to ${equityCheck.sumOfPercentages}%, which is inconsistent with 100%. Possible extraction error.` 
+          });
+          // Heavy penalty as this indicates bad extraction
+          score -= 0.2; 
+      } else if (equityCheck.deviationFrom100 > 0.5) {
+          flags.push({ 
+              code: "EQUITY_NEAR_100", 
+              level: "warning", 
+              message: `Share percentages sum to ${equityCheck.sumOfPercentages}%; likely rounding issue.` 
+          });
+          score -= 0.05;
+      }
   }
 
   const signatories = resolveSignatories(profile);

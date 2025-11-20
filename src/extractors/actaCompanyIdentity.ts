@@ -21,6 +21,7 @@ EXTRACT THE FOLLOWING DEEP KYC DATA:
 1. SHAREHOLDERS:
    - Extract full names of initial shareholders (socios/accionistas).
    - Extract number of shares and percentage of ownership (calculate only if explicitly clear from the text).
+   - Use 0-100 scale for percentages (e.g. 60 = 60%, 0.5 = 0.5%). Never use 0-1 scale (decimals).
    - Identify beneficial owners (usually >25% or control).
    - Capture share class (e.g., "Serie A", "Capital Fijo").
 
