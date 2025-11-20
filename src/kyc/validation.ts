@@ -128,9 +128,9 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
             
             // PRODUCTION GRADE FIX: 
             // We now strictly enforce 0-100 scale in the LLM prompt and Schema.
-            // Any value <= 1.0 is considered either a very small percentage (valid) or an extraction error,
-            // but we do NOT auto-convert it anymore to avoid ambiguity (e.g. 1.0 could be 1% or 100%).
-            // We treat the value as-is (on 0-100 scale).
+            // The calculation comes directly from the shares vs total shares logic.
+            // We should NOT scale or modify the percentage unless we are re-calculating it from raw shares.
+            // BUT, if we see percentages > 1.0, we assume they are already 0-100.
             
             if (val > 25) {
                 isUbo = true;

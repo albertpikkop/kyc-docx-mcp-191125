@@ -137,6 +137,24 @@ async function main() {
   
   console.log("-------------------------------");
 
+  // --- EQUITY CONSISTENCY ASSERTION ---
+  if (customerId === 'pfds' && profile.companyIdentity?.shareholders) {
+    console.log("Running PFDS-specific Equity Assertion...");
+    const shareholders = profile.companyIdentity.shareholders;
+    let sumPct = 0;
+    for (const s of shareholders) {
+        if (s.percentage) sumPct += s.percentage;
+    }
+    
+    console.log(`PFDS Total Equity Sum: ${sumPct}%`);
+    
+    if (Math.abs(sumPct - 100) > 0.5) {
+        console.error(`❌ FAILURE: Equity sum is ${sumPct}%, expected ~100%`);
+    } else {
+        console.log(`✅ SUCCESS: Equity sum is ${sumPct}% (within tolerance)`);
+    }
+  }
+
   const run: KycRun = {
     runId: crypto.randomUUID(),
     customerId,

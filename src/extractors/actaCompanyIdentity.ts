@@ -175,6 +175,38 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
     // Apply normalization to the entire identity object
     const normalizedIdentity = deepNormalize(identity);
 
+    // Correct equity percentages if shares are present and percentages seem off (like 50.5% instead of 100%)
+    if (Array.isArray(normalizedIdentity.shareholders)) {
+        let totalShares = 0;
+        let totalPercentage = 0;
+        let hasRawShares = true;
+        
+        for (const s of normalizedIdentity.shareholders) {
+            if (typeof s.shares === 'number') {
+                totalShares += s.shares;
+            } else {
+                hasRawShares = false;
+            }
+            if (typeof s.percentage === 'number') {
+                totalPercentage += s.percentage;
+            }
+        }
+
+        // Recalculate if we have raw shares and total percentage is suspiciously low (e.g. ~50%) or not ~100%
+        if (hasRawShares && totalShares > 0 && Math.abs(totalPercentage - 100) > 1) {
+             console.log(`Refining equity percentages based on raw shares. Old Total: ${totalPercentage}%, Shares Total: ${totalShares}`);
+             normalizedIdentity.shareholders = normalizedIdentity.shareholders.map((s: any) => {
+                const calculatedPct = (s.shares / totalShares) * 100;
+                // Keep 2 decimal places
+                const refinedPct = Math.round(calculatedPct * 100) / 100;
+                return {
+                    ...s,
+                    percentage: refinedPct
+                };
+             });
+        }
+    }
+
     // Ensure country is set to "MX" for founding_address if not null
     if (normalizedIdentity.founding_address) {
       normalizedIdentity.founding_address.country = "MX";
