@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankTransactionListSchema } from '../schemas/mx/bankTransaction.js';
-import { normalizeEmptyToNull } from '../kyc/validators.js';
+import { normalizeEmptyToNull, sanitizeDate, sanitizeCurrency } from '../kyc/validators.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
@@ -145,6 +145,12 @@ export async function extractBankStatementTransactions(fileUrl: string): Promise
     if (normalizedData.transactions && Array.isArray(normalizedData.transactions)) {
         normalizedData.transactions = normalizedData.transactions.map((tx: any) => ({
             ...tx,
+            // Ensure date is valid
+            date: sanitizeDate(tx.date),
+            // Ensure amount is positive absolute
+            amount: Math.abs(tx.amount),
+            // Ensure currency is valid
+            currency: sanitizeCurrency(tx.currency) || "MXN",
             counterparty_name: tx.counterparty_name, // Already normalized by normalizeEmptyToNull
             category: normalizeTransactionCategory(tx.description || "", tx.category)
         }));

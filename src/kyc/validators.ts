@@ -8,6 +8,8 @@ export const RFC_REGEX   = /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{2,3}$/;
 export const CLABE_REGEX = /^\d{18}$/;
 export const CURP_REGEX  = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
 export const INVOICE_REGEX = /^[A-Z0-9\/\-]+$/;
+export const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+export const VALID_CURRENCIES = new Set(["MXN", "USD", "EUR", "CAD"]);
 
 /**
  * Deeply converts empty strings ("") to null, leaving other values untouched.
@@ -87,4 +89,34 @@ export function sanitizeInvoiceNumber(value: string | null | undefined): string 
   if (trimmed.includes("-") && trimmed.length === 36) return null;
   
   return INVOICE_REGEX.test(trimmed) ? trimmed : null;
+}
+
+/**
+ * Validates that a string is a valid ISO 8601 date (YYYY-MM-DD).
+ * Returns the string if valid, or null.
+ */
+export function sanitizeDate(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!DATE_REGEX.test(trimmed)) return null;
+  
+  // Basic logical check
+  const date = new Date(trimmed);
+  if (isNaN(date.getTime())) return null;
+  
+  return trimmed;
+}
+
+/**
+ * Sanitizes currency code. Defaults to MXN if invalid/unknown but looks like money,
+ * or returns null if totally bogus.
+ */
+export function sanitizeCurrency(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const upper = value.trim().toUpperCase();
+  if (VALID_CURRENCIES.has(upper)) return upper;
+  
+  // Heuristic fallback or null? Strict KYC prefers null or explicit "MXN" default in extractor.
+  // Let's return null and let extractor default if needed.
+  return null;
 }
