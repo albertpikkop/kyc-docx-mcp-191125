@@ -6,7 +6,7 @@ export const BankTransactionSchema = {
     date: { type: "string", description: "Transaction date in YYYY-MM-DD format" },
     direction: { type: "string", description: "debit (outflow) or credit (inflow)" },
     amount: { type: "number", description: "Amount of the transaction" },
-    currency: { type: "string", description: "Currency code (e.g. MXN)" },
+    currency: { type: "string", enum: ["MXN", "USD"], description: "Currency code (MXN or USD)" },
     description: { type: "string", description: "Transaction description / concept" },
     counterparty_name: { type: "string", description: "Name of the other party involved", nullable: true },
     category: { type: "string", description: "Category of the transaction (e.g. Transfer, Payment, Fee)", nullable: true }

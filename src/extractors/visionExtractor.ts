@@ -125,10 +125,7 @@ export async function extractDocument(filePath: string, schema: any, instruction
           } else if (key === 'invoice_number' || key === 'account_reference') {
             value[key] = sanitizeInvoiceNumber(current);
           } else if (key === 'currency') {
-            const sanitized = sanitizeCurrency(current);
-            if (sanitized) {
-              value[key] = sanitized;
-            }
+            value[key] = sanitizeCurrency(current);
           }
           applySanitizers(value[key]);
         }

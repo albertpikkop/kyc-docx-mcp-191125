@@ -22,6 +22,7 @@ GLOBAL HARDENING RULES:
 - Normalize all dates to YYYY-MM-DD.
 - Convert amounts to numeric values (no currency symbols).
 - Never invent service numbers, RFCs, or names.
+- Currency: Assume "MXN" for Mexican documents unless the document explicitly uses "USD", "US$", "DÓLARES", or "DLS", in which case set to "USD". Never treat "$" alone as USD; in this context "$" means pesos (MXN).
 
 EXTRACT:
 - Provider info: vendor_name (CFE) and vendor_tax_id from the issuer block.
@@ -147,7 +148,7 @@ export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
       normalizedProof.account_reference = sanitizeInvoiceNumber(normalizedProof.account_reference);
     }
     if (normalizedProof.currency) {
-      normalizedProof.currency = sanitizeCurrency(normalizedProof.currency) || normalizedProof.currency;
+      normalizedProof.currency = sanitizeCurrency(normalizedProof.currency);
     }
 
     return normalizedProof;

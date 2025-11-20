@@ -16,12 +16,13 @@ GLOBAL HARDENING RULES:
 - If a field is not present, set to null. Do NOT use "N/A", "Unknown", "--", or empty strings.
 - Normalize all dates to YYYY-MM-DD.
 - Normalize amounts to numeric values.
+- Currency: Assume "MXN" for Mexican documents unless the document explicitly uses "USD", "US$", "DÓLARES", or "DLS", in which case set to "USD". Never treat "$" alone as USD; in this context "$" means pesos (MXN).
 
 EXTRACT:
 - Date: YYYY-MM-DD.
 - Direction: "debit" (cargo/retiro/salida) or "credit" (abono/depósito/entrada).
 - Amount: Numeric.
-- Currency: e.g. MXN.
+- Currency: e.g. MXN or USD.
 - Description: The main transaction text (Concepto/Detalle).
 - Counterparty: Extract from SPEI/transfer narrations. If not visible, set to null.
 - Category: Classify based on description (e.g., "rent", "telecom", "cfe", "services", "unknown").

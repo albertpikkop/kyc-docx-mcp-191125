@@ -39,7 +39,7 @@ export const ProofOfAddressSchema = {
     vendor_tax_id: { type: "string", description: "Provider RFC from issuer block.", nullable: true },
     
     total_due: { type: "number", description: "Total amount to pay", nullable: true },
-    currency: { type: "string", description: "Currency code (MXN)", nullable: true },
+    currency: { type: "string", enum: ["MXN", "USD"], description: "Currency code (MXN or USD)", nullable: true },
     
     due_date: { type: "string", description: "Payment due date (YYYY-MM-DD)", nullable: true },
     billing_month: { type: "string", description: "Billing month/period description", nullable: true },

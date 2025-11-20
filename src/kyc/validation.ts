@@ -57,31 +57,43 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
   // If percentage is null, we can't determine UBO mathematically, but if is_beneficial_owner is true, include it.
   // We prioritize explicit percentage.
   
-  const ubos: UboInfo[] = [];
+    const ubos: UboInfo[] = [];
   
-  for (const s of shareholders) {
-      let isUbo = false;
-      let pct: number | null = null;
+    // Detect scale: If any percentage is > 1.0, assume 0-100 scale for ALL.
+    // Otherwise assume 0-1 scale (decimals).
+    const validPercentages = shareholders
+        .map(s => s.percentage)
+        .filter((p): p is number => p !== null && p !== undefined);
+        
+    const maxPct = validPercentages.length > 0 ? Math.max(...validPercentages) : 0;
+    const isScale100 = maxPct > 1.0;
+    
+    for (const s of shareholders) {
+        let isUbo = false;
+        let pct: number | null = null;
 
-    if (s.percentage !== null && s.percentage !== undefined) {
-        let fraction = s.percentage;
-        if (fraction > 1) {
-            fraction = fraction / 100;
-        }
-        if (fraction > 0.25) {
+        if (s.percentage !== null && s.percentage !== undefined) {
+            let val = s.percentage;
+            
+            // Normalize to 0-100 scale if it seems to be 0-1
+            if (!isScale100) {
+                val = val * 100;
+            }
+            
+            if (val > 25) {
+                isUbo = true;
+            }
+            pct = val;
+        } else if (s.is_beneficial_owner) {
             isUbo = true;
         }
-        pct = fraction * 100;
-    } else if (s.is_beneficial_owner) {
-          isUbo = true;
-      }
 
-      if (isUbo) {
-          ubos.push({ name: s.name, percentage: pct });
-      }
-  }
-  
-  return ubos;
+        if (isUbo) {
+            ubos.push({ name: s.name, percentage: pct });
+        }
+    }
+    
+    return ubos;
 }
 
 // --- 3. Signatory Helper ---
