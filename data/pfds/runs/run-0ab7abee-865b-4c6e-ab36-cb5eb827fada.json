@@ -1,0 +1,670 @@
+{
+  "runId": "0ab7abee-865b-4c6e-ab36-cb5eb827fada",
+  "customerId": "pfds",
+  "createdAt": "2025-11-21T02:35:16.028Z",
+  "documents": [
+    {
+      "id": "b3894f11-1c83-4160-b47f-cd907274d78b",
+      "customerId": "pfds",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Acta_Constitutiva_PFDS_SAPI.pdf",
+      "extractedAt": "2025-11-21T02:34:59.148Z",
+      "extractedPayload": {
+        "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2021-08-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "Ashish Punj",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial, en los términos del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+              "Para intentar y desistir de toda clase de procedimientos, inclusive amparo",
+              "Para transigir",
+              "Para comprometer en árbitros",
+              "Para absolver y articular posiciones",
+              "Para recusar",
+              "Para hacer cesión de bienes",
+              "Para recibir pagos",
+              "Para presentar denuncias y querellas en materia penal y para desistirse de ellas cuando lo permita la ley",
+              "Facultades para representar a la sociedad en la celebración de convenios y acuerdos necesarios para participar en la etapa de conciliación en procedimientos orales contemplados en el Código de Procedimientos Civiles para el Distrito Federal y Código de Comercio",
+              "Poder general para pleitos y cobranzas y actos de administración en materia laboral, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial",
+              "Representación patronal ante trabajadores, individual o colectivamente, y ante sindicatos correspondientes en conflictos laborales",
+              "Realizar todos los actos administrativos en materia laboral y representar ante Juntas de Conciliación y Arbitraje, locales y federales, y demás autoridades del trabajo, incluyendo audiencias de conciliación, demanda y excepciones, ofrecimiento y admisión de pruebas, y en todas las instancias, actos y diligencias de los procedimientos laborales",
+              "Celebrar convenios y transacciones, proponer arreglos conciliatorios, celebrar, negociar y suscribir convenios de liquidación en materia laboral",
+              "Actuar como representante con calidad de administrador respecto de toda clase de juicios y procedimientos de trabajo, formalizar y rescindir contratos de trabajo",
+              "Representación legal de la poderdante para acreditar personalidad y capacidad en juicio o fuera de él en términos de la Ley Federal del Trabajo",
+              "Poder general para actos de administración, en los términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+              "Poder general para actos de dominio, de acuerdo con el párrafo tercero del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+              "Poder para otorgar y suscribir títulos de crédito, en los términos del artículo noveno de la Ley General de Títulos y Operaciones de Crédito",
+              "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+              "Poder para otorgar poderes generales o especiales así como para delegarlos total o parcialmente e inclusive delegar esta facultad y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "Lucas John Introne",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial, en los términos del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+              "Para intentar y desistir de toda clase de procedimientos, inclusive amparo",
+              "Para transigir",
+              "Para comprometer en árbitros",
+              "Para absolver y articular posiciones",
+              "Para recusar",
+              "Para hacer cesión de bienes",
+              "Para recibir pagos",
+              "Para presentar denuncias y querellas en materia penal y para desistirse de ellas cuando lo permita la ley",
+              "Facultades para representar a la sociedad en la celebración de convenios y acuerdos necesarios para participar en la etapa de conciliación en procedimientos orales contemplados en el Código de Procedimientos Civiles para el Distrito Federal y Código de Comercio",
+              "Poder general para pleitos y cobranzas y actos de administración en materia laboral, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial",
+              "Representación patronal ante trabajadores, individual o colectivamente, y ante sindicatos correspondientes en conflictos laborales",
+              "Realizar todos los actos administrativos en materia laboral y representar ante Juntas de Conciliación y Arbitraje, locales y federales, y demás autoridades del trabajo, incluyendo audiencias de conciliación, demanda y excepciones, ofrecimiento y admisión de pruebas, y en todas las instancias, actos y diligencias de los procedimientos laborales",
+              "Celebrar convenios y transacciones, proponer arreglos conciliatorios, celebrar, negociar y suscribir convenios de liquidación en materia laboral",
+              "Actuar como representante con calidad de administrador respecto de toda clase de juicios y procedimientos de trabajo, formalizar y rescindir contratos de trabajo",
+              "Representación legal de la poderdante para acreditar personalidad y capacidad en juicio o fuera de él en términos de la Ley Federal del Trabajo",
+              "Poder general para actos de administración, en los términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+              "Poder general para actos de dominio, de acuerdo con el párrafo tercero del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+              "Poder para otorgar y suscribir títulos de crédito, en los términos del artículo noveno de la Ley General de Títulos y Operaciones de Crédito",
+              "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+              "Poder para otorgar poderes generales o especiales así como para delegarlos total o parcialmente e inclusive delegar esta facultad y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "Arturo de la Peña Loredo",
+            "role": "Apoderado especial",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran cláusula especial, pero sin que se comprenda la facultad de hacer cesión de bienes",
+              "Para intentar y desistirse de toda clase de procedimientos, inclusive amparo",
+              "Para transigir",
+              "Para comprometer en árbitros",
+              "Para absolver y articular posiciones",
+              "Para recusar",
+              "Para recibir pagos",
+              "Para presentar denuncias y querellas en materia penal y para desistirse de ellas cuando lo permita la ley",
+              "Facultades para representar a la sociedad en la celebración de convenios y acuerdos necesarios para participar en la etapa de conciliación en procedimientos orales contemplados en el Código de Procedimientos Civiles para el Distrito Federal y Código de Comercio",
+              "Poder especial para que en nombre y representación de la sociedad lleve a cabo todos los trámites y gestiones necesarios ante dependencias o entidades de la Administración Pública Federal Centralizada o Paraestatal, así como ante Dependencias y Entidades de la Administración Pública del Gobierno de la Ciudad de México, Instituto Mexicano del Seguro Social, Instituto del Fondo Nacional de la Vivienda para los Trabajadores, Servicio de Administración Tributaria, Secretaría de Desarrollo Urbano y Vivienda de la Ciudad de México, Secretaría de Finanzas de la Ciudad de México y Tesorería de la Ciudad de México, para obtener registro y reconocimiento de la sociedad, inscribirla y obtener cédulas y documentos de registro fiscal, recoger constancias, registros y documentos, presentar declaraciones, realizar pagos, solicitar devoluciones, aclaraciones, correcciones y compensaciones de contribuciones, así como cualquier gestión necesaria relacionada con la identidad de la sociedad y su domicilio fiscal",
+              "Poder general para actos de administración, en términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal, limitado única y exclusivamente para que tramite ante la Secretaría de Hacienda y Crédito Público las solicitudes y avisos ante el Registro Federal de Contribuyentes, presente declaraciones, reciba constancias y documentos, presente declaraciones de pago provisional, proporcione información relacionada con la identidad, domicilio y situación fiscal de la sociedad, entregue pagos incluyendo recargos y multas, reclame y reciba cheques de devoluciones o cualquier otro tipo de contribuciones, reciba todo tipo de notificaciones, ofrezca y rinda pruebas, interponga recursos y realice cualquier otro acto necesario para dichos fines",
+              "Poder general para actos de administración, en términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal, para todos y cada uno de los actos necesarios y convenientes relacionados con el objeto indicado, sin limitación alguna, incluyendo la facultad de firmar cualquier tipo de documento público o privado"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "Ashish Punj",
+            "shares": 94,
+            "percentage": 92.16,
+            "class": "Serie Uno, Capital fijo",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "Lucas John Introne",
+            "shares": 6,
+            "percentage": 5.88,
+            "class": "Serie Uno, Capital fijo",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "Jose Rodolfo Cerdan Leon",
+            "shares": 1,
+            "percentage": 0.98,
+            "class": "Serie Tres, Capital variable",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "Moises Gabriel Gonzalez Rangel",
+            "shares": 1,
+            "percentage": 0.98,
+            "class": "Serie Tres, Capital variable",
+            "is_beneficial_owner": true
+          }
+        ],
+        "corporate_purpose": [
+          "Comercialización de toda clase de productos mediante plataformas electrónicas o cualquier otro medio digital",
+          "Comercialización, distribución, producción, fabricación, importación y exportación de toda clase de productos, así como la prestación de toda clase de servicios de logística, almacén, transporte y entrega de los mismos",
+          "Prestación de toda clase de servicios a empresas y entidades en México o en el extranjero y a clientes de la sociedad, llevando a cabo el estudio, desarrollo e integración de proyectos, planes, programas, métodos y sistemas de asesoría",
+          "Celebración por cuenta propia o de terceros de programas de capacitación y desarrollo, así como investigaciones científicas para desarrollo tecnológico o desarrollo profesional",
+          "Realización de investigaciones profesionales en materias requeridas por personas físicas o morales a las que la sociedad preste servicios, directamente o por medio de institutos tecnológicos y universitarios o empresas o instituciones especializadas en México o en el extranjero, y proporcionar a sus clientes los resultados de dichas investigaciones",
+          "Obtención, adquisición, registro, utilización o disposición de toda clase de patentes, marcas industriales y de servicio, certificados de invención o nombres comerciales, diseños y dibujos industriales, derechos de autor y cualquier otro tipo de derechos de propiedad industrial, literaria o artística, y derechos sobre ellos en México o en el extranjero",
+          "Obtención por cualquier título de concesiones, permisos, autorizaciones o licencias, así como celebración de cualquier clase de contratos con la administración pública federal o local o con particulares",
+          "Otorgamiento y recepción de préstamos con o sin garantía, emisión de bonos, obligaciones, valores y otros títulos de crédito, así como su adquisición, cancelación, negociación o bonos y otros títulos de crédito emitidos por terceros, y constitución de garantías a favor de terceros",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros",
+          "Participación directa o indirecta en otras sociedades o asociaciones e intervención en todos los asuntos y derechos relacionados con ellas",
+          "Establecimiento de sucursales, oficinas, subsidiarias y agencias, así como representación o agencia de empresas e intermediación en la venta de toda clase de bienes y servicios",
+          "Adquisición o posesión por cualquier título, uso, arrendamiento, administración, venta o disposición de toda clase de bienes muebles o inmuebles, así como derechos reales o personales sobre ellos necesarios para el objeto social",
+          "Contratación del personal necesario para cumplir el objeto social",
+          "Celebración en general de toda clase de contratos civiles, mercantiles o de cualquier naturaleza necesarios para el objeto social"
+        ],
+        "notary": {
+          "name": "Mauricio Gálvez Muñoz",
+          "notary_number": "39",
+          "protocol_number": "96053",
+          "protocol_date": "2021-08-30",
+          "office_location": "Ciudad de México"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Consejo de Administración",
+          "quorum_rules": "Para que una asamblea general ordinaria de accionistas se considere legalmente instalada en primera o ulterior convocatoria debe estar representado por lo menos el 50% del capital social con derecho a voto; para asamblea general extraordinaria se requiere al menos el 75% del capital social con derecho a voto y las resoluciones se adoptarán por el voto de las acciones que representen al menos el 51% del capital social con derecho a voto.",
+          "voting_rights": "El Presidente del Consejo de Administración tendrá voto de calidad dentro de las resoluciones; las resoluciones del Consejo se adoptan por voto favorable de la mayoría de sus miembros; diversas materias reservadas requieren aprobación de asamblea extraordinaria con al menos 75% del capital social o del Consejo por mayoría de sus miembros.",
+          "share_transfer_rules": "Ningún accionista podrá enajenar, vender, transferir, donar, ceder, pignorar, constituir gravámenes o de cualquier otra forma disponer de sus acciones salvo transmisiones permitidas y sujetas a aprobación de la Asamblea General Extraordinaria de Accionistas; existen derechos de preferencia, Tag Along y Drag Along conforme a los artículos Décimo Tercero a Trigésimo Quinto de los estatutos.",
+          "capital_rules": "El capital social se divide en capital mínimo fijo de 10,000 pesos representado por 100 acciones Serie Uno, y parte variable sin límite representada por acciones Serie Tres; el capital puede aumentarse por aportaciones o capitalización de reservas y disminuirse por capitalización de pérdidas, reembolso, cancelación o amortización de acciones conforme a la Ley General de Sociedades Mercantiles y a resoluciones de asamblea extraordinaria; los accionistas tienen derecho preferente para suscribir nuevas acciones."
+        },
+        "modifications": []
+      },
+      "sourceName": "Acta_Constitutiva_PFDS_SAPI.pdf"
+    },
+    {
+      "id": "882660ac-55ea-45b1-8803-9da9188c3ac6",
+      "customerId": "pfds",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Constancia_PFDS.pdf",
+      "extractedAt": "2025-11-21T02:35:08.133Z",
+      "extractedPayload": {
+        "rfc": "PFD210830KQ7",
+        "razon_social": "PFDS",
+        "commercial_name": "PFDS",
+        "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2021-08-30",
+        "status": "ACTIVO",
+        "last_status_change": "2021-08-30",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-10-14"
+        },
+        "fiscal_address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de mensajería y paquetería local",
+            "percentage": 60,
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 40,
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2022-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ]
+      },
+      "sourceName": "Constancia_PFDS.pdf"
+    },
+    {
+      "id": "9fde2441-9ca4-4f46-8a29-42e291166cea",
+      "customerId": "pfds",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/FM2 (1).pdf",
+      "extractedAt": "2025-11-21T02:35:11.051Z",
+      "extractedPayload": {
+        "full_name": "Ashish Punj",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "0000000445543",
+        "secondary_number": "10495074",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": ":",
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX"
+      },
+      "sourceName": "FM2 (1).pdf"
+    },
+    {
+      "id": "02e9f958-5e02-417f-9175-72ab5240deb5",
+      "customerId": "pfds",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Esatdo_De_Cuenta_Octubre_2025.pdf",
+      "extractedAt": "2025-11-21T02:35:16.026Z",
+      "extractedPayload": {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "SN",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Esatdo_De_Cuenta_Octubre_2025.pdf"
+    }
+  ],
+  "profile": {
+    "addressEvidence": [],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "acta",
+        "address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2021-08-30"
+      },
+      {
+        "source": "sat",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+          "country": "MX"
+        },
+        "date": "2025-10-14"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-21T02:35:16.027Z",
+    "companyIdentity": {
+      "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+      "rfc": null,
+      "registro_mercantil": null,
+      "incorporation_date": "2021-08-30",
+      "founding_address": {
+        "street": null,
+        "ext_number": null,
+        "int_number": null,
+        "colonia": null,
+        "municipio": "Ciudad de México",
+        "estado": "Ciudad de México",
+        "cp": null,
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "legal_representatives": [
+        {
+          "name": "Ashish Punj",
+          "role": "Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial, en los términos del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+            "Para intentar y desistir de toda clase de procedimientos, inclusive amparo",
+            "Para transigir",
+            "Para comprometer en árbitros",
+            "Para absolver y articular posiciones",
+            "Para recusar",
+            "Para hacer cesión de bienes",
+            "Para recibir pagos",
+            "Para presentar denuncias y querellas en materia penal y para desistirse de ellas cuando lo permita la ley",
+            "Facultades para representar a la sociedad en la celebración de convenios y acuerdos necesarios para participar en la etapa de conciliación en procedimientos orales contemplados en el Código de Procedimientos Civiles para el Distrito Federal y Código de Comercio",
+            "Poder general para pleitos y cobranzas y actos de administración en materia laboral, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial",
+            "Representación patronal ante trabajadores, individual o colectivamente, y ante sindicatos correspondientes en conflictos laborales",
+            "Realizar todos los actos administrativos en materia laboral y representar ante Juntas de Conciliación y Arbitraje, locales y federales, y demás autoridades del trabajo, incluyendo audiencias de conciliación, demanda y excepciones, ofrecimiento y admisión de pruebas, y en todas las instancias, actos y diligencias de los procedimientos laborales",
+            "Celebrar convenios y transacciones, proponer arreglos conciliatorios, celebrar, negociar y suscribir convenios de liquidación en materia laboral",
+            "Actuar como representante con calidad de administrador respecto de toda clase de juicios y procedimientos de trabajo, formalizar y rescindir contratos de trabajo",
+            "Representación legal de la poderdante para acreditar personalidad y capacidad en juicio o fuera de él en términos de la Ley Federal del Trabajo",
+            "Poder general para actos de administración, en los términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+            "Poder general para actos de dominio, de acuerdo con el párrafo tercero del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+            "Poder para otorgar y suscribir títulos de crédito, en los términos del artículo noveno de la Ley General de Títulos y Operaciones de Crédito",
+            "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+            "Poder para otorgar poderes generales o especiales así como para delegarlos total o parcialmente e inclusive delegar esta facultad y revocar poderes"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "Lucas John Introne",
+          "role": "Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial, en los términos del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+            "Para intentar y desistir de toda clase de procedimientos, inclusive amparo",
+            "Para transigir",
+            "Para comprometer en árbitros",
+            "Para absolver y articular posiciones",
+            "Para recusar",
+            "Para hacer cesión de bienes",
+            "Para recibir pagos",
+            "Para presentar denuncias y querellas en materia penal y para desistirse de ellas cuando lo permita la ley",
+            "Facultades para representar a la sociedad en la celebración de convenios y acuerdos necesarios para participar en la etapa de conciliación en procedimientos orales contemplados en el Código de Procedimientos Civiles para el Distrito Federal y Código de Comercio",
+            "Poder general para pleitos y cobranzas y actos de administración en materia laboral, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran poder o cláusula especial",
+            "Representación patronal ante trabajadores, individual o colectivamente, y ante sindicatos correspondientes en conflictos laborales",
+            "Realizar todos los actos administrativos en materia laboral y representar ante Juntas de Conciliación y Arbitraje, locales y federales, y demás autoridades del trabajo, incluyendo audiencias de conciliación, demanda y excepciones, ofrecimiento y admisión de pruebas, y en todas las instancias, actos y diligencias de los procedimientos laborales",
+            "Celebrar convenios y transacciones, proponer arreglos conciliatorios, celebrar, negociar y suscribir convenios de liquidación en materia laboral",
+            "Actuar como representante con calidad de administrador respecto de toda clase de juicios y procedimientos de trabajo, formalizar y rescindir contratos de trabajo",
+            "Representación legal de la poderdante para acreditar personalidad y capacidad en juicio o fuera de él en términos de la Ley Federal del Trabajo",
+            "Poder general para actos de administración, en los términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+            "Poder general para actos de dominio, de acuerdo con el párrafo tercero del artículo dos mil quinientos cincuenta y cuatro del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal",
+            "Poder para otorgar y suscribir títulos de crédito, en los términos del artículo noveno de la Ley General de Títulos y Operaciones de Crédito",
+            "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+            "Poder para otorgar poderes generales o especiales así como para delegarlos total o parcialmente e inclusive delegar esta facultad y revocar poderes"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "Arturo de la Peña Loredo",
+          "role": "Apoderado especial",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas, con todas las facultades generales y aun con las especiales que de acuerdo con la ley requieran cláusula especial, pero sin que se comprenda la facultad de hacer cesión de bienes",
+            "Para intentar y desistirse de toda clase de procedimientos, inclusive amparo",
+            "Para transigir",
+            "Para comprometer en árbitros",
+            "Para absolver y articular posiciones",
+            "Para recusar",
+            "Para recibir pagos",
+            "Para presentar denuncias y querellas en materia penal y para desistirse de ellas cuando lo permita la ley",
+            "Facultades para representar a la sociedad en la celebración de convenios y acuerdos necesarios para participar en la etapa de conciliación en procedimientos orales contemplados en el Código de Procedimientos Civiles para el Distrito Federal y Código de Comercio",
+            "Poder especial para que en nombre y representación de la sociedad lleve a cabo todos los trámites y gestiones necesarios ante dependencias o entidades de la Administración Pública Federal Centralizada o Paraestatal, así como ante Dependencias y Entidades de la Administración Pública del Gobierno de la Ciudad de México, Instituto Mexicano del Seguro Social, Instituto del Fondo Nacional de la Vivienda para los Trabajadores, Servicio de Administración Tributaria, Secretaría de Desarrollo Urbano y Vivienda de la Ciudad de México, Secretaría de Finanzas de la Ciudad de México y Tesorería de la Ciudad de México, para obtener registro y reconocimiento de la sociedad, inscribirla y obtener cédulas y documentos de registro fiscal, recoger constancias, registros y documentos, presentar declaraciones, realizar pagos, solicitar devoluciones, aclaraciones, correcciones y compensaciones de contribuciones, así como cualquier gestión necesaria relacionada con la identidad de la sociedad y su domicilio fiscal",
+            "Poder general para actos de administración, en términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal, limitado única y exclusivamente para que tramite ante la Secretaría de Hacienda y Crédito Público las solicitudes y avisos ante el Registro Federal de Contribuyentes, presente declaraciones, reciba constancias y documentos, presente declaraciones de pago provisional, proporcione información relacionada con la identidad, domicilio y situación fiscal de la sociedad, entregue pagos incluyendo recargos y multas, reclame y reciba cheques de devoluciones o cualquier otro tipo de contribuciones, reciba todo tipo de notificaciones, ofrezca y rinda pruebas, interponga recursos y realice cualquier otro acto necesario para dichos fines",
+            "Poder general para actos de administración, en términos del Código Civil para el Distrito Federal y su correlativo en los demás Códigos Civiles de los Estados de la República Mexicana y del Código Civil Federal, para todos y cada uno de los actos necesarios y convenientes relacionados con el objeto indicado, sin limitación alguna, incluyendo la facultad de firmar cualquier tipo de documento público o privado"
+          ],
+          "joint_signature_required": false
+        }
+      ],
+      "shareholders": [
+        {
+          "name": "Ashish Punj",
+          "shares": 94,
+          "percentage": 92.16,
+          "class": "Serie Uno, Capital fijo",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "Lucas John Introne",
+          "shares": 6,
+          "percentage": 5.88,
+          "class": "Serie Uno, Capital fijo",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "Jose Rodolfo Cerdan Leon",
+          "shares": 1,
+          "percentage": 0.98,
+          "class": "Serie Tres, Capital variable",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "Moises Gabriel Gonzalez Rangel",
+          "shares": 1,
+          "percentage": 0.98,
+          "class": "Serie Tres, Capital variable",
+          "is_beneficial_owner": true
+        }
+      ],
+      "corporate_purpose": [
+        "Comercialización de toda clase de productos mediante plataformas electrónicas o cualquier otro medio digital",
+        "Comercialización, distribución, producción, fabricación, importación y exportación de toda clase de productos, así como la prestación de toda clase de servicios de logística, almacén, transporte y entrega de los mismos",
+        "Prestación de toda clase de servicios a empresas y entidades en México o en el extranjero y a clientes de la sociedad, llevando a cabo el estudio, desarrollo e integración de proyectos, planes, programas, métodos y sistemas de asesoría",
+        "Celebración por cuenta propia o de terceros de programas de capacitación y desarrollo, así como investigaciones científicas para desarrollo tecnológico o desarrollo profesional",
+        "Realización de investigaciones profesionales en materias requeridas por personas físicas o morales a las que la sociedad preste servicios, directamente o por medio de institutos tecnológicos y universitarios o empresas o instituciones especializadas en México o en el extranjero, y proporcionar a sus clientes los resultados de dichas investigaciones",
+        "Obtención, adquisición, registro, utilización o disposición de toda clase de patentes, marcas industriales y de servicio, certificados de invención o nombres comerciales, diseños y dibujos industriales, derechos de autor y cualquier otro tipo de derechos de propiedad industrial, literaria o artística, y derechos sobre ellos en México o en el extranjero",
+        "Obtención por cualquier título de concesiones, permisos, autorizaciones o licencias, así como celebración de cualquier clase de contratos con la administración pública federal o local o con particulares",
+        "Otorgamiento y recepción de préstamos con o sin garantía, emisión de bonos, obligaciones, valores y otros títulos de crédito, así como su adquisición, cancelación, negociación o bonos y otros títulos de crédito emitidos por terceros, y constitución de garantías a favor de terceros",
+        "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros",
+        "Participación directa o indirecta en otras sociedades o asociaciones e intervención en todos los asuntos y derechos relacionados con ellas",
+        "Establecimiento de sucursales, oficinas, subsidiarias y agencias, así como representación o agencia de empresas e intermediación en la venta de toda clase de bienes y servicios",
+        "Adquisición o posesión por cualquier título, uso, arrendamiento, administración, venta o disposición de toda clase de bienes muebles o inmuebles, así como derechos reales o personales sobre ellos necesarios para el objeto social",
+        "Contratación del personal necesario para cumplir el objeto social",
+        "Celebración en general de toda clase de contratos civiles, mercantiles o de cualquier naturaleza necesarios para el objeto social"
+      ],
+      "notary": {
+        "name": "Mauricio Gálvez Muñoz",
+        "notary_number": "39",
+        "protocol_number": "96053",
+        "protocol_date": "2021-08-30",
+        "office_location": "Ciudad de México"
+      },
+      "registry": {
+        "fme": null,
+        "nci": null,
+        "unique_doc_number": null,
+        "registration_city": null,
+        "registration_date": null,
+        "folio": null
+      },
+      "governance": {
+        "board_type": "Consejo de Administración",
+        "quorum_rules": "Para que una asamblea general ordinaria de accionistas se considere legalmente instalada en primera o ulterior convocatoria debe estar representado por lo menos el 50% del capital social con derecho a voto; para asamblea general extraordinaria se requiere al menos el 75% del capital social con derecho a voto y las resoluciones se adoptarán por el voto de las acciones que representen al menos el 51% del capital social con derecho a voto.",
+        "voting_rights": "El Presidente del Consejo de Administración tendrá voto de calidad dentro de las resoluciones; las resoluciones del Consejo se adoptan por voto favorable de la mayoría de sus miembros; diversas materias reservadas requieren aprobación de asamblea extraordinaria con al menos 75% del capital social o del Consejo por mayoría de sus miembros.",
+        "share_transfer_rules": "Ningún accionista podrá enajenar, vender, transferir, donar, ceder, pignorar, constituir gravámenes o de cualquier otra forma disponer de sus acciones salvo transmisiones permitidas y sujetas a aprobación de la Asamblea General Extraordinaria de Accionistas; existen derechos de preferencia, Tag Along y Drag Along conforme a los artículos Décimo Tercero a Trigésimo Quinto de los estatutos.",
+        "capital_rules": "El capital social se divide en capital mínimo fijo de 10,000 pesos representado por 100 acciones Serie Uno, y parte variable sin límite representada por acciones Serie Tres; el capital puede aumentarse por aportaciones o capitalización de reservas y disminuirse por capitalización de pérdidas, reembolso, cancelación o amortización de acciones conforme a la Ley General de Sociedades Mercantiles y a resoluciones de asamblea extraordinaria; los accionistas tienen derecho preferente para suscribir nuevas acciones."
+      },
+      "modifications": []
+    },
+    "foundingAddress": {
+      "street": null,
+      "ext_number": null,
+      "int_number": null,
+      "colonia": null,
+      "municipio": "Ciudad de México",
+      "estado": "Ciudad de México",
+      "cp": null,
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "companyTaxProfile": {
+      "rfc": "PFD210830KQ7",
+      "razon_social": "PFDS",
+      "commercial_name": "PFDS",
+      "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+      "tax_regime": "Régimen General de Ley Personas Morales",
+      "start_of_operations": "2021-08-30",
+      "status": "ACTIVO",
+      "last_status_change": "2021-08-30",
+      "issue": {
+        "place_municipio": "MIGUEL HIDALGO",
+        "place_estado": "CIUDAD DE MEXICO",
+        "issue_date": "2025-10-14"
+      },
+      "fiscal_address": {
+        "street": "CALLE GUTENBERG",
+        "ext_number": "60",
+        "int_number": "6",
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "11300",
+        "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+        "country": "MX"
+      },
+      "economic_activities": [
+        {
+          "order": 1,
+          "description": "Servicios de mensajería y paquetería local",
+          "percentage": 60,
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "order": 2,
+          "description": "Servicios de consultoría en computación",
+          "percentage": 40,
+          "start_date": "2024-06-01",
+          "end_date": null
+        }
+      ],
+      "tax_obligations": [
+        {
+          "description": "Pago definitivo mensual de IVA.",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Declaración anual de ISR del ejercicio Personas morales.",
+          "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Declaración de proveedores de IVA",
+          "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Pago provisional mensual de ISR personas morales régimen general",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2022-04-01",
+          "end_date": null
+        },
+        {
+          "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2024-06-01",
+          "end_date": null
+        }
+      ]
+    },
+    "currentFiscalAddress": {
+      "street": "CALLE GUTENBERG",
+      "ext_number": "60",
+      "int_number": "6",
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MEXICO",
+      "cp": "11300",
+      "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+      "country": "MX"
+    },
+    "bankIdentity": {
+      "bank_name": "Kapital",
+      "account_holder_name": "PFDS",
+      "clabe": "128180018411900130",
+      "clabe_last4": "0130",
+      "address_on_file": {
+        "street": "CALLE GUTENBERG",
+        "ext_number": "60",
+        "int_number": "SN",
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "11300",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "document_date": "2025-10-31",
+      "age_in_days": 21,
+      "within_90_days": true,
+      "holder_matches_company": true,
+      "address_matches_operational": true
+    },
+    "representativeIdentity": {
+      "full_name": "Ashish Punj",
+      "nationality": "India",
+      "document_type": "RESIDENTE PERMANENTE",
+      "document_number": "0000000445543",
+      "secondary_number": "10495074",
+      "date_of_birth": "1975-03-16",
+      "curp": "PUXA750316HNENXS02",
+      "sex": "Hombre",
+      "issue_date": "2014-05-15",
+      "expiry_date": ":",
+      "issuing_office": "Delegación Federal en Distrito Federal",
+      "issuer_country": "MX"
+    },
+    "currentOperationalAddress": {
+      "street": "CALLE GUTENBERG",
+      "ext_number": "60",
+      "int_number": "SN",
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MEXICO",
+      "cp": "11300",
+      "cross_streets": null,
+      "country": "MX"
+    }
+  },
+  "validation": {
+    "score": 1,
+    "flags": [],
+    "generatedAt": "2025-11-21T02:35:16.028Z"
+  }
+}

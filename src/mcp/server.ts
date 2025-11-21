@@ -1,5 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import express from "express";
+import cors from "cors";
 import { z } from "zod";
 import * as crypto from 'crypto';
 import * as path from 'path';
@@ -28,6 +31,8 @@ import { extractTelmexProofOfAddress } from "../extractors/telmexProofOfAddress.
 import { extractCfeProofOfAddress } from "../extractors/cfeProofOfAddress.js";
 import { extractBankStatementProfile } from "../extractors/bankStatementProfile.js";
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
+import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
+import { DEMO_CONFIG } from "../core/demoConfig.js";
 
 type McpToolResponse = {
   content: Array<{ type: "text"; text: string }>;
@@ -97,20 +102,32 @@ export async function handleImportKycDocument({ customer_id, doc_type, file_url,
         extractedPayload = await extractCfeProofOfAddress(file_url);
         break;
       case "bank_statement":
+        // In Demo Mode, if using Bank Identity Only, we should really be using "bank_identity_page" doc type.
+        // But if the user sends "bank_statement", we might want to adapt.
+        // However, strict adherence to the new types is better.
+        
         const profileResult = await extractBankStatementProfile(file_url);
         const txResult = await extractBankStatementTransactions(file_url);
 
         extractedPayload = profileResult.bank_account_profile ?? null;
 
-        supplementalDocs.push({
-          id: crypto.randomUUID(),
-          customerId: customer_id,
-          type: "bank_statement_transactions",
-          fileUrl: file_url,
-          extractedAt: new Date().toISOString(),
-          extractedPayload: txResult.transactions || [],
-          sourceName: source_name || path.basename(file_url)
-        });
+        if (!DEMO_CONFIG.enabled || !DEMO_CONFIG.useBankIdentityOnly) {
+          supplementalDocs.push({
+            id: crypto.randomUUID(),
+            customerId: customer_id,
+            type: "bank_statement_transactions",
+            fileUrl: file_url,
+            extractedAt: new Date().toISOString(),
+            extractedPayload: txResult.transactions || [],
+            sourceName: source_name || path.basename(file_url)
+          });
+        }
+        break;
+      case "bank_identity_page":
+        const identityResult = await extractBankIdentityPage(file_url);
+        // Use the same payload structure as bank statement profile since they share schema
+        extractedPayload = identityResult.bank_account_profile ?? null;
+        // No transactions for identity page
         break;
       default:
         throw new Error(`Unsupported document type: ${doc_type}`);
@@ -196,6 +213,11 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
           bankAccounts.push(payload);
         }
         break;
+      case "bank_identity_page":
+        if (payload) {
+          bankAccounts.push(payload);
+        }
+        break;
       case "bank_statement_transactions":
         // Reserved for future transaction analytics
         break;
@@ -244,7 +266,7 @@ export async function handleValidateKycProfile({ customer_id }: { customer_id: s
   return okResponse(validation);
 }
 
-export async function handleGetKycReport({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
+export async function handleGetKycReport({ customer_id, include_trace = false }: { customer_id: string; include_trace?: boolean }): Promise<McpToolResponse> {
   const run = await loadLatestRun(customer_id);
   
   if (!run) {
@@ -265,7 +287,7 @@ export async function handleGetKycReport({ customer_id }: { customer_id: string 
       return errorResponse("FAILED_TO_GENERATE_PROFILE_OR_VALIDATION", "Unable to build profile or validation for report");
   }
 
-  const report = buildKycReport(profile, validation);
+  const report = buildKycReport(profile, validation, { includeTrace: include_trace });
 
   return okResponse(report);
 }
@@ -285,7 +307,8 @@ const SUPPORTED_DOCS: Record<ImportableDocumentType, string> = {
   "fm2": "FM2 / Residente Card - Extracts Immigration Profile",
   "telmex": "Telmex Bill - Extracts Proof of Address",
   "cfe": "CFE Electricity Bill - Extracts Proof of Address",
-  "bank_statement": "Bank Statement - Extracts Profile & Transactions"
+  "bank_statement": "Bank Statement - Extracts Profile & Transactions",
+  "bank_identity_page": "Bank Identity Page - Extracts Account Profile from Bank Statement Identity Page"
 };
 
 // Wire tools to handlers
@@ -299,7 +322,7 @@ server.tool(
   "import_kyc_document",
   {
     customer_id: z.string(),
-    doc_type: z.enum(["acta", "sat_constancia", "fm2", "telmex", "cfe", "bank_statement"]),
+    doc_type: z.enum(["acta", "sat_constancia", "fm2", "telmex", "cfe", "bank_statement", "bank_identity_page"]),
     file_url: z.string(),
     source_name: z.string().optional()
   },
@@ -325,13 +348,40 @@ server.tool(
 server.tool(
   "get_kyc_report",
   {
-    customer_id: z.string()
+    customer_id: z.string(),
+    include_trace: z.boolean().optional().default(false)
   },
   handleGetKycReport
 );
 
 export async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("MX KYC MCP Server running on stdio");
+  if (process.env.MCP_TRANSPORT === "sse") {
+    const app = express();
+    app.use(cors());
+    const port = process.env.PORT || 3000;
+
+    let transport: SSEServerTransport | null = null;
+
+    app.get("/sse", async (_req, res) => {
+      console.log("New SSE connection established");
+      transport = new SSEServerTransport("/message", res);
+      await server.connect(transport);
+    });
+
+    app.post("/message", async (req, res) => {
+      if (!transport) {
+        res.sendStatus(400);
+        return;
+      }
+      await transport.handlePostMessage(req, res);
+    });
+
+    app.listen(port, () => {
+      console.log(`MX KYC MCP Server running on SSE at http://localhost:${port}/sse`);
+    });
+  } else {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("MX KYC MCP Server running on stdio");
+  }
 }

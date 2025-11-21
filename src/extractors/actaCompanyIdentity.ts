@@ -37,16 +37,52 @@ EXTRACT THE FOLLOWING DEEP KYC DATA:
    - Do not guess; if a field is missing, return null.
 
 5. REPRESENTATION POWERS:
-   - Extract legal representatives with strict authority analysis.
-   - can_sign_contracts: TRUE only if explicit powers ("Poderes") are granted or role is "Apoderado" / "Representante Legal".
-   - poder_scope: List specific powers (e.g., "Pleitos y Cobranzas", "Actos de Administración", "Actos de Dominio", "Títulos de Crédito").
+   - CRITICAL: Distinguish between three separate concepts:
+     a) Socios/Accionistas (shareholders/owners) - NO powers unless also listed as Apoderados
+     b) Consejo de Administración (governing board) - may have powers as a body, but individual members need explicit apoderado designation
+     c) Apoderados (legal representatives with powers) - these are the ones who can sign contracts
+   
+   - Extract legal representatives with STRICT authority analysis:
+   - can_sign_contracts: TRUE ONLY if the person is explicitly designated as "Apoderado" (general or special) AND explicit powers are granted in their clause.
+   - If someone is ONLY listed as "Secretario", "Comisario", "Vocal", or "Consejo" WITHOUT an explicit "Apoderado" designation, set can_sign_contracts to FALSE.
+   
+   - CRITICAL MULTI-PAGE POWER EXTRACTION:
+     * Powers for each apoderado may be spread across MULTIPLE PAGES or separated by line breaks.
+     * You MUST scan the ENTIRE main Notarial Instrument (all pages before annexes) to find ALL power phrases that belong to the SAME apoderado clause.
+     * An apoderado clause typically starts with "Se otorga poder a [Name]" or "[Name] queda facultado" or "Se faculta a [Name]" and continues until:
+       - The next apoderado clause begins (e.g., "Se otorga poder a [Another Name]"), OR
+       - A section break (e.g., "ARTÍCULO", "CAPÍTULO"), OR
+       - The end of the powers section, OR
+       - The start of annexes (Secretaría de Economía, RPP, SAT)
+     * CRITICAL: You MUST search for ALL FOUR canonical powers for EACH apoderado, even if they appear on different pages:
+       - "Pleitos y Cobranzas" or "pleitos y cobranzas" (may also appear as "Poder general para pleitos y cobranzas")
+       - "Actos de Administración" or "actos de administración" (may appear as "Poder general para actos de administración" or "facultades de administración")
+       - "Actos de Dominio" or "actos de dominio" (may appear as "Poder general para actos de dominio" or "facultades de dominio")
+       - "Títulos de Crédito" or "títulos de crédito" (may appear as "Poder para otorgar y suscribir títulos de crédito" or "facultad para títulos de crédito")
+     * These four canonical powers are ESSENTIAL - if ANY apoderado has all four, they have FULL powers.
+     * DO NOT stop scanning after finding 1-2 powers - continue reading ALL pages until you have found all four canonical powers OR reached the end of that apoderado's clause.
+     * If powers are listed in a bulleted format, numbered lists, or separated by commas/semicolons across pages, include ALL of them.
+     * Also collect any other specific powers mentioned (e.g., "gestiones fiscales", "apertura de cuentas bancarias", "representación laboral", "otorgar poderes")
+   
+   - poder_scope: List ALL powers granted in the Acta clause for THIS person, combining phrases from all pages:
+     * Include every power phrase you find, even if they appear on different pages
+     * Use the exact wording from the Acta (e.g., "Pleitos y cobranzas", "Actos de administración", "Actos de dominio", "Títulos de crédito")
+     * If the same power is mentioned multiple times, include it once
+     * If powers are listed as "Poder general para..." followed by specific items, include both the general phrase and the specific items
+   
+   - IMPORTANT: If the Acta explicitly labels someone as "apoderado especial" or "apoderado limitado", include that label in poder_scope.
+   - If the Acta labels someone as "apoderado general" AND grants all four canonical powers (even if spread across pages), include all four in poder_scope.
    - joint_signature_required: Check if powers must be exercised jointly ("mancomunadamente") or individually ("indistintamente"). Set to null if not specified.
 
 6. FOUNDING ADDRESS (HISTORICAL ONLY):
    - Extract the corporate domicile (domicilio social) mentioned in the deed as founding_address.
    - This is a HISTORICAL address. Do NOT label it as current.
+   - CRITICAL: If the Acta only specifies a jurisdiction (e.g., "Ciudad de México") without street-level details:
+     * Set street, ext_number, int_number, colonia, and cp to null
+     * Only populate municipio and estado if explicitly stated
+   - If the Acta provides a full street address, extract all components.
    - Set country to "MX".
-   - Use null for missing components.
+   - Use null for missing components. Do NOT use "/null" or "N/A" strings.
 
 7. GOVERNANCE:
    - Board type: "Administrador Único" or "Consejo de Administración".
@@ -112,11 +148,43 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
     }
   }
 
+  // --- PAGE RANGE LIMIT FOR DEMO MODE ---
+  // To prevent reading annex pages (RPP, SE) as part of the Acta, we explicitly prompt the model
+  // to ignore pages after the notary signature block if detected, or we rely on the instruction.
+  // However, a cleaner way (as requested) is to enforce this in the instruction if we can't split the PDF easily.
+  // Since we are sending the full file, we must instruct the model strictly.
+  
+  const INSTRUCTIONS_WITH_LIMITS = EXTRACTION_INSTRUCTIONS + `
+  
+  CRITICAL PAGE RANGE INSTRUCTION:
+  - This document may contain appended annexes (Secretaría de Economía, RPP, SAT) at the end.
+  - IGNORE these annexes for the "Founding Address" and "Legal Representatives".
+  - ONLY extract data from the main Notarial Instrument (the first section signed by the Notary).
+  - If the main deed does not specify a street/number address (only "Ciudad de México"), return null for street/number. DO NOT use addresses found in the annexes.
+  
+  CRITICAL MULTI-PAGE POWER EXTRACTION:
+  - Powers for each apoderado may be spread across MULTIPLE PAGES within the main Notarial Instrument.
+  - You MUST scan ALL pages of the main Notarial Instrument (before annexes) to find COMPLETE power clauses.
+  - When extracting powers for an apoderado:
+    * Start from where the apoderado is first mentioned (e.g., "Se otorga poder a [Name]" or "[Name] queda facultado")
+    * Continue scanning forward through ALL subsequent pages until you reach:
+      - The next apoderado clause, OR
+      - The end of the powers section, OR
+      - The start of annexes (Secretaría de Economía, RPP, SAT)
+    * Collect ALL power phrases from this entire multi-page clause, including:
+      - Powers mentioned on the same page as the apoderado name
+      - Powers mentioned on following pages before the next apoderado
+      - Powers listed in bullet points, numbered lists, or separated by commas/semicolons
+    * DO NOT stop reading after the first page - the complete power list may continue on page 2, 3, etc.
+  - Example: If "Ashish Punj" is mentioned as apoderado on page 5, and powers are listed on pages 5, 6, and 7, you must include ALL powers from pages 5-7 in his poder_scope array.
+  - The poder_scope array should contain EVERY power phrase found across all pages for that person.
+  `;
+
   try {
     const res = await withRetry(() =>
       client.responses.create({
         model,
-        instructions: EXTRACTION_INSTRUCTIONS,
+        instructions: INSTRUCTIONS_WITH_LIMITS,
         input: [
           {
             role: 'user',
@@ -150,7 +218,7 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
     const normalizeEmptyToNull = (value: any): any => {
       if (typeof value === 'string') {
         const trimmed = value.trim();
-        if (trimmed === "" || trimmed === "/" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
+        if (trimmed === "" || trimmed === "/" || trimmed === "/null" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
           return null;
         }
         return trimmed;

@@ -1,0 +1,7 @@
+run = ["node", "dist/mcp/cli.js"]
+entrypoint = "dist/mcp/cli.js"
+
+[env]
+MCP_TRANSPORT = "sse"
+PORT = "3000"
+

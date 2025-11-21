@@ -1,18 +1,13 @@
 import { KycProfile, KycValidationResult, KycValidationFlag, TraceSection, UboTrace, AddressEvidenceTrace, PowerTrace, FreshnessTrace } from './types.js';
 import { differenceInDays } from "date-fns";
+import { DEMO_CONFIG } from '../core/demoConfig.js';
 
 // --- 1. Address Resolution ---
 
 /**
  * Resolves key addresses from the profile data.
- * Note: This logic is partially mirrored in the Builder, but the Validation layer
- * ensures it is explicitly re-evaluated or verified for the final report.
- * The Builder populates the fields, this function validates/refines them if needed,
- * or simply passes through since the Builder already enforces precedence.
- * We will treat this as a pass-through verification step.
  */
 export function resolveAddresses(profile: KycProfile): KycProfile {
-  // Logic is already in Builder, but we ensure consistency here.
   // If fiscal address is missing but we have Tax Profile, we map it again to be safe.
   if (!profile.currentFiscalAddress && profile.companyTaxProfile?.fiscal_address) {
       profile.currentFiscalAddress = profile.companyTaxProfile.fiscal_address;
@@ -20,10 +15,17 @@ export function resolveAddresses(profile: KycProfile): KycProfile {
   
   // If operational address is missing, we try to find one from evidence
   if (!profile.currentOperationalAddress) {
-      // Try Bank
-      const bank = profile.bankAccounts.find(b => b.address_on_statement);
-      if (bank?.address_on_statement) {
-          profile.currentOperationalAddress = bank.address_on_statement;
+      // Try Bank (in full mode) or Bank Identity (in demo mode)
+      let bankAddress: any = null;
+      if (DEMO_CONFIG.enabled && profile.bankIdentity?.address_on_file) {
+          bankAddress = profile.bankIdentity.address_on_file;
+      } else {
+          const bank = profile.bankAccounts.find(b => b.address_on_statement);
+          if (bank) bankAddress = bank.address_on_statement;
+      }
+
+      if (bankAddress) {
+          profile.currentOperationalAddress = bankAddress;
       } else {
           // Try PoA
           const poa = profile.addressEvidence.find(p => p.client_address);
@@ -51,6 +53,7 @@ export interface EquityConsistencyResult {
   sumOfSharesFromHolders: number;
   sumOfPercentages: number;
   deviationFrom100: number;
+  usedShares: boolean;
 }
 
 export function checkEquityConsistency(profile: KycProfile): EquityConsistencyResult | null {
@@ -60,46 +63,54 @@ export function checkEquityConsistency(profile: KycProfile): EquityConsistencyRe
     
     const shareholders = profile.companyIdentity.shareholders;
     let sumOfSharesFromHolders = 0;
-    let sumOfPercentages = 0;
     let hasShares = false;
-    let hasPct = false;
+
+    // DEBUG LOGGING
+    // console.log("Checking equity consistency...");
+    // shareholders.forEach(s => console.log(`Shareholder: ${s.name}, Shares: ${s.shares} (${typeof s.shares})`));
 
     for (const s of shareholders) {
         if (s.shares !== null && s.shares !== undefined) {
-            sumOfSharesFromHolders += s.shares;
+            sumOfSharesFromHolders += Number(s.shares); // Ensure number coercion
             hasShares = true;
         }
-        if (s.percentage !== null && s.percentage !== undefined) {
-            sumOfPercentages += s.percentage;
-            hasPct = true;
+    }
+
+    // Re-calculate percentages from shares if shares are available
+    let sumOfPercentages = 0;
+    let percentages: number[] = [];
+    let usedShares = false;
+    
+    if (hasShares && sumOfSharesFromHolders > 0) {
+        usedShares = true;
+        for (const s of shareholders) {
+            const shareCount = Number(s.shares) || 0;
+            const pct = (shareCount / sumOfSharesFromHolders) * 100;
+            percentages.push(pct);
+            sumOfPercentages += pct;
+        }
+    } else {
+        // Fallback to extracted percentages if shares are missing
+        usedShares = false;
+        for (const s of shareholders) {
+            if (s.percentage !== null && s.percentage !== undefined) {
+                percentages.push(s.percentage);
+                sumOfPercentages += s.percentage;
+            }
         }
     }
     
-    // If we don't have percentage data, try to compute from shares if possible
-    if (!hasPct && hasShares && sumOfSharesFromHolders > 0) {
-         // Re-calc percentages? Not strictly needed for this check unless we backfill
-         // But we return sumOfPercentages as 0 or implicit 100 if we trust shares?
-         // If we only have shares, we can't check deviation from 100% unless we assume total shares = sum
-         // Deviation check is mainly for when we HAVE percentages.
-    }
-
-    // If we have NO percentage data, we can't validate 100% sum.
-    if (!hasPct) {
-        return null;
-    }
+    // console.log(`Used Shares: ${usedShares}, Sum %: ${sumOfPercentages}`);
 
     const deviationFrom100 = Math.abs(sumOfPercentages - 100);
-    
-    // Note: totalSharesFromActa isn't directly in the schema as a top-level field in CompanyIdentitySchema
-    // It might be inferred or we'd need to look at capital rules. 
-    // For now we set it to null as the schema doesn't explicitly carry "Total Authorized Shares" separately from shareholders.
-    const totalSharesFromActa = null;
+    const totalSharesFromActa = null; // Not always extracted separately
 
     return {
         totalSharesFromActa,
         sumOfSharesFromHolders,
         sumOfPercentages,
-        deviationFrom100
+        deviationFrom100,
+        usedShares
     };
 }
 
@@ -110,33 +121,27 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
 
   const shareholders = profile.companyIdentity.shareholders;
   
-  // Filter > 25% ownership
-  // If percentage is null, we can't determine UBO mathematically, but if is_beneficial_owner is true, include it.
-  // We prioritize explicit percentage.
+  // Canonical recalculation for UBO check too
+  let totalShares = 0;
+  shareholders.forEach(s => { totalShares += (s.shares || 0); });
   
-    const ubos: UboInfo[] = [];
+  const ubos: UboInfo[] = [];
   
-    // Detect scale: Removed legacy guessing logic. We now rely on strict schema/prompt enforcement (0-100).
-    // const validPercentages = ... (removed)
-    
     for (const s of shareholders) {
         let isUbo = false;
         let pct: number | null = null;
 
-        if (s.percentage !== null && s.percentage !== undefined) {
-            let val = s.percentage;
-            
-            // PRODUCTION GRADE FIX: 
-            // We now strictly enforce 0-100 scale in the LLM prompt and Schema.
-            // The calculation comes directly from the shares vs total shares logic.
-            // We should NOT scale or modify the percentage unless we are re-calculating it from raw shares.
-            // BUT, if we see percentages > 1.0, we assume they are already 0-100.
-            
-            if (val > 25) {
-                isUbo = true;
-            }
-            pct = val;
+        // Prefer calculated percentage if total shares available
+        if (totalShares > 0 && s.shares !== null && s.shares !== undefined) {
+            pct = (s.shares / totalShares) * 100;
+        } else {
+            pct = s.percentage ?? null;
+        }
+
+        if (pct !== null && pct > 25) {
+            isUbo = true;
         } else if (s.is_beneficial_owner) {
+            // Fallback if calculation fails but extracted metadata says yes
             isUbo = true;
         }
 
@@ -164,7 +169,6 @@ const POWER_PATTERNS = {
   administracion: /ACTOS? DE ADMINISTRACI[ÓO]N/i,
   dominio: /ACTOS? DE DOMINIO/i,
   titulosCredito: /T[ÍI]TULOS? DE CR[ÉE]DITO/i,
-  // laborales: /(PODERES|FACULTADES).+LABORALES?/i // Optional depending on strictness
 };
 
 export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
@@ -172,7 +176,8 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
     return [];
   }
 
-  return profile.companyIdentity.legal_representatives.map(rep => {
+  // First pass: map to SignatoryInfo with STRICT classification based on Acta text only
+  const rawSignatories = profile.companyIdentity.legal_representatives.map(rep => {
       let scope: "full" | "limited" | "none" = "none";
       const matchedPhrases: string[] = [];
       
@@ -180,6 +185,19 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       // Combine all power scopes into one string for regex matching
       const powersText = (rep.poder_scope || []).join(' ').toUpperCase();
       
+      // Check for explicit labels: person must be explicitly labeled as "apoderado especial" or "apoderado limitado"
+      // NOT just if the word "especial" appears in power clauses (which could refer to granting powers to others)
+      const isExplicitlyEspecial = roleUpper.includes("APODERADO ESPECIAL") || 
+                                   roleUpper.includes("ESPECIAL APODERADO") ||
+                                   roleUpper.includes("APODERADO LIMITADO") ||
+                                   roleUpper.includes("LIMITADO APODERADO");
+      // Also check if poder_scope explicitly states this person has "poderes especiales" (not just granting them)
+      const hasEspecialPowers = powersText.includes("PODERES ESPECIALES") || 
+                                powersText.includes("PODER ESPECIAL") ||
+                                powersText.includes("PODERES LIMITADOS");
+      const isExplicitlyLimited = isExplicitlyEspecial || hasEspecialPowers;
+      
+      // Match canonical power phrases
       const hasPleitos = POWER_PATTERNS.pleitos.test(powersText);
       const hasAdmin = POWER_PATTERNS.administracion.test(powersText);
       const hasDomino = POWER_PATTERNS.dominio.test(powersText);
@@ -190,32 +208,36 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       if (hasDomino) matchedPhrases.push("ACTOS DE DOMINIO");
       if (hasTitulos) matchedPhrases.push("TÍTULOS DE CRÉDITO");
       
-      if (rep.can_sign_contracts) {
-          // STRICT DEFINITION OF FULL POWERS:
-          // Must have Admin + Dominio + Pleitos (General Powers)
-          // Títulos de crédito is often included but Admin+Dominio is the core high-risk set.
-          // User specified: "scope = 'full' if pleitos + administracion + dominio + titulosCredito present"
+      // STRICT CLASSIFICATION LOGIC:
+      // 1. Only classify if can_sign_contracts is TRUE (extractor determined they have powers)
+      // 2. FULL = ALL 4 canonical powers AND NOT explicitly labeled as "especial"
+      // 3. LIMITED = Some powers OR explicitly labeled as "especial" OR missing any canonical power
+      // 4. NONE = No powers OR officer roles without apoderado designation
+      
+      if (!rep.can_sign_contracts) {
+          // No powers granted - set to none
+          scope = "none";
+      } else {
+          // Check if this is an officer role WITHOUT apoderado designation
+          const isOfficerOnly = (roleUpper.includes("SECRETARIO") || roleUpper.includes("VOCAL") || 
+                                 roleUpper.includes("COMISARIO") || roleUpper.includes("CONSEJO")) &&
+                                !roleUpper.includes("APODERADO");
           
-          if (hasPleitos && hasAdmin && hasDomino && hasTitulos) {
+          if (isOfficerOnly) {
+              // Officers without explicit apoderado designation have NO powers
+              scope = "none";
+          } else if (isExplicitlyLimited) {
+              // Explicitly labeled as "especial" or "limitado" OR has "poderes especiales" = LIMITED
+              scope = "limited";
+          } else if (hasPleitos && hasAdmin && hasDomino && hasTitulos) {
+              // ALL 4 canonical powers AND not explicitly limited = FULL
               scope = "full";
-          } else if (hasPleitos && hasAdmin && hasDomino) {
-              // Almost full, but missing titulos. Usually treated as full for corporate acts.
-              // Strict per user request: "limited" if only some present.
-              // But practically, Admin+Dominio is the highest power level.
-              // We will stick to the strict 4-set if user requested, or reasonable 3-set.
-              // User example: "scope = 'full' if pleitos + administracion + dominio + titulosCredito present;"
-              scope = "limited"; 
-          } else if (hasAdmin || hasPleitos || roleUpper.includes("APODERADO")) {
+          } else if (matchedPhrases.length > 0) {
+              // Has some powers but not all 4 = LIMITED
               scope = "limited";
           } else {
+              // Has can_sign_contracts but no matched phrases = LIMITED (fallback)
               scope = "limited";
-          }
-      }
-      
-      // Council positions without powers
-      if (roleUpper.includes("SECRETARIO") || roleUpper.includes("VOCAL") || roleUpper.includes("COMISARIO")) {
-          if (!rep.has_poder) {
-              scope = "none";
           }
       }
 
@@ -224,9 +246,39 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
           role: rep.role,
           scope,
           matchedPhrases,
-          sourceReference: null
+          sourceReference: undefined
       };
   });
+
+  // Deduplicate by name
+  const mergedSignatories: SignatoryInfo[] = [];
+  const map = new Map<string, SignatoryInfo>();
+
+  for (const s of rawSignatories) {
+      const existing = map.get(s.name);
+      if (existing) {
+          // Merge logic
+          // Upgrade scope if new one is higher
+          if (s.scope === "full") existing.scope = "full";
+          else if (s.scope === "limited" && existing.scope === "none") existing.scope = "limited";
+          
+          // Concatenate roles if different
+          if (!existing.role.includes(s.role)) {
+              existing.role = `${existing.role} / ${s.role}`;
+          }
+          
+          // Merge matched phrases
+          if (s.matchedPhrases) {
+              const newPhrases = s.matchedPhrases.filter(p => !existing.matchedPhrases?.includes(p));
+              existing.matchedPhrases = [...(existing.matchedPhrases || []), ...newPhrases];
+          }
+      } else {
+          map.set(s.name, s);
+          mergedSignatories.push(s);
+      }
+  }
+
+  return Array.from(map.values());
 }
 
 // --- 4. Document Freshness Helper ---
@@ -254,15 +306,21 @@ export function checkFreshness(profile: KycProfile, asOf: Date = new Date()): Fr
   results.push({ type: "proof_of_address", maxAgeDays: maxAgePoa });
 
   // 2. Bank Statements
-  const bankDates = profile.bankAccounts
-      .map(b => b.statement_period_end)
-      .filter(d => d !== null) as string[];
-      
   let maxAgeBank: number | null = null;
-  if (bankDates.length > 0) {
-      const sorted = bankDates.sort().reverse();
-      const latest = new Date(sorted[0]);
-      maxAgeBank = differenceInDays(asOf, latest);
+  
+  if (DEMO_CONFIG.enabled && profile.bankIdentity && profile.bankIdentity.document_date) {
+      const docDate = new Date(profile.bankIdentity.document_date);
+      maxAgeBank = differenceInDays(asOf, docDate);
+  } else if (profile.bankAccounts.length > 0) {
+      const bankDates = profile.bankAccounts
+          .map(b => b.statement_period_end)
+          .filter(d => d !== null) as string[];
+      
+      if (bankDates.length > 0) {
+          const sorted = bankDates.sort().reverse();
+          const latest = new Date(sorted[0]);
+          maxAgeBank = differenceInDays(asOf, latest);
+      }
   }
   results.push({ type: "bank_statement", maxAgeDays: maxAgeBank });
 
@@ -303,19 +361,20 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   // Equity Consistency Check
   const equityCheck = checkEquityConsistency(profile);
   if (equityCheck) {
+      // Use a small tolerance (e.g. 1.0) instead of exact sum check
       if (equityCheck.deviationFrom100 > 2) {
           flags.push({ 
               code: "EQUITY_INCONSISTENT", 
               level: "critical", 
-              message: `Share percentages sum to ${equityCheck.sumOfPercentages}%, which is inconsistent with 100%. Possible extraction error.` 
+              message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%, which is inconsistent with 100%. Possible extraction error.` 
           });
           // Heavy penalty as this indicates bad extraction
           score -= 0.2; 
-      } else if (equityCheck.deviationFrom100 > 0.5) {
+      } else if (equityCheck.deviationFrom100 > 1.0) { // Relaxed from 0.5 to 1.0 to handle rounding noise
           flags.push({ 
               code: "EQUITY_NEAR_100", 
               level: "warning", 
-              message: `Share percentages sum to ${equityCheck.sumOfPercentages}%; likely rounding issue.` 
+              message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%; likely rounding issue.` 
           });
           score -= 0.05;
       }
@@ -348,11 +407,6 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
        });
        score -= 0.1;
     }
-    
-    // Could add more fuzzy matching here (municipio, street)
-  } else if (!fiscalAddress || !operationalAddress) {
-      // Don't penalize twice if missing doc penalizes below, but good to flag specific data gap
-      // flags.push({ ... }); 
   }
 
   // D. Doc Coverage
@@ -364,7 +418,7 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Tax Profile (SAT Constancia)." });
     score -= 0.3;
   }
-  if (profile.addressEvidence.length === 0 && profile.bankAccounts.length === 0) {
+  if (profile.addressEvidence.length === 0 && !profile.bankIdentity && profile.bankAccounts.length === 0) {
       flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "No Proof of Address or Bank Statements provided." });
       score -= 0.2;
   }
@@ -420,9 +474,6 @@ export function buildTrace(profile: KycProfile): TraceSection {
   }
 
   // 2) Address evidence trace
-  // Ensure addresses are resolved
-  // (Ideally profile is already resolved, but we can re-check)
-  
   const addressEvidence: AddressEvidenceTrace[] = [];
   
   // Founding Address (from Acta)
@@ -443,31 +494,48 @@ export function buildTrace(profile: KycProfile): TraceSection {
       });
   }
   
+  // Helper function to safely format address parts for trace descriptions
+  const formatAddressForTrace = (addr: any): string => {
+      if (!addr) return "";
+      const parts: string[] = [];
+      if (addr.street) parts.push(addr.street);
+      if (addr.ext_number) parts.push(`No. ${addr.ext_number}`);
+      return parts.join(" ");
+  };
+
   // Operational Address (from Bank/PoA)
   if (profile.currentOperationalAddress) {
       const sources: AddressEvidenceTrace["sources"] = [];
       
       // Find matching PoAs
       profile.addressEvidence.forEach(poa => {
-          // Check if this PoA matches operational address logic (simple check: is it the same object or matching zip?)
-          // Since resolveAddresses picks one, we can list all valid PoAs as sources for "Operational" if they are roughly consistent.
-          // Or just list the ones that are present.
           const dateStr = poa.issue_datetime || poa.due_date || "N/A";
+          const addrPart = poa.client_address ? formatAddressForTrace(poa.client_address) : "";
           sources.push({
               type: poa.document_type === "cfe_receipt" ? "cfe" : (poa.document_type === "telmex_bill" ? "telmex" : "other"),
-              description: `${poa.vendor_name} (${dateStr}) - ${poa.client_address?.street} ${poa.client_address?.ext_number}`
+              description: `${poa.vendor_name} (${dateStr})${addrPart ? ` - ${addrPart}` : ""}`
           });
       });
 
-      // Find matching Bank Accounts
-      profile.bankAccounts.forEach(bank => {
-          if (bank.address_on_statement) {
-             sources.push({
-                 type: "bank_statement",
-                 description: `${bank.bank_name} - ${bank.address_on_statement.street} ${bank.address_on_statement.ext_number}`
-             });
-          }
-      });
+      // Find matching Bank Accounts / Identity
+      if (DEMO_CONFIG.enabled && profile.bankIdentity && profile.bankIdentity.address_on_file) {
+          const dateStr = profile.bankIdentity.document_date || "N/A";
+          const addrPart = formatAddressForTrace(profile.bankIdentity.address_on_file);
+          sources.push({
+              type: "bank_identity_page" as any,
+              description: `${profile.bankIdentity.bank_name} (${dateStr})${addrPart ? ` - ${addrPart}` : ""}`
+          });
+      } else {
+          profile.bankAccounts.forEach(bank => {
+              if (bank.address_on_statement) {
+                 const addrPart = formatAddressForTrace(bank.address_on_statement);
+                 sources.push({
+                     type: "bank_statement",
+                     description: `${bank.bank_name}${addrPart ? ` - ${addrPart}` : ""}`
+                 });
+              }
+          });
+      }
       
       addressEvidence.push({
           role: "operational",
@@ -505,13 +573,21 @@ export function buildTrace(profile: KycProfile): TraceSection {
               });
           });
       } else if (f.type === "bank_statement") {
-          profile.bankAccounts.forEach(b => {
+          if (DEMO_CONFIG.enabled && profile.bankIdentity) {
               docs.push({
-                  type: "bank_statement",
-                  date: b.statement_period_end || undefined,
-                  description: b.bank_name || undefined
+                  type: "bank_identity_page",
+                  date: profile.bankIdentity.document_date || undefined,
+                  description: profile.bankIdentity.bank_name
               });
-          });
+          } else {
+              profile.bankAccounts.forEach(b => {
+                  docs.push({
+                      type: "bank_statement",
+                      date: b.statement_period_end || undefined,
+                      description: b.bank_name || undefined
+                  });
+              });
+          }
       } else if (f.type === "sat_constancia") {
            if (profile.companyTaxProfile?.issue?.issue_date) {
                docs.push({
@@ -524,8 +600,7 @@ export function buildTrace(profile: KycProfile): TraceSection {
 
       return {
         docType: f.type,
-        latestDate: null, // We didn't return exact date in checkFreshness, could infer from docs or update helper. For now leaving null or inferring.
-        // Actually we can infer from the docs we just collected
+        latestDate: null,
         ageInDays: f.maxAgeDays,
         withinThreshold: f.maxAgeDays !== null ? f.maxAgeDays <= 90 : false,
         thresholdDays: 90,
@@ -536,7 +611,6 @@ export function buildTrace(profile: KycProfile): TraceSection {
   // Backfill latestDate for freshness trace from docs
   trace.freshness.forEach(t => {
       if (t.supportingDocuments.length > 0) {
-          // Sort docs by date desc
           const dates = t.supportingDocuments
              .map(d => d.date)
              .filter(d => !!d)

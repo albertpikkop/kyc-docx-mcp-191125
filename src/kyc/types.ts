@@ -188,7 +188,8 @@ export type ImportableDocumentType =
   | "fm2"
   | "telmex"
   | "cfe"
-  | "bank_statement";
+  | "bank_statement"
+  | "bank_identity_page";
 
 export type DocumentType = ImportableDocumentType | "bank_statement_transactions";
 
@@ -215,6 +216,15 @@ export interface KycValidationResult {
   generatedAt: string;
 }
 
+export interface BankIdentity {
+  bank_name: string;
+  account_holder_name: string;
+  clabe: string | null;
+  clabe_last4: string | null;
+  address_on_file: Address | null;
+  document_date: string | null; // ISO
+}
+
 /**
  * Complete KYC Profile aggregating all document sources
  */
@@ -230,6 +240,15 @@ export interface KycProfile {
   
   addressEvidence: ProofOfAddress[];     // all PoA docs
   bankAccounts: BankAccountProfile[];    // one per CLABE/account
+  
+  // Demo Mode additions
+  bankIdentity?: BankIdentity & {
+    age_in_days: number;
+    within_90_days: boolean;
+    holder_matches_company: boolean;
+    address_matches_operational: boolean;
+  };
+
   historical_addresses: HistoricalAddress[]; // keep track of all addresses found
   
   lastUpdatedAt: string;

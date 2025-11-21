@@ -28,7 +28,12 @@
     "test:kyc-report-pfds": "tsx src/tests/testKycReportPFDS.ts",
     "test:mcp-pfds": "tsx src/tests/testMcpToolsPFDS.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "client:list": "tsx src/scripts/clientManagement.ts list",
+    "client:delete": "tsx src/scripts/clientManagement.ts delete",
+    "client:open": "tsx src/scripts/clientManagement.ts open",
+    "client:open-latest": "tsx src/scripts/clientManagement.ts open-latest",
+    "client:run": "tsx src/scripts/runKycClient.ts"
   },
   "keywords": [
     "kyc",
@@ -56,9 +61,16 @@
   "license": "ISC",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
+    "express": "^5.1.0",
     "openai": "^4.77.0",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.4.394",
+    "xlsx": "^0.18.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {

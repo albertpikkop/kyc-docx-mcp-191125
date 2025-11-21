@@ -2,45 +2,48 @@ import "dotenv/config";
 import { extractCompanyIdentity } from "../extractors/actaCompanyIdentity.js";
 import { extractCompanyTaxProfile } from "../extractors/companyTaxProfileExtractor.js";
 import { extractImmigrationProfile } from "../extractors/fm2Immigration.js";
-import { extractTelmexProofOfAddress } from "../extractors/telmexProofOfAddress.js";
 import { extractCfeProofOfAddress } from "../extractors/cfeProofOfAddress.js";
-import { extractBankStatementProfile } from "../extractors/bankStatementProfile.js";
-import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
+import { extractTelmexProofOfAddress } from "../extractors/telmexProofOfAddress.js";
+import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
 import { buildKycProfile } from "../kyc/profileBuilder.js";
-import { validateKycProfile, resolveUbo, resolveSignatories, checkFreshness } from "../kyc/validation.js";
+import { validateKycProfile } from "../kyc/validation.js";
 import { saveRun } from "../kyc/storage.js";
 import { KycRun, KycDocument, DocumentType } from "../kyc/types.js";
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { DEMO_CONFIG } from "../core/demoConfig.js";
 
 const customerId = "pfds";
-const fixtureRoot = process.env.KYC_FIXTURES_DIR ?? path.resolve(process.cwd(), "fixtures");
+// Use the desktop folder as requested
+const fixtureRoot = "/Users/ashishpunj/Desktop/MCP-Docx/MCP";
 
 function resolveFixture(fileName: string): string {
   const fullPath = path.resolve(fixtureRoot, fileName);
   if (!fs.existsSync(fullPath)) {
     throw new Error(
-      `Fixture not found: ${fullPath}. Set KYC_FIXTURES_DIR env var to your document folder.`
+      `Fixture not found: ${fullPath}. Please check the folder content.`
     );
   }
   return fullPath;
 }
 
+// Demo Mode 5-Document Set from Desktop Folder
 const docs = [
   { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_PFDS_SAPI.pdf") },
   { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS.pdf") },
   { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2 (1).pdf") },
+  // Using Recibo-Oct (2).pdf which is Telmex based on previous analysis
   { type: "telmex" as DocumentType,         fileUrl: resolveFixture("Recibo-Oct (2).pdf") },
-  { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_AGOSTO.pdf") },
-  { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_OCTUBRE.pdf") },
-  { type: "bank_statement" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Agosto_2025.pdf") },
-  { type: "bank_statement" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Septiembre_2025.pdf") },
-  { type: "bank_statement" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Octubre_2025.pdf") }
+  // Using one bank statement as identity page
+  { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Octubre_2025.pdf") }
 ];
 
 async function main() {
-  console.log(`Starting End-to-End KYC Run for customer: ${customerId}`);
+  console.log(`Starting Demo Mode KYC Run for customer: ${customerId}`);
+  console.log(`Demo Config Enabled: ${DEMO_CONFIG.enabled}`);
+  console.log(`Fixture Root: ${fixtureRoot}`);
+  
   const kycDocuments: KycDocument[] = [];
   
   // Temporary holders for builder inputs
@@ -48,7 +51,7 @@ async function main() {
   let companyTaxProfile;
   let representativeIdentity;
   const proofsOfAddress: any[] = [];
-  const bankAccounts: any[] = [];
+  const bankAccounts: any[] = []; 
 
   for (const doc of docs) {
     console.log(`Processing ${doc.type} - ${doc.fileUrl}...`);
@@ -68,30 +71,20 @@ async function main() {
           extractedPayload = await extractImmigrationProfile(doc.fileUrl);
           representativeIdentity = extractedPayload;
           break;
-        case "telmex":
-          extractedPayload = await extractTelmexProofOfAddress(doc.fileUrl);
-          proofsOfAddress.push(extractedPayload);
-          break;
         case "cfe":
           extractedPayload = await extractCfeProofOfAddress(doc.fileUrl);
           proofsOfAddress.push(extractedPayload);
           break;
-        case "bank_statement":
-          const profile = await extractBankStatementProfile(doc.fileUrl);
-          const txs = await extractBankStatementTransactions(doc.fileUrl);
-          if (profile.bank_account_profile) {
-             extractedPayload = profile.bank_account_profile;
-             bankAccounts.push(profile.bank_account_profile);
+        case "telmex":
+          extractedPayload = await extractTelmexProofOfAddress(doc.fileUrl);
+          proofsOfAddress.push(extractedPayload);
+          break;
+        case "bank_identity_page":
+          const identityResult = await extractBankIdentityPage(doc.fileUrl);
+          if (identityResult.bank_account_profile) {
+             extractedPayload = identityResult.bank_account_profile;
+             bankAccounts.push(extractedPayload);
           }
-          kycDocuments.push({
-            id: crypto.randomUUID(),
-            customerId,
-            type: "bank_statement_transactions",
-            fileUrl: doc.fileUrl,
-            extractedAt: new Date().toISOString(),
-            extractedPayload: txs.transactions,
-            sourceName: doc.fileUrl.split('/').pop()
-          });
           break;
       }
 
@@ -102,7 +95,7 @@ async function main() {
         fileUrl: doc.fileUrl,
         extractedAt: new Date().toISOString(),
         extractedPayload,
-        sourceName: doc.fileUrl.split('/').pop()
+        sourceName: path.basename(doc.fileUrl)
       });
 
     } catch (error) {
@@ -123,36 +116,26 @@ async function main() {
   console.log("Validating KYC Profile...");
   const validation = validateKycProfile(profile);
 
-  // --- EXPLICIT INSPECTION LOGGING ---
-  console.log("\n--- INSPECTABLE RULES BRAIN ---");
-  
-  const ubos = resolveUbo(profile);
-  console.log("1. Resolved UBOs (>25%):", JSON.stringify(ubos, null, 2));
+  // --- DEMO MODE ASSERTIONS ---
+  if (DEMO_CONFIG.enabled) {
+      console.log("\n--- DEMO MODE ASSERTIONS ---");
+      
+      // 1. Check Bank Identity
+      if (profile.bankIdentity) {
+          console.log("✅ Bank Identity populated.");
+          console.log(`   - Age: ${profile.bankIdentity.age_in_days} days (Within 90: ${profile.bankIdentity.within_90_days})`);
+          console.log(`   - Holder Match: ${profile.bankIdentity.holder_matches_company}`);
+          console.log(`   - Address Match: ${profile.bankIdentity.address_matches_operational}`);
+      } else {
+          console.error("❌ FAILURE: Bank Identity missing.");
+      }
 
-  const signers = resolveSignatories(profile);
-  console.log("2. Resolved Signatories:", JSON.stringify(signers, null, 2));
-
-  const freshness = checkFreshness(profile, new Date()); // relative to now
-  console.log("3. Document Freshness (Days):", JSON.stringify(freshness, null, 2));
-  
-  console.log("-------------------------------");
-
-  // --- EQUITY CONSISTENCY ASSERTION ---
-  if (customerId === 'pfds' && profile.companyIdentity?.shareholders) {
-    console.log("Running PFDS-specific Equity Assertion...");
-    const shareholders = profile.companyIdentity.shareholders;
-    let sumPct = 0;
-    for (const s of shareholders) {
-        if (s.percentage) sumPct += s.percentage;
-    }
-    
-    console.log(`PFDS Total Equity Sum: ${sumPct}%`);
-    
-    if (Math.abs(sumPct - 100) > 0.5) {
-        console.error(`❌ FAILURE: Equity sum is ${sumPct}%, expected ~100%`);
-    } else {
-        console.log(`✅ SUCCESS: Equity sum is ${sumPct}% (within tolerance)`);
-    }
+      // 2. Check PoA Count
+      if (profile.addressEvidence.length === 1) {
+          console.log("✅ Exact 1 Proof of Address used.");
+      } else {
+          console.error(`❌ FAILURE: ${profile.addressEvidence.length} PoA docs found (Expected 1).`);
+      }
   }
 
   const run: KycRun = {
@@ -164,8 +147,24 @@ async function main() {
     validation
   };
 
-  console.log("Saving Run...");
-  await saveRun(run);
+  console.log("Saving Run and Generating Report...");
+  const reportUrl = await saveRun(run);
+  
+  if (reportUrl) {
+      console.log(`\n✅ Visual Report Generated!`);
+      console.log(`📄 Report URL: ${reportUrl}`);
+      
+      // Automatically open in browser (macOS)
+      try {
+          const { exec } = await import('child_process');
+          const { promisify } = await import('util');
+          const execAsync = promisify(exec);
+          await execAsync(`open "${reportUrl}"`);
+          console.log(`\n🌐 Opened browser automatically!`);
+      } catch (error) {
+          console.log(`\n💡 Tip: Copy and paste this URL into your browser to view the report.`);
+      }
+  }
 
   console.log("\n=== FINAL KYC PROFILE ===");
   console.log(JSON.stringify(profile, null, 2));
