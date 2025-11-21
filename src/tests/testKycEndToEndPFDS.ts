@@ -15,8 +15,7 @@ import * as path from 'path';
 import { DEMO_CONFIG } from "../core/demoConfig.js";
 
 const customerId = "pfds";
-// Use the desktop folder as requested
-const fixtureRoot = "/Users/ashishpunj/Desktop/MCP-Docx/MCP";
+const fixtureRoot = "/Users/ashishpunj/Desktop/mcp-docs/pfds";
 
 function resolveFixture(fileName: string): string {
   const fullPath = path.resolve(fixtureRoot, fileName);
@@ -28,7 +27,7 @@ function resolveFixture(fileName: string): string {
   return fullPath;
 }
 
-// Demo Mode 5-Document Set from Desktop Folder
+// Demo Mode 5-Document Set
 const docs = [
   { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_PFDS_SAPI.pdf") },
   { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS.pdf") },
@@ -149,6 +148,18 @@ async function main() {
 
   console.log("Saving Run and Generating Report...");
   const reportUrl = await saveRun(run);
+  
+  // Calculate Cost Summary from Cost Log (just for console output here, assuming synchronous write speed)
+  try {
+    const { getAggregateCosts } = await import('../kyc/costTracker.js');
+    const costs = await getAggregateCosts();
+    console.log("\n--- COST SUMMARY ---");
+    console.log(`Total Runs: ${costs.totalRuns}`);
+    console.log(`Total Spent: $${costs.totalCost}`);
+    console.log(`Avg Cost/Run: $${costs.avgCostPerRun}`);
+  } catch (e) {
+    // ignore
+  }
   
   if (reportUrl) {
       console.log(`\n✅ Visual Report Generated!`);

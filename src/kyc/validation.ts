@@ -160,6 +160,8 @@ export interface SignatoryInfo {
   role: string;
   scope: "full" | "limited" | "none";
   matchedPhrases?: string[];
+  missingPowers?: string[];
+  limitations?: string[];
   sourceReference?: string;
 }
 
@@ -180,6 +182,8 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
   const rawSignatories = profile.companyIdentity.legal_representatives.map(rep => {
       let scope: "full" | "limited" | "none" = "none";
       const matchedPhrases: string[] = [];
+      const missingPowers: string[] = [];
+      const limitations: string[] = [];
       
       const roleUpper = rep.role.toUpperCase();
       // Combine all power scopes into one string for regex matching
@@ -191,11 +195,19 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
                                    roleUpper.includes("ESPECIAL APODERADO") ||
                                    roleUpper.includes("APODERADO LIMITADO") ||
                                    roleUpper.includes("LIMITADO APODERADO");
-      // Also check if poder_scope explicitly states this person has "poderes especiales" (not just granting them)
-      const hasEspecialPowers = powersText.includes("PODERES ESPECIALES") || 
-                                powersText.includes("PODER ESPECIAL") ||
-                                powersText.includes("PODERES LIMITADOS");
-      const isExplicitlyLimited = isExplicitlyEspecial || hasEspecialPowers;
+      // CRITICAL: Only check for "poderes especiales" as a label, NOT "poder especial" which appears in power descriptions
+      // "Poder especial para X" is a specific power grant, not a label that the person is an "apoderado especial"
+      // We need to distinguish between:
+      // - "apoderado especial" (role label) = LIMITED
+      // - "poder especial para actos de dirección" (specific power) = can still be FULL if has all 4 canonical powers
+      const hasEspecialPowersLabel = powersText.includes("PODERES ESPECIALES") || 
+                                     powersText.includes("PODERES LIMITADOS");
+      // Do NOT check for "PODER ESPECIAL" as it appears in power descriptions like "Poder especial para actos de dirección"
+      const isExplicitlyLimited = isExplicitlyEspecial || hasEspecialPowersLabel;
+      
+      if (isExplicitlyLimited) {
+          limitations.push("Explicitly labeled as 'Especial' or 'Limitado' in role or powers.");
+      }
       
       // Match canonical power phrases
       const hasPleitos = POWER_PATTERNS.pleitos.test(powersText);
@@ -204,9 +216,16 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       const hasTitulos = POWER_PATTERNS.titulosCredito.test(powersText);
 
       if (hasPleitos) matchedPhrases.push("PLEITOS Y COBRANZAS");
+      else missingPowers.push("Pleitos y Cobranzas");
+
       if (hasAdmin) matchedPhrases.push("ACTOS DE ADMINISTRACIÓN");
+      else missingPowers.push("Actos de Administración");
+
       if (hasDomino) matchedPhrases.push("ACTOS DE DOMINIO");
+      else missingPowers.push("Actos de Dominio");
+
       if (hasTitulos) matchedPhrases.push("TÍTULOS DE CRÉDITO");
+      else missingPowers.push("Títulos de Crédito");
       
       // STRICT CLASSIFICATION LOGIC:
       // 1. Only classify if can_sign_contracts is TRUE (extractor determined they have powers)
@@ -217,6 +236,7 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       if (!rep.can_sign_contracts) {
           // No powers granted - set to none
           scope = "none";
+          limitations.push("No 'Apoderado' designation found in extraction.");
       } else {
           // Check if this is an officer role WITHOUT apoderado designation
           const isOfficerOnly = (roleUpper.includes("SECRETARIO") || roleUpper.includes("VOCAL") || 
@@ -226,6 +246,7 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
           if (isOfficerOnly) {
               // Officers without explicit apoderado designation have NO powers
               scope = "none";
+              limitations.push("Officer role (Secretario/Vocal) without explicit Apoderado grant.");
           } else if (isExplicitlyLimited) {
               // Explicitly labeled as "especial" or "limitado" OR has "poderes especiales" = LIMITED
               scope = "limited";
@@ -238,6 +259,7 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
           } else {
               // Has can_sign_contracts but no matched phrases = LIMITED (fallback)
               scope = "limited";
+              limitations.push("Has powers but no canonical power phrases matched.");
           }
       }
 
@@ -246,6 +268,8 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
           role: rep.role,
           scope,
           matchedPhrases,
+          missingPowers,
+          limitations,
           sourceReference: undefined
       };
   });
@@ -272,6 +296,29 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
               const newPhrases = s.matchedPhrases.filter(p => !existing.matchedPhrases?.includes(p));
               existing.matchedPhrases = [...(existing.matchedPhrases || []), ...newPhrases];
           }
+          
+          // Update missing powers (intersection: if one has it, it's not missing)
+          // If existing has it (not in its missing), remove from new missing
+          // Wait, missing needs to be intersection: if doc A misses X but doc B has X, then X is NOT missing.
+          if (existing.missingPowers && s.matchedPhrases) {
+             existing.missingPowers = existing.missingPowers.filter(mp => 
+                !s.matchedPhrases?.some(ph => ph.toUpperCase().includes(mp.toUpperCase()))
+             );
+          }
+          
+          // Merge limitations? If one doc says limited, is he limited overall? 
+          // Usually we take the BEST scope. So clear limitations if we found a full scope doc.
+          if (existing.scope === 'full') {
+              existing.limitations = [];
+              existing.missingPowers = [];
+          } else {
+              // If still limited, maybe merge unique limitations
+              if (s.limitations) {
+                  const newLimits = s.limitations.filter(l => !existing.limitations?.includes(l));
+                  existing.limitations = [...(existing.limitations || []), ...newLimits];
+              }
+          }
+
       } else {
           map.set(s.name, s);
           mergedSignatories.push(s);
@@ -554,6 +601,8 @@ export function buildTrace(profile: KycProfile): TraceSection {
       role: s.role,
       scope: s.scope,
       matchedPhrases: s.matchedPhrases ?? [],
+      missingPowers: s.missingPowers,
+      limitations: s.limitations,
       sourceReference: s.sourceReference
     } as PowerTrace;
   });

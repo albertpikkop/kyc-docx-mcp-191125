@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { KycRun } from './types.js';
 import * as XLSX from 'xlsx';
+import { logRunCost, calculateRunCost } from './costTracker.js';
 
 // Root directory for data, relative to this file
 // src/kyc/storage.ts -> ../../data/
@@ -95,6 +96,32 @@ export async function saveRun(run: KycRun): Promise<string> {
       const filePath = getRunFilePath(run.customerId, run.runId);
       const content = JSON.stringify(run, null, 2);
       await fs.writeFile(filePath, content, 'utf-8');
+
+      // Log Cost
+      // Estimate usage based on documents count if actual usage is not available in run object
+      // In a real implementation, 'run' object should contain token usage data from extractors
+      const estimatedInputTokens = run.documents.length * 30000; // Avg 30k tokens per doc (Acta is heavy)
+      const estimatedOutputTokens = run.documents.length * 1000; // Avg 1k tokens output
+      const estimatedCost = calculateRunCost({
+        prompt_tokens: estimatedInputTokens,
+        completion_tokens: estimatedOutputTokens,
+        total_tokens: estimatedInputTokens + estimatedOutputTokens
+      });
+
+      await logRunCost({
+        runId: run.runId,
+        customerId: run.customerId,
+        timestamp: new Date().toISOString(),
+        model: 'gpt-5.1', // Assuming default model
+        usage: {
+            prompt_tokens: estimatedInputTokens,
+            completion_tokens: estimatedOutputTokens,
+            total_tokens: estimatedInputTokens + estimatedOutputTokens
+        },
+        estimatedCost,
+        documentCount: run.documents.length,
+        reportType: 'kyc_full'
+      });
 
       // Generate and save HTML report if profile and validation exist
       let reportUrl = '';

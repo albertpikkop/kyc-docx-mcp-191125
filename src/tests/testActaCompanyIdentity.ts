@@ -1,7 +1,9 @@
 import "dotenv/config";
+import * as path from 'path';
 import { extractCompanyIdentity } from "../extractors/actaCompanyIdentity.js";
 
-const FILE_PATH = "/Users/ashishpunj/Desktop/MCP-Docx/MCP/Acta_Constitutiva_PFDS_SAPI.pdf";
+const fixtureRoot = process.env.KYC_FIXTURES_DIR ?? path.resolve(process.cwd(), "fixtures");
+const FILE_PATH = path.join(fixtureRoot, "Acta_Constitutiva_PFDS_SAPI.pdf");
 
 async function main() {
   const identity = await extractCompanyIdentity(FILE_PATH);

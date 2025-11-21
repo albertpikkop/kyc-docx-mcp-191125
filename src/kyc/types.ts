@@ -289,6 +289,8 @@ export interface PowerTrace {
   role: string;
   scope: "full" | "limited" | "none";
   matchedPhrases: string[];   // e.g. ["PLEITOS Y COBRANZAS", "ACTOS DE ADMINISTRACIÓN"]
+  missingPowers?: string[];   // New: Which canonical powers were NOT found
+  limitations?: string[];     // New: Specific reasons for limited scope (e.g. "Labeled as Special")
   sourceReference?: string;   // e.g. "Acta, cláusula quinta, pág. 12"
 }
 

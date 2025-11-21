@@ -7,6 +7,7 @@ import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
 import { normalizeEmptyToNull, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 import { withRetry } from '../utils/retry.js';
 import { logExtractorError } from '../utils/logging.js';
+import { optimizeDocument } from '../utils/documentOptimizer.js';
 
 // Zod definition matching BankAccountProfileSchema for runtime validation
 const AddressZodSchema = z.object({
@@ -78,34 +79,32 @@ export async function extractBankIdentityPage(fileUrl: string): Promise<any> {
       image_url: fileUrl
     };
   } else {
-    const ext = path.extname(fileUrl).toLowerCase();
-    const isPdf = ext === '.pdf';
-    const isImage = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
+    // Optimize document before sending to OpenAI
+    const optimizedResults = await optimizeDocument(fileUrl);
+    const optimized = optimizedResults[0];
 
-    if (!isPdf && !isImage) {
-       throw new Error(`Unsupported file type: ${ext}. Only PDF and Images are supported.`);
-    }
-
-    if (isPdf) {
-      console.log('Uploading PDF file...');
-      const fileStream = fs.createReadStream(fileUrl);
-      const uploadedFile = await client.files.create({
-        file: fileStream,
-        purpose: 'assistants',
-      });
-
-      inputItem = {
-        type: 'input_file',
-        file_id: uploadedFile.id,
-      };
-    } else {
-        // Fallback for images
-        const fileBuffer = fs.readFileSync(fileUrl);
-        const base64Data = fileBuffer.toString('base64');
-        const mimeType = ext === '.jpg' ? 'image/jpeg' : `image/${ext.substring(1)}`;
+    // Check if optimization failed (fallback)
+    if (!optimized.success || optimized.isFallback) {
+        console.warn(`Optimization failed for ${fileUrl}. Uploading raw PDF file to OpenAI.`);
+        
+        // FALLBACK: Upload original PDF file
+        console.log('Uploading raw PDF file...');
+        const fileStream = fs.createReadStream(fileUrl);
+        const uploadedFile = await client.files.create({
+            file: fileStream,
+            purpose: 'assistants',
+        });
+        
         inputItem = {
-          type: 'input_image',
-          image_url: `data:${mimeType};base64,${base64Data}`
+            type: 'input_file',
+            file_id: uploadedFile.id,
+        };
+    } else {
+        // Success: Use optimized image
+        const base64Data = optimized.buffer!.toString('base64');
+        inputItem = {
+            type: 'input_image',
+            image_url: `data:${optimized.mimeType};base64,${base64Data}`
         };
     }
   }

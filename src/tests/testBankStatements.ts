@@ -1,13 +1,13 @@
 import "dotenv/config";
+import * as path from 'path';
 import { extractBankStatementProfile } from "../extractors/bankStatementProfile.js";
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
 
-// Using local paths mapped to the prompt's /mnt/data/
-const basePath = "/Users/ashishpunj/Desktop/MCP-Docx/MCP";
+const fixtureRoot = process.env.KYC_FIXTURES_DIR ?? path.resolve(process.cwd(), "fixtures");
 const files = [
-  `${basePath}/Esatdo_De_Cuenta_Agosto_2025.pdf`,
-  `${basePath}/Esatdo_De_Cuenta_Septiembre_2025.pdf`,
-  `${basePath}/Esatdo_De_Cuenta_Octubre_2025.pdf`
+  path.join(fixtureRoot, "Esatdo_De_Cuenta_Agosto_2025.pdf"),
+  path.join(fixtureRoot, "Esatdo_De_Cuenta_Septiembre_2025.pdf"),
+  path.join(fixtureRoot, "Esatdo_De_Cuenta_Octubre_2025.pdf")
 ];
 
 async function main() {
@@ -23,4 +23,3 @@ async function main() {
 }
 
 main().catch(console.error);
-

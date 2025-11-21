@@ -1,0 +1,240 @@
+[
+  {
+    "runId": "a7270113-758a-4656-b2cb-769456c20f66",
+    "customerId": "pfds",
+    "timestamp": "2025-11-21T05:47:32.052Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 30000,
+      "completion_tokens": 1000,
+      "total_tokens": 31000
+    },
+    "estimatedCost": 0.085,
+    "documentCount": 1,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "0f026410-6002-4655-93f0-17b1d3a61ae4",
+    "customerId": "pfds",
+    "timestamp": "2025-11-21T05:48:08.239Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 30000,
+      "completion_tokens": 1000,
+      "total_tokens": 31000
+    },
+    "estimatedCost": 0.085,
+    "documentCount": 1,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "33e21777-daad-44be-9ec8-fc8908956f91",
+    "customerId": "pfds",
+    "timestamp": "2025-11-21T05:50:12.835Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 30000,
+      "completion_tokens": 1000,
+      "total_tokens": 31000
+    },
+    "estimatedCost": 0.085,
+    "documentCount": 1,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "44391082-bdbf-49c9-a418-bb668003a4ab",
+    "customerId": "pfds",
+    "timestamp": "2025-11-21T05:52:44.973Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 30000,
+      "completion_tokens": 1000,
+      "total_tokens": 31000
+    },
+    "estimatedCost": 0.085,
+    "documentCount": 1,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "ce50dfdb-4d54-44a5-8185-70697ff7ad84",
+    "customerId": "pfds",
+    "timestamp": "2025-11-21T05:55:22.492Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "4694d159-eaf9-4110-b69e-4826701b37bd",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:02:01.958Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "e8790b17-ccaf-4ea9-a1ec-bdd52a42596a",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:02:52.428Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "2933d4fe-d707-4f33-ac5e-337c7cd19222",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:06:25.027Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "2d5ce108-4613-4aa6-9f10-8543ea065931",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:11:40.866Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "6ea6e023-c10e-43cb-921b-855f50afbcaa",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:13:40.677Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "ae85af7e-cffb-45a4-be4d-351f2a024331",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:15:12.972Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "31b4ecaa-f01b-4a38-930e-07dd2948e6c2",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:16:42.795Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "31b4ecaa-f01b-4a38-930e-07dd2948e6c2",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:19:36.726Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "36b1a518-ea3e-442a-bc1e-31ed3b19ac7d",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:21:44.335Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "4475d785-7f57-4498-aff5-ecedf7f0d3f8",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:26:57.658Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "6ec73927-1989-43fc-83e1-25c4ac8b41a9",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:28:31.968Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "cfa55a10-721f-410e-af51-394f3e2863bc",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-21T06:30:45.800Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  }
+]

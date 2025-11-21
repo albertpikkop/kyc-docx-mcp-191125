@@ -490,6 +490,12 @@ export function buildKycReport(
               if (p.matchedPhrases?.length) {
                   lines.push(`  - Frases clave detectadas: ${p.matchedPhrases.join(", ")}`);
               }
+              if (p.missingPowers?.length && p.scope !== 'full') {
+                  lines.push(`  - ❌ Faltantes para Poder Amplio: ${p.missingPowers.join(", ")}`);
+              }
+              if (p.limitations?.length) {
+                  lines.push(`  - ⚠️ Limitaciones detectadas: ${p.limitations.join(", ")}`);
+              }
               if (p.sourceReference) {
                   lines.push(`  - Fuente: ${p.sourceReference}`);
               }

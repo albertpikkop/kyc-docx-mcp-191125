@@ -1,7 +1,9 @@
 import "dotenv/config";
+import * as path from 'path';
 import { extractCompanyTaxProfile } from '../extractors/companyTaxProfileExtractor.js';
 
-const FILE_PATH = "/Users/ashishpunj/Desktop/MCP-Docx/MCP/Constancia_PFDS.pdf";
+const fixtureRoot = process.env.KYC_FIXTURES_DIR ?? path.resolve(process.cwd(), "fixtures");
+const FILE_PATH = path.join(fixtureRoot, "Constancia_PFDS.pdf");
 
 async function main() {
   try {

@@ -205,10 +205,54 @@ export class KycProfileBuilder {
       const ageInDays = differenceInDays(asOf, docDate);
       
       // Fuzzy match holder
-      const companyName = this.profile.companyIdentity?.razon_social || this.profile.companyTaxProfile?.razon_social || "";
-      // Simple inclusion check for demo
-      const holderMatches = companyName.toLowerCase().includes((identity.account_holder_name || "").toLowerCase()) || 
-                            (identity.account_holder_name || "").toLowerCase().includes(companyName.toLowerCase());
+      const companyName = (this.profile.companyIdentity?.razon_social || this.profile.companyTaxProfile?.razon_social || "").toLowerCase();
+      const holderName = (identity.account_holder_name || "").toLowerCase();
+      
+      // 1. Exact inclusion (original logic)
+      let holderMatches = companyName.includes(holderName) || holderName.includes(companyName);
+      
+      // 2. Enhanced token matching (handles "Pounj Group" vs "Grupo Pounj")
+      if (!holderMatches) {
+          // Remove common legal entity suffixes and noise
+          const clean = (s: string) => s.replace(/[.,]/g, '')
+              .replace(/\b(sociedad|anonima|capital|variable|sa|cv|sapi|de|rl|limited|ltd|inc|corp)\b/g, '')
+              .trim();
+          
+          const companyClean = clean(companyName);
+          const holderClean = clean(holderName);
+          
+          // Split into tokens
+          const cTokens = companyClean.split(/\s+/).filter(w => w.length > 1);
+          const hTokens = holderClean.split(/\s+/).filter(w => w.length > 1);
+          
+          // Count matches (naive intersection)
+          let matches = 0;
+          for (const ht of hTokens) {
+              // Direct match or translation match (Group <-> Grupo)
+              if (cTokens.includes(ht) || 
+                 (ht === 'group' && cTokens.includes('grupo')) ||
+                 (ht === 'grupo' && cTokens.includes('group'))) {
+                  matches++;
+              }
+          }
+          
+          // If all significant holder tokens found in company (or significant overlap)
+          if (hTokens.length > 0 && matches >= hTokens.length * 0.8) { // Allow slight mismatch if long
+             holderMatches = true;
+          } else if (hTokens.length === 2 && matches >= 1) {
+             // Special case: "Pounj Group" (2 tokens) vs "Grupo Pounj" (2 tokens)
+             // If "Pounj" matches, and the other is Group/Grupo, we handled it above.
+             // If just 1 matches (Pounj), is it enough? Maybe too risky for generic names.
+             // But we added specific translation logic for Group/Grupo so it should match 2/2.
+             if (matches === 2) holderMatches = true;
+          }
+          
+          // Fallback: Check if unique identifier (Pounj) is present
+          // Assuming "Pounj" is the distinct part
+          if (!holderMatches && companyClean.includes(holderClean) || holderClean.includes(companyClean)) {
+              holderMatches = true;
+          }
+      }
       
       // Fuzzy match address (CP match is robust enough for demo)
       const opAddress = this.profile.currentOperationalAddress || this.profile.currentFiscalAddress;
