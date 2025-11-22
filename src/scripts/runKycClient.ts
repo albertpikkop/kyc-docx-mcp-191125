@@ -83,18 +83,31 @@ async function detectFileType(filePath: string): Promise<DocumentType | null> {
     if (/\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)[\s_-]*20[2-9][0-9]\b/.test(lower)) {
         return 'bank_identity_page';
     }
+    
+    // Check for Month-only pattern with single-letter suffix (e.g., "Octubre_E.pdf", "Enero_A.pdf")
+    // This catches bank statements that use month + initial letter instead of full year
+    if (/\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)[\s_-]*[a-z]\b/i.test(lower)) {
+        // Additional check: if it's a PDF, we'll verify it's actually a bank statement in content inspection
+        // But for now, return bank_identity_page as likely match
+        return 'bank_identity_page';
+    }
 
     // 2. Slow Path: Content Inspection (only for PDFs)
     if (lower.endsWith('.pdf')) {
         console.log(`   🔎 Peeking content of ambiguous file: ${filename}...`);
         const text = await peekPdfContent(filePath);
         
-        // Bank Keywords
-        if (text.includes('estado de cuenta') || text.includes('clabe') || text.includes('saldo') || text.includes('intercam') || text.includes('bbva') || text.includes('santander') || text.includes('banorte')) {
+        // Bank Keywords (Spanish)
+        if (text.includes('estado de cuenta') || text.includes('clabe') || text.includes('saldo') || 
+            text.includes('intercam') || text.includes('bbva') || text.includes('santander') || 
+            text.includes('banorte') || text.includes('banamex') || text.includes('hsbc') ||
+            text.includes('numero de cuenta') || text.includes('cuenta') && text.includes('banco')) {
             return 'bank_identity_page';
         }
         // English Bank Keywords
-        if (text.includes('account statement') || text.includes('single account statement') || text.includes('checking account') || text.includes('balance') || text.includes('period from')) {
+        if (text.includes('account statement') || text.includes('single account statement') || 
+            text.includes('checking account') || text.includes('balance') || 
+            text.includes('period from') || text.includes('account number')) {
             return 'bank_identity_page';
         }
         

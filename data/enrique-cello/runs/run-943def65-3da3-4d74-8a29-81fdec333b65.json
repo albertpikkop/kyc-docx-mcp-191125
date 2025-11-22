@@ -1,0 +1,184 @@
+{
+  "runId": "943def65-3da3-4d74-8a29-81fdec333b65",
+  "customerId": "enrique-cello",
+  "createdAt": "2025-11-22T02:55:52.387Z",
+  "documents": [
+    {
+      "id": "fd64d81a-acfa-43f4-8ec8-73ee0730774d",
+      "customerId": "enrique-cello",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/Constancia de Situacion Fiscal.pdf",
+      "extractedAt": "2025-11-22T02:54:23.684Z",
+      "extractedPayload": {
+        "rfc": "CEDE981004E67",
+        "razon_social": "ENRIQUE DE CELLO DIAZ",
+        "commercial_name": null,
+        "capital_regime": null,
+        "tax_regime": "PERSONA FISICA SIN ACTIVIDAD ECONOMICA",
+        "start_of_operations": "2017-09-05",
+        "status": "ACTIVO",
+        "last_status_change": "2017-11-02",
+        "issue": {
+          "place_municipio": "CHIMALHUACAN",
+          "place_estado": "MEXICO",
+          "issue_date": "2025-09-29"
+        },
+        "fiscal_address": {
+          "street": "INDEPENDENCIA",
+          "ext_number": "2",
+          "int_number": "LT 10",
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEXICO",
+          "cp": "56337",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "economic_activities": [],
+        "tax_obligations": [
+          {
+            "description": "Sin obligaciones fiscales",
+            "due_rule": null,
+            "start_date": "2017-09-05",
+            "end_date": null
+          }
+        ]
+      },
+      "sourceName": "Constancia de Situacion Fiscal.pdf"
+    },
+    {
+      "id": "f714427f-fae5-4306-800d-f3408f38fc09",
+      "customerId": "enrique-cello",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/INE Enrique De Cello.pdf",
+      "extractedAt": "2025-11-22T02:54:42.167Z",
+      "extractedPayload": {
+        "full_name": "DE CELLO DIAZ ENRIQUE",
+        "curp": "CEDE981004HDFLZN05",
+        "clave_elector": "CLDZEN98100409H300",
+        "cic": "2775551185",
+        "ocr_number": "5959107315436",
+        "emission_year": "2016",
+        "vigencia_year": "2035",
+        "date_of_birth": "1998-10-04",
+        "sex": "H",
+        "address": {
+          "street": "CDA INDEPENDENCIA MZA 2 LT 10",
+          "colonia": "COL COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEX.",
+          "cp": "56337",
+          "country": "MEX."
+        },
+        "issuer_country": "MX"
+      },
+      "sourceName": "INE Enrique De Cello.pdf"
+    }
+  ],
+  "profile": {
+    "customerId": "enrique-cello",
+    "addressEvidence": [],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "sat",
+        "address": {
+          "street": "INDEPENDENCIA",
+          "ext_number": "2",
+          "int_number": "LT 10",
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEXICO",
+          "cp": "56337",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-09-29"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-22T02:55:52.386Z",
+    "companyTaxProfile": {
+      "rfc": "CEDE981004E67",
+      "razon_social": "ENRIQUE DE CELLO DIAZ",
+      "commercial_name": null,
+      "capital_regime": null,
+      "tax_regime": "PERSONA FISICA SIN ACTIVIDAD ECONOMICA",
+      "start_of_operations": "2017-09-05",
+      "status": "ACTIVO",
+      "last_status_change": "2017-11-02",
+      "issue": {
+        "place_municipio": "CHIMALHUACAN",
+        "place_estado": "MEXICO",
+        "issue_date": "2025-09-29"
+      },
+      "fiscal_address": {
+        "street": "INDEPENDENCIA",
+        "ext_number": "2",
+        "int_number": "LT 10",
+        "colonia": "COPALERA",
+        "municipio": "CHIMALHUACAN",
+        "estado": "MEXICO",
+        "cp": "56337",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "economic_activities": [],
+      "tax_obligations": [
+        {
+          "description": "Sin obligaciones fiscales",
+          "due_rule": null,
+          "start_date": "2017-09-05",
+          "end_date": null
+        }
+      ]
+    },
+    "currentFiscalAddress": {
+      "street": "INDEPENDENCIA",
+      "ext_number": "2",
+      "int_number": "LT 10",
+      "colonia": "COPALERA",
+      "municipio": "CHIMALHUACAN",
+      "estado": "MEXICO",
+      "cp": "56337",
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "representativeIdentity": {
+      "full_name": "DE CELLO DIAZ ENRIQUE",
+      "nationality": "MEXICANA",
+      "document_type": "INE",
+      "document_number": "2775551185",
+      "secondary_number": "CLDZEN98100409H300",
+      "date_of_birth": "1998-10-04",
+      "curp": "CEDE981004HDFLZN05",
+      "sex": "Hombre",
+      "issue_date": "2016-01-01",
+      "expiry_date": "2035-12-31",
+      "issuing_office": "INE",
+      "issuer_country": "MX"
+    },
+    "currentOperationalAddress": {
+      "street": "INDEPENDENCIA",
+      "ext_number": "2",
+      "int_number": "LT 10",
+      "colonia": "COPALERA",
+      "municipio": "CHIMALHUACAN",
+      "estado": "MEXICO",
+      "cp": "56337",
+      "cross_streets": null,
+      "country": "MX"
+    }
+  },
+  "validation": {
+    "customerId": "enrique-cello",
+    "score": 0.8,
+    "flags": [
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "No Proof of Address or Bank Statements provided."
+      }
+    ],
+    "generatedAt": "2025-11-22T02:55:52.387Z"
+  }
+}

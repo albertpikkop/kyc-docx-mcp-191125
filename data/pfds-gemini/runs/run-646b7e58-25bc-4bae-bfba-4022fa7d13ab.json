@@ -1,0 +1,45 @@
+{
+  "runId": "646b7e58-25bc-4bae-bfba-4022fa7d13ab",
+  "customerId": "pfds-gemini",
+  "createdAt": "2025-11-21T21:27:32.196Z",
+  "documents": [],
+  "profile": {
+    "customerId": "pfds-gemini",
+    "addressEvidence": [],
+    "bankAccounts": [],
+    "historical_addresses": [],
+    "lastUpdatedAt": "2025-11-21T21:27:32.194Z"
+  },
+  "validation": {
+    "customerId": "pfds-gemini",
+    "score": 0,
+    "flags": [
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "No UBOs (>25%) detected from shareholder structure."
+      },
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "No Full Power signatories detected."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Company Identity (Acta Constitutiva)."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Tax Profile (SAT Constancia)."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "No Proof of Address or Bank Statements provided."
+      }
+    ],
+    "generatedAt": "2025-11-21T21:27:32.196Z"
+  }
+}

@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
-import pdfImgConvert from 'pdf-img-convert';
+import * as pdfImgConvert from 'pdf-img-convert';
 
 // Configuration for "High Fidelity but Low Cost"
 const MAX_DIMENSION = 1536;

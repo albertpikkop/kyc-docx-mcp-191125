@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Report / Reporte KYC - ENRIQUE DE CELLO DIAZ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body { 
+            font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-size: 15px;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.3;
+        }
+        p, li, td, th {
+            font-size: 15px;
+            line-height: 1.7;
+            letter-spacing: 0.01em;
+        }
+        table { border-collapse: separate; border-spacing: 0; }
+        table thead th { 
+            background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.03em;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+        table tbody tr:hover { background-color: #f3f4f6; }
+        table td, table th {
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 12px 16px;
+        }
+        code { 
+            font-family: 'Consolas', 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .score-ring { transition: all 0.3s ease; }
+        .section-card { transition: all 0.2s ease; }
+        .section-card:hover { transform: translateY(-1px); }
+        
+        /* Prevent text overflow and ensure proper wrapping */
+        * { word-wrap: break-word; overflow-wrap: break-word; }
+        h1, h2, h3, h4, h5, h6 { word-break: break-word; }
+        p, li, td, th { word-break: break-word; hyphens: auto; }
+        
+        /* Ensure proper spacing */
+        .section-card h2 { line-height: 1.3; }
+        .section-card h3 { line-height: 1.4; }
+        
+        /* Better table cell wrapping */
+        table td, table th { 
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 300px;
+        }
+        
+        /* Windows Fluent Design */
+        .fluent-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .fluent-button {
+            background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 120, 212, 0.2);
+        }
+        .fluent-button:hover {
+            background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
+            box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3);
+        }
+        
+        /* Print Styles - Optimized for professional printing */
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.5cm 1.5cm 2cm 1.5cm;
+            }
+            
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
+            body { 
+                background: white !important;
+                color: #000 !important;
+                font-size: 11pt;
+                line-height: 1.5;
+            }
+            
+            .no-print { 
+                display: none !important; 
+            }
+            
+            nav { 
+                display: none !important; 
+            }
+            
+            .fluent-card { 
+                background: white !important;
+                border: 1px solid #d1d5db !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 1.5em;
+                padding: 1em;
+            }
+            
+            .section-card { 
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                color: #000 !important;
+            }
+            
+            table {
+                page-break-inside: auto;
+                border-collapse: collapse;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            thead {
+                display: table-header-group;
+            }
+            
+            tfoot {
+                display: table-footer-group;
+            }
+            
+            /* Prevent breaking inside cells */
+            td, th {
+                page-break-inside: avoid;
+                padding: 8px !important;
+            }
+            
+            /* Avoid breaking lists */
+            ul, ol {
+                page-break-inside: avoid;
+            }
+            
+            li {
+                page-break-inside: avoid;
+            }
+            
+            /* Section breaks */
+            .print-break { 
+                page-break-after: always; 
+            }
+            
+            .print-break-before {
+                page-break-before: always;
+            }
+            
+            /* Ensure proper spacing */
+            .space-y-6 > * + * {
+                margin-top: 1.5em;
+            }
+            
+            /* Remove gradients and shadows for print */
+            .bg-gradient-to-br,
+            .bg-gradient-to-r {
+                background: white !important;
+            }
+            
+            .shadow-md,
+            .shadow-sm,
+            .shadow-lg {
+                box-shadow: none !important;
+            }
+            
+            /* Ensure text is readable */
+            .text-gray-700,
+            .text-gray-600,
+            .text-gray-500 {
+                color: #374151 !important;
+            }
+            
+            .text-gray-900 {
+                color: #111827 !important;
+            }
+            
+            /* Keep important colors for flags */
+            .bg-red-50 { background: #fef2f2 !important; }
+            .bg-yellow-50 { background: #fefce8 !important; }
+            .bg-green-50 { background: #f0fdf4 !important; }
+            .bg-blue-50 { background: #eff6ff !important; }
+            
+            .text-red-800 { color: #991b1b !important; }
+            .text-yellow-800 { color: #854d0e !important; }
+            .text-green-800 { color: #166534 !important; }
+            .text-blue-800 { color: #1e40af !important; }
+            
+            /* Grid layout for print */
+            .grid {
+                display: block;
+            }
+            
+            .lg\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .lg\:col-span-2 {
+                width: 100%;
+            }
+            
+            /* Sidebar content should come after main content in print */
+            .space-y-6 > div:first-child {
+                page-break-after: always;
+            }
+        }
+    </style>
+    <script>
+        function printReport() {
+            // Use browser's native print dialog - best quality
+            window.print();
+        }
+        
+        function exportToExcel() {
+            // Excel file was already generated server-side
+            const excelPath = '/Users/ashishpunj/kyc-docx-mcp-191125/data/enrique-cello/reports/report-ea24cfdc-279c-4137-b9d8-bd62d881b5c0.xlsx';
+            const companyNameSafe = 'ENRIQUE_DE_CELLO_DIAZ';
+            const dateStr = '2025-11-22';
+            const filename = 'KYC_Report_' + companyNameSafe + '_' + dateStr + '.xlsx';
+            
+            // Convert to file:// URL for opening
+            const fileUrl = 'file://' + excelPath.replace(/\\/g, '/');
+            
+            // Show user-friendly message with file location
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Export Excel';
+            
+            // Create a message with the file path
+            const message = 'Excel file generated successfully!\n\n' +
+                          'File: ' + filename + '\n\n' +
+                          'Location: ' + excelPath + '\n\n' +
+                          'The file has been saved. You can find it in the reports folder.';
+            
+            alert(message);
+            
+            // Try to open the file location (works on some systems)
+            setTimeout(() => {
+                try {
+                    window.open(fileUrl, '_blank');
+                } catch (e) {
+                    // If opening fails, user can navigate manually
+                }
+                button.innerHTML = originalText;
+            }, 1000);
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="fluent-card sticky top-0 z-50 shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold mr-3 shadow-lg">K</div>
+                        <span class="font-semibold text-lg text-gray-900">KYC<span class="text-blue-600">Intel</span></span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600">Nov 21, 2025</span>
+                    <button onclick="printReport()" class="fluent-button text-white px-4 py-2 rounded-lg text-sm font-medium transition-all no-print whitespace-nowrap">
+                        🖨️ Print / Imprimir
+                    </button>
+                    <button onclick="exportToExcel()" class="fluent-button text-white px-4 py-2 rounded-lg text-sm font-medium transition-all no-print whitespace-nowrap">
+                        📊 Export Excel / Exportar Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div id="report-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="fluent-card rounded-xl shadow-md p-8 mb-8">
+            <div class="md:flex md:items-center md:justify-between">
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-3xl font-semibold leading-snug text-gray-900 mb-4 break-words" style="font-size: 28px; line-height: 1.3;">
+                        ENRIQUE DE CELLO DIAZ
+                    </h1>
+                    <div class="flex flex-wrap gap-6 text-gray-700">
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <div class="min-w-0">
+                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">RFC:</span> <span class="text-gray-700">CEDE981004E67</span></div>
+                              <div class="text-gray-500 mt-1 break-words" style="font-size: 13px; line-height: 1.5;">RFC: CEDE981004E67</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <svg class="w-4 h-4 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <div class="min-w-0">
+                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">Generated:</span> <span class="text-gray-700">November 21, 2025</span></div>
+                              <div class="text-gray-500 mt-1 break-words" style="font-size: 13px; line-height: 1.5;">Generado: 21 de noviembre de 2025</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex md:mt-0 md:ml-4">
+                    <div class="flex flex-col items-end">
+                      <span class="bg-green-100 text-green-800 px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide uppercase shadow-sm border whitespace-nowrap">
+                          APPROVED
+                      </span>
+                      <span class="text-xs text-gray-600 mt-1.5 whitespace-nowrap">APROBADO</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Score & Risks -->
+            <div class="space-y-6">
+                
+                <!-- Score Card -->
+                <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition-all">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center" style="font-size: 17px; line-height: 1.4;">
+                        <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="break-words">Risk Score</span>
+                    </h3>
+                    <div class="text-sm text-gray-500 mb-5 ml-7 break-words" style="font-size: 13px; line-height: 1.5;">Puntuación de Riesgo</div>
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="relative w-36 h-36 mb-3">
+                            <svg class="w-full h-full transform -rotate-90 score-ring" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="3" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#107c10" stroke-width="3" stroke-dasharray="100, 100" stroke-linecap="round" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span class="text-4xl font-semibold text-gray-900" style="font-size: 42px; line-height: 1.2;">100</span>
+                                <span class="text-xs text-gray-600 uppercase tracking-wider mt-1.5" style="font-size: 11px; line-height: 1.4;">Trust Score</span>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-500 text-center mt-2" style="font-size: 13px; line-height: 1.5;">Puntuación de Confianza</div>
+                    </div>
+                </div>
+
+                <!-- Flags -->
+                <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center" style="font-size: 17px; line-height: 1.4;">
+                        <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span class="break-words">Compliance Flags</span>
+                    </h3>
+                    <div class="text-sm text-gray-500 mb-4 ml-7 break-words" style="font-size: 13px; line-height: 1.5;">Banderas de Cumplimiento</div>
+                    <div class="space-y-3">
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center shadow-sm">
+        <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <div class="text-green-800 font-medium" style="font-size: 15px; line-height: 1.6;">No risk flags detected.</div>
+          <div class="text-green-700 mt-1.5" style="font-size: 14px; line-height: 1.6;">No se detectaron banderas de riesgo.</div>
+        </div>
+      </div>
+                    </div>
+                </div>
+
+                <!-- Source Documents -->
+                <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center" style="font-size: 17px; line-height: 1.4;">
+                        <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span class="break-words">Source Documents</span>
+                    </h3>
+                    <div class="text-sm text-gray-500 mb-4 ml-7 break-words" style="font-size: 13px; line-height: 1.5;">Documentos Fuente</div>
+                    <div class="space-y-2">
+                        
+        <div class="flex items-center justify-between p-4 bg-white rounded-lg mb-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all gap-3">
+            <div class="flex items-center flex-1 min-w-0">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-xl mr-3 flex-shrink-0">
+                    🏛️
+                </div>
+                <div class="min-w-0 flex-1 overflow-hidden">
+                    <div class="text-sm font-semibold text-gray-900 break-words" style="font-size: 14px; line-height: 1.5;">SAT Constancia</div>
+                    <div class="text-xs text-gray-600 break-words mt-1" style="font-size: 12px; line-height: 1.5;">Constancia SAT</div>
+                    <div class="text-xs text-gray-500 break-words mt-1.5" style="font-size: 11px; line-height: 1.4;">Constancia de Situacion Fiscal.pdf</div>
+                </div>
+            </div>
+            <div class="flex flex-col items-end ml-3 flex-shrink-0 gap-1">
+              <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">✓ Processed</span>
+              <span class="text-xs text-gray-500 whitespace-nowrap">Procesado</span>
+            </div>
+        </div>
+      
+        <div class="flex items-center justify-between p-4 bg-white rounded-lg mb-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all gap-3">
+            <div class="flex items-center flex-1 min-w-0">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-xl mr-3 flex-shrink-0">
+                    🛂
+                </div>
+                <div class="min-w-0 flex-1 overflow-hidden">
+                    <div class="text-sm font-semibold text-gray-900 break-words" style="font-size: 14px; line-height: 1.5;">FM2 Immigration</div>
+                    <div class="text-xs text-gray-600 break-words mt-1" style="font-size: 12px; line-height: 1.5;">FM2 Inmigración</div>
+                    <div class="text-xs text-gray-500 break-words mt-1.5" style="font-size: 11px; line-height: 1.4;">INE Enrique De Cello.pdf</div>
+                </div>
+            </div>
+            <div class="flex flex-col items-end ml-3 flex-shrink-0 gap-1">
+              <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">✓ Processed</span>
+              <span class="text-xs text-gray-500 whitespace-nowrap">Procesado</span>
+            </div>
+        </div>
+      
+        <div class="flex items-center justify-between p-4 bg-white rounded-lg mb-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all gap-3">
+            <div class="flex items-center flex-1 min-w-0">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-xl mr-3 flex-shrink-0">
+                    ⚡
+                </div>
+                <div class="min-w-0 flex-1 overflow-hidden">
+                    <div class="text-sm font-semibold text-gray-900 break-words" style="font-size: 14px; line-height: 1.5;">CFE Bill</div>
+                    <div class="text-xs text-gray-600 break-words mt-1" style="font-size: 12px; line-height: 1.5;">Recibo CFE</div>
+                    <div class="text-xs text-gray-500 break-words mt-1.5" style="font-size: 11px; line-height: 1.4;">Comprobante (1).pdf</div>
+                </div>
+            </div>
+            <div class="flex flex-col items-end ml-3 flex-shrink-0 gap-1">
+              <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">✓ Processed</span>
+              <span class="text-xs text-gray-500 whitespace-nowrap">Procesado</span>
+            </div>
+        </div>
+      
+        <div class="flex items-center justify-between p-4 bg-white rounded-lg mb-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all gap-3">
+            <div class="flex items-center flex-1 min-w-0">
+                <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-xl mr-3 flex-shrink-0">
+                    🏦
+                </div>
+                <div class="min-w-0 flex-1 overflow-hidden">
+                    <div class="text-sm font-semibold text-gray-900 break-words" style="font-size: 14px; line-height: 1.5;">Bank Identity</div>
+                    <div class="text-xs text-gray-600 break-words mt-1" style="font-size: 12px; line-height: 1.5;">Identidad Bancaria</div>
+                    <div class="text-xs text-gray-500 break-words mt-1.5" style="font-size: 11px; line-height: 1.4;">Octubre_E.pdf</div>
+                </div>
+            </div>
+            <div class="flex flex-col items-end ml-3 flex-shrink-0 gap-1">
+              <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">✓ Processed</span>
+              <span class="text-xs text-gray-500 whitespace-nowrap">Procesado</span>
+            </div>
+        </div>
+      
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Detailed Report -->
+            <div class="lg:col-span-2 space-y-6">
+                
+        <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-8 mb-6 hover:shadow-lg transition-all section-card">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-3 pb-3 border-b-2 border-blue-200 break-words" style="font-size: 22px; line-height: 1.4;">
+              I. EXTRACTED FACTS
+            </h2>
+            <div class="text-base text-gray-600 mb-6 pb-2 border-b border-gray-200 break-words" style="font-size: 16px; line-height: 1.5;">
+              I. HECHOS EXTRAÍDOS
+            </div>
+            <div class="text-gray-700 prose prose-sm max-w-none" style="font-size: 15px; line-height: 1.7;">
+                <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">1. Identidad Personal (Fuente: INE/FM2)</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Nombre Completo:</span> <span class="text-gray-700">DE CELLO DIAZ ENRIQUE</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">CURP:</span> <span class="text-gray-700">CEDE981004HDFLZN05</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Documento:</span> <span class="text-gray-700">INE</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Número de Documento:</span> <span class="text-gray-700">2775551185</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Fecha de Nacimiento:</span> <span class="text-gray-700">1998-10-04</span></li></ul>
+
+<p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;"><strong class="font-semibold text-gray-900">Nota:</strong> Acta constitutiva no aplica para Persona Física.</p>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">2. Perfil Fiscal (Fuente: SAT Constancia)</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">RFC:</span> <span class="text-gray-700">CEDE981004E67</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Régimen Fiscal:</span> <span class="text-gray-700">Sin obligaciones fiscales</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Nota:</span> <span class="text-gray-700">Régimen fiscal: Sin obligaciones fiscales (no implica exención; solo indica ausencia de actividad económica registrada).</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Estatus:</span> <span class="text-gray-700">ACTIVO</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Domicilio Fiscal (Actual):</span> <span class="text-gray-700">INDEPENDENCIA, No. 2, Int. LT 10, COPALERA, CHIMALHUACAN, MEXICO, 56337, MX</span></li></ul>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">3. Identidad del Representante</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Nombre:</span> <span class="text-gray-700">DE CELLO DIAZ ENRIQUE</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Documento:</span> <span class="text-gray-700">INE (2775551185)</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Nacionalidad:</span> <span class="text-gray-700">MEXICANA</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">CURP:</span> <span class="text-gray-700">CEDE981004HDFLZN05</span></li></ul>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">4. Evidencia Operativa</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Identidad Bancaria:</span> <span class="text-gray-700">1 documento</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Banco:</span> <span class="text-gray-700">BanCoppel</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Titular:</span> <span class="text-gray-700">ENRIQUE DE CELLO DIAZ</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">CLABE:</span> <span class="text-gray-700">137180104209988942</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Dirección Reg.:</span> <span class="text-gray-700">CDA INDEPENDENCIA MZA 2 LT 10, COPALERA, CHIMALHUACAN, ESTADO DE MEXICO, 56337, MX</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Comprobantes de Domicilio:</span> <span class="text-gray-700">1 documento</span></li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Comisión Federal de Electricidad (2025-10-22)</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dirección: CDA INDEPENDENCIA, No. MZ 2 LT10, COPALERA, CHIMALHUACAN, MEX., 56337, MX</li></ul>
+
+            </div>
+        </div>
+      
+        <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-8 mb-6 hover:shadow-lg transition-all section-card">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-3 pb-3 border-b-2 border-blue-200 break-words" style="font-size: 22px; line-height: 1.4;">
+              II. KYC CONCLUSIONS
+            </h2>
+            <div class="text-base text-gray-600 mb-6 pb-2 border-b border-gray-200 break-words" style="font-size: 16px; line-height: 1.5;">
+              II. CONCLUSIONES DE KYC
+            </div>
+            <div class="text-gray-700 prose prose-sm max-w-none" style="font-size: 15px; line-height: 1.7;">
+                <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">1. Domicilio Operativo Confirmado</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Dirección:</span> <span class="text-gray-700">CDA INDEPENDENCIA MZA 2 LT 10, COPALERA, CHIMALHUACAN, ESTADO DE MEXICO, 56337, MX</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Validado por:</span> <span class="text-gray-700">Servicios (CFE), Identidad Bancaria (BanCoppel)</span></li></ul>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">2. Propietarios Beneficiarios</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;"><strong class="font-semibold text-gray-900">No existen accionistas; el titular es Persona Física.</strong></li></ul>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">3. Capacidad Legal (Firmantes)</h3>
+<p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;"><strong class="font-semibold text-gray-900">✅ Autoridad Firmante Verificada:</strong></p>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;"><strong class="font-semibold text-gray-900">DE CELLO DIAZ ENRIQUE</strong> - La persona titular es la autoridad firmante y representante legal de sí misma.</li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Documento de Identidad:</span> <span class="text-gray-700">INE (2775551185)</span></li></ul>
+
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">4. Vigencia Documental</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Comprobante de Domicilio:</span> <span class="text-gray-700">VIGENTE (emitido hace 30 días)</span></li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Identidad Bancaria:</span> <span class="text-gray-700">VIGENTE (emitido hace 19 días)</span></li></ul>
+
+            </div>
+        </div>
+      
+        <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-8 mb-6 hover:shadow-lg transition-all section-card">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-3 pb-3 border-b-2 border-blue-200 break-words" style="font-size: 22px; line-height: 1.4;">
+              III. FLAGS Y RIESGOS
+            </h2>
+            <div class="text-base text-gray-600 mb-6 pb-2 border-b border-gray-200 break-words" style="font-size: 16px; line-height: 1.5;">
+              III. FLAGS Y RIESGOS
+            </div>
+            <div class="text-gray-700 prose prose-sm max-w-none" style="font-size: 15px; line-height: 1.7;">
+                <p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">✅ <strong class="font-semibold text-gray-900">Sin riesgos detectados.</strong> El expediente cumple con los criterios estándar de KYC.</p>
+
+            </div>
+        </div>
+      
+        <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-8 mb-6 hover:shadow-lg transition-all section-card">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-3 pb-3 border-b-2 border-blue-200 break-words" style="font-size: 22px; line-height: 1.4;">
+              IV. TRAZA Y JUSTIFICACIÓN
+            </h2>
+            <div class="text-base text-gray-600 mb-6 pb-2 border-b border-gray-200 break-words" style="font-size: 16px; line-height: 1.5;">
+              IV. TRAZA Y JUSTIFICACIÓN
+            </div>
+            <div class="text-gray-700 prose prose-sm max-w-none" style="font-size: 15px; line-height: 1.7;">
+                <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">1. Propietarios Beneficiarios</h3>
+
+<p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">No existen accionistas; el titular es Persona Física.</p>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">2. Evidencia de Domicilio</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Rol:</span> <span class="text-gray-700">Fiscal (SAT)</span></li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dirección: INDEPENDENCIA, No. 2, Int. LT 10, COPALERA, CHIMALHUACAN, MEXICO, 56337, MX</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Fuentes:</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">sat_constancia – Constancia de Situación Fiscal</li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Rol:</span> <span class="text-gray-700">Operativo (Físico)</span></li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dirección: CDA INDEPENDENCIA MZA 2 LT 10, COPALERA, CHIMALHUACAN, ESTADO DE MEXICO, 56337, MX</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Fuentes:</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">cfe – Comisión Federal de Electricidad (2025-10-22T02:34:22) - CDA INDEPENDENCIA No. MZ 2 LT10</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">bank_identity_page – BanCoppel (2025-11-03) - CDA INDEPENDENCIA MZA 2 LT 10</li></ul>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">3. Facultades / Poderes</h3>
+
+<p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">La persona titular (DE CELLO DIAZ ENRIQUE) es la autoridad firmante y representante legal de sí misma.</p>
+
+<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">4. Vigencia de Documentos – Detalle</h3>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Tipo:</span> <span class="text-gray-700">proof_of_address</span></li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Última fecha: 2025-10-22T02:34:22</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Antigüedad (días): 30</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dentro del umbral: Sí</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Documentos utilizados:</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">cfe_receipt (2025-10-22T02:34:22) – Comisión Federal de Electricidad</li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Tipo:</span> <span class="text-gray-700">bank_statement</span></li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Última fecha: 2025-11-03</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Antigüedad (días): 19</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dentro del umbral: Sí</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Documentos utilizados:</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">bank_identity_page (2025-11-03) – BanCoppel</li>
+<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">Tipo:</span> <span class="text-gray-700">sat_constancia</span></li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Última fecha: 2025-09-29</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Antigüedad (días): 54</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dentro del umbral: Sí</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Documentos utilizados:</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">sat_constancia (2025-09-29) – Fecha de emisión de Constancia</li></ul>
+
+<p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;"><strong class="font-semibold text-gray-900">Validación de Identidad Bancaria:</strong></p>
+<ul class="list-disc list-inside space-y-1 my-3 ml-4"><li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Titular coincide con Razón Social: Sí</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Dirección coincide con Operativa: Sí</li>
+<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">Documento reciente: Sí (19 días)</li></ul>
+
+            </div>
+        </div>
+      
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

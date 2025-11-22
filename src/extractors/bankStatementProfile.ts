@@ -1,6 +1,5 @@
 import OpenAI from 'openai';
 import * as fs from 'fs';
-import * as path from 'path';
 import { z } from 'zod';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';

@@ -1,12 +1,8 @@
-import OpenAI from 'openai';
-import * as fs from 'fs';
 import * as path from 'path';
-import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { ImmigrationProfileSchema } from '../schemas/mx/immigrationProfile.js';
 import { normalizeEmptyToNull, sanitizeCurp } from '../kyc/validators.js';
-import { withRetry } from '../utils/retry.js';
 import { logExtractorError } from '../utils/logging.js';
-import { optimizeDocument } from '../utils/documentOptimizer.js';
+import { extractWithGemini } from '../utils/geminiExtractor.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican immigration cards (FM2 / Residente Temporal / Residente Permanente).
@@ -38,88 +34,21 @@ Do NOT invent any dates or codes. Only copy values that are clearly visible on t
 `;
 
 export async function extractImmigrationProfile(fileUrl: string): Promise<any> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not set in environment variables');
-  }
-
-  const client = new OpenAI({ apiKey });
-  const model: GPT5Model = validateModel(MODEL);
-
-  console.log(`Extracting Immigration Profile using model: ${model}`);
+  console.log(`Extracting Immigration Profile using Gemini 2.5`);
   console.log(`Processing file: ${fileUrl}`);
 
-  const isUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://') || fileUrl.startsWith('data:');
-  let inputItem: any;
-
-  if (isUrl) {
-    inputItem = {
-      type: 'input_image',
-      image_url: fileUrl
-    };
-  } else {
-    // Optimize document before sending to OpenAI
-    const optimizedResults = await optimizeDocument(fileUrl);
-    const optimized = optimizedResults[0];
-
-    // Check if optimization failed (fallback)
-    if (!optimized.success || optimized.isFallback) {
-        console.warn(`Optimization failed for ${fileUrl}. Uploading raw PDF file to OpenAI.`);
-        
-        // FALLBACK: Upload original PDF file
-        console.log('Uploading raw PDF file...');
-        const fileStream = fs.createReadStream(fileUrl);
-        const uploadedFile = await client.files.create({
-            file: fileStream,
-            purpose: 'assistants',
-        });
-        
-        inputItem = {
-            type: 'input_file',
-            file_id: uploadedFile.id,
-        };
-    } else {
-        // Success: Use optimized image
-        const base64Data = optimized.buffer!.toString('base64');
-        inputItem = {
-            type: 'input_image',
-            image_url: `data:${optimized.mimeType};base64,${base64Data}`
-        };
-    }
-  }
-
   try {
-    const res = await withRetry(() =>
-      client.responses.create({
-        model,
-        instructions: EXTRACTION_INSTRUCTIONS,
-        input: [
-          {
-            role: 'user',
-            content: [inputItem]
-          }
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: "immigration_profile",
-            strict: true,
-            schema: ImmigrationProfileSchema
-          },
-        },
-      } as any)
-    );
+    // Determine MIME type
+    const ext = path.extname(fileUrl).toLowerCase();
+    const mimeType = ext === '.pdf' ? 'application/pdf' : 
+                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+                     ext === '.png' ? 'image/png' :
+                     ext === '.webp' ? 'image/webp' : 'application/pdf';
 
-    const outputItem = res.output?.[0] as any;
-    const content = outputItem?.content?.[0]?.text || (res as any).output_text;
-
-    if (!content) {
-      throw new Error('No content received from model');
-    }
-
-    const data = JSON.parse(content);
+    // Use Gemini for extraction
+    const data = await extractWithGemini(fileUrl, mimeType, ImmigrationProfileSchema, EXTRACTION_INSTRUCTIONS);
     
-    // Extract object if nested
+    // Extract object if nested (Gemini returns flat structure)
     const profile = data.immigration_profile || data;
 
     // Deep normalization of empty strings to null

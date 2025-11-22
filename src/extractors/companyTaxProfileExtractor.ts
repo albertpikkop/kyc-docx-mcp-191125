@@ -1,119 +1,54 @@
-import OpenAI from 'openai';
-import fs from 'fs';
-import path from 'path';
-import { MODEL, validateModel, type GPT5Model } from '../model.js';
+import * as path from 'path';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
 import { normalizeEmptyToNull, sanitizeRfc } from '../kyc/validators.js';
-import { withRetry } from '../utils/retry.js';
 import { logExtractorError } from '../utils/logging.js';
-import { optimizeDocument } from '../utils/documentOptimizer.js';
+import { extractWithGemini } from '../utils/geminiExtractor.js';
 
 const EXTRACTION_INSTRUCTIONS = `
-You are a strict KYC extractor for Mexican SAT Constancias (Persona Moral).
+You are a strict KYC extractor for Mexican SAT Constancias (both Persona Moral and Persona Física).
 Your job is to fill the CompanyTaxProfile JSON schema accurately using ONLY the information printed on the document.
 
 GLOBAL HARDENING RULES:
 - Never infer or generate data.
-- If a field is not present, set to null. Do NOT use "N/A" or empty strings.
+- If a field is not present, set to null. Do NOT use "N/A" or empty strings. Do NOT use the string "null".
 - Normalize all dates to YYYY-MM-DD.
 
 EXTRACT:
-- RFC: Extract EXACTLY as printed (e.g., PFD210830KQ7). Never transform or rebuild it.
-- Razón Social: Exactly as printed (e.g., PFDS).
-- Capital Regime & Tax Regime: Must match printed tables only.
-- Start of Operations: Date as YYYY-MM-DD.
+- RFC: Extract EXACTLY as printed (e.g., PFD210830KQ7 for Persona Moral, CEDE981004E67 for Persona Física). Never transform or rebuild it.
+- Razón Social: For Persona Física, this is the person's full name. Extract EXACTLY as printed (e.g., "ENRIQUE DE CELLO DIAZ"). For Persona Moral, extract the company name (e.g., "PFDS").
+- Capital Regime: For Persona Física, this is typically null. For Persona Moral, extract from printed tables.
+- Tax Regime: Extract EXACTLY as printed (e.g., "PERSONA FÍSICA", "Sin obligaciones fiscales", "Régimen Simplificado de Confianza", etc.).
+- Start of Operations: Date as YYYY-MM-DD. May be null for Persona Física.
 - Status: e.g., "ACTIVO".
 - Issue Date/Place: From "Lugar y Fecha de Emisión".
 - Fiscal Address: This is the CANONICAL fiscal address. Split strictly into: street, ext_number, int_number, colonia, municipio, estado, cp. Set country="MX".
-- Economic Activities: Extract from the "Actividades Económicas" table.
-- Tax Obligations: Extract from the "Obligaciones" table.
+- Economic Activities: Extract from the "Actividades Económicas" table. May be empty for Persona Física with "Sin obligaciones fiscales".
+- Tax Obligations: Extract from the "Obligaciones" table. May be empty for Persona Física with "Sin obligaciones fiscales".
+
+CRITICAL: For Persona Física documents:
+- The "Razón Social" field contains the person's full name, not a company name.
+- "Sin obligaciones fiscales" is a valid tax regime and should NOT be treated as missing data.
+- Extract the person's name exactly as shown in the "Razón Social" or "Nombre" field.
 
 Only copy what is explicitly printed. No hallucinations.
 `;
 
 export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not set in environment variables');
-  }
-  
-  const client = new OpenAI({ apiKey });
-  const model: GPT5Model = validateModel(MODEL);
-
-  console.log(`Extracting company tax profile using model: ${model}`);
+  console.log(`Extracting company tax profile using Gemini 2.5`);
   console.log(`Processing file: ${fileUrl}`);
 
-  const isUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://') || fileUrl.startsWith('data:');
-  let inputItem: any;
-
-  if (isUrl) {
-    inputItem = {
-      type: 'input_image',
-      image_url: fileUrl
-    };
-  } else {
-    // Optimize document before sending to OpenAI
-    const optimizedResults = await optimizeDocument(fileUrl);
-    const optimized = optimizedResults[0];
-
-    // Check if optimization failed (fallback)
-    if (!optimized.success || optimized.isFallback) {
-        console.warn(`Optimization failed for ${fileUrl}. Uploading raw PDF file to OpenAI.`);
-        
-        // FALLBACK: Upload original PDF file
-        console.log('Uploading raw PDF file...');
-        const fileStream = fs.createReadStream(fileUrl);
-        const uploadedFile = await client.files.create({
-            file: fileStream,
-            purpose: 'assistants',
-        });
-        
-        inputItem = {
-            type: 'input_file',
-            file_id: uploadedFile.id,
-        };
-    } else {
-        // Success: Use optimized image
-        const base64Data = optimized.buffer!.toString('base64');
-        inputItem = {
-            type: 'input_image',
-            image_url: `data:${optimized.mimeType};base64,${base64Data}`
-        };
-    }
-  }
-
   try {
-    const res = await withRetry(() =>
-      client.responses.create({
-        model,
-        instructions: EXTRACTION_INSTRUCTIONS,
-        input: [
-          {
-            role: 'user',
-            content: [inputItem]
-          }
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: "company_tax_profile",
-            strict: true,
-            schema: CompanyTaxProfileSchema
-          },
-        },
-      } as any)
-    );
+    // Determine MIME type
+    const ext = path.extname(fileUrl).toLowerCase();
+    const mimeType = ext === '.pdf' ? 'application/pdf' : 
+                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+                     ext === '.png' ? 'image/png' :
+                     ext === '.webp' ? 'image/webp' : 'application/pdf';
 
-    const outputItem = res.output?.[0] as any;
-    const content = outputItem?.content?.[0]?.text || (res as any).output_text;
-
-    if (!content) {
-      throw new Error('No content received from model');
-    }
-
-    const data = JSON.parse(content);
+    // Use Gemini for extraction
+    const data = await extractWithGemini(fileUrl, mimeType, CompanyTaxProfileSchema, EXTRACTION_INSTRUCTIONS);
     
-    // Extract object if nested
+    // Extract object if nested (Gemini returns flat structure)
     const profile = data.company_tax_profile || data;
 
     // Strict Post-processing: Normalize empty strings to null using deep validator

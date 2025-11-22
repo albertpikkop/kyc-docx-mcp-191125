@@ -2,6 +2,41 @@ import { KycProfile, KycValidationResult, KycValidationFlag, TraceSection, UboTr
 import { differenceInDays } from "date-fns";
 import { DEMO_CONFIG } from '../core/demoConfig.js';
 
+// --- 0. Persona Física Detection ---
+
+/**
+ * Detects if the profile represents a Persona Física (individual) vs Persona Moral (corporate)
+ * Triggers PF Mode when:
+ * - SAT Constancia shows "Régimen: Persona Física" OR
+ * - SAT Constancia shows "Régimen: Sin obligaciones fiscales" OR
+ * - No Acta uploaded AND RFC pattern = persona física (ends with letters/numbers, not "KQ7" corporate pattern)
+ */
+export function isPersonaFisica(profile: KycProfile): boolean {
+  // Check SAT Constancia tax regime
+  if (profile.companyTaxProfile?.tax_regime) {
+    const regime = profile.companyTaxProfile.tax_regime.toUpperCase();
+    if (regime.includes('PERSONA FÍSICA') || regime.includes('PERSONA FISICA') || 
+        regime.includes('SIN OBLIGACIONES FISCALES') || regime === 'SIN OBLIGACIONES FISCALES') {
+      return true;
+    }
+  }
+
+  // Check if no Acta AND RFC pattern suggests persona física
+  if (!profile.companyIdentity && profile.companyTaxProfile?.rfc) {
+    const rfc = profile.companyTaxProfile.rfc.toUpperCase();
+    // Persona Física RFC pattern: ends with 3 letters/numbers (e.g., "CEDE981004E67")
+    // Persona Moral RFC pattern: ends with "KQ7", "KQ8", etc. (e.g., "PFD210830KQ7")
+    const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/;
+    const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z]{1}\d{1}$/;
+    
+    if (personaFisicaPattern.test(rfc) && !personaMoralPattern.test(rfc)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // --- 1. Address Resolution ---
 
 /**
@@ -391,51 +426,57 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   const flags: KycValidationFlag[] = [];
   let score = 1.0;
 
+  // A. Detect Persona Física mode
+  const isPF = isPersonaFisica(profile);
+
   // A. Resolve Addresses (Ensure strictly populated)
   resolveAddresses(profile);
 
-  // B. Compute & Log UBO/Signers (For debugging/info mostly, but could trigger rules)
-  const ubos = resolveUbo(profile);
-  if (ubos.length === 0) {
-      flags.push({
-          code: "OTHER",
-          level: "warning",
-          message: "No UBOs (>25%) detected from shareholder structure."
-      });
-      score -= 0.1;
-  }
+  // B. Corporate checks (SKIP for Persona Física)
+  if (!isPF) {
+    // Compute & Log UBO/Signers (For debugging/info mostly, but could trigger rules)
+    const ubos = resolveUbo(profile);
+    if (ubos.length === 0) {
+        flags.push({
+            code: "OTHER",
+            level: "warning",
+            message: "No UBOs (>25%) detected from shareholder structure."
+        });
+        score -= 0.1;
+    }
 
-  // Equity Consistency Check
-  const equityCheck = checkEquityConsistency(profile);
-  if (equityCheck) {
-      // Use a small tolerance (e.g. 1.0) instead of exact sum check
-      if (equityCheck.deviationFrom100 > 2) {
-          flags.push({ 
-              code: "EQUITY_INCONSISTENT", 
-              level: "critical", 
-              message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%, which is inconsistent with 100%. Possible extraction error.` 
-          });
-          // Heavy penalty as this indicates bad extraction
-          score -= 0.2; 
-      } else if (equityCheck.deviationFrom100 > 1.0) { // Relaxed from 0.5 to 1.0 to handle rounding noise
-          flags.push({ 
-              code: "EQUITY_NEAR_100", 
-              level: "warning", 
-              message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%; likely rounding issue.` 
-          });
-          score -= 0.05;
-      }
-  }
+    // Equity Consistency Check
+    const equityCheck = checkEquityConsistency(profile);
+    if (equityCheck) {
+        // Use a small tolerance (e.g. 1.0) instead of exact sum check
+        if (equityCheck.deviationFrom100 > 2) {
+            flags.push({ 
+                code: "EQUITY_INCONSISTENT", 
+                level: "critical", 
+                message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%, which is inconsistent with 100%. Possible extraction error.` 
+            });
+            // Heavy penalty as this indicates bad extraction
+            score -= 0.2; 
+        } else if (equityCheck.deviationFrom100 > 1.0) { // Relaxed from 0.5 to 1.0 to handle rounding noise
+            flags.push({ 
+                code: "EQUITY_NEAR_100", 
+                level: "warning", 
+                message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%; likely rounding issue.` 
+            });
+            score -= 0.05;
+        }
+    }
 
-  const signatories = resolveSignatories(profile);
-  const fullSigners = signatories.filter(s => s.scope === "full");
-  if (fullSigners.length === 0) {
-       flags.push({
-          code: "OTHER",
-          level: "warning",
-          message: "No Full Power signatories detected."
-      });
-      score -= 0.1;
+    const signatories = resolveSignatories(profile);
+    const fullSigners = signatories.filter(s => s.scope === "full");
+    if (fullSigners.length === 0) {
+         flags.push({
+            code: "OTHER",
+            level: "warning",
+            message: "No Full Power signatories detected."
+        });
+        score -= 0.1;
+    }
   }
 
   // C. Address Consistency
@@ -456,8 +497,8 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     }
   }
 
-  // D. Doc Coverage
-  if (!profile.companyIdentity) {
+  // D. Doc Coverage (PF Mode: Skip Acta requirement)
+  if (!isPF && !profile.companyIdentity) {
     flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Company Identity (Acta Constitutiva)." });
     score -= 0.3;
   }
@@ -468,6 +509,46 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   if (profile.addressEvidence.length === 0 && !profile.bankIdentity && profile.bankAccounts.length === 0) {
       flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "No Proof of Address or Bank Statements provided." });
       score -= 0.2;
+  }
+
+  // PF Mode: Identity verification (INE/FM2 must match SAT)
+  if (isPF) {
+    // Check if identity document exists
+    if (!profile.representativeIdentity) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "critical",
+        message: "Missing Identity Document (INE/FM2) for Persona Física."
+      });
+      score -= 0.2;
+    }
+    
+    // Check if identity document matches SAT name (only if both exist)
+    const satName = profile.companyTaxProfile?.razon_social;
+    const identityName = profile.representativeIdentity?.full_name;
+    
+    if (satName && identityName) {
+      // Normalize names for comparison (uppercase, trim, normalize spaces)
+      const normalizeName = (name: string) => name.toUpperCase().trim().replace(/\s+/g, ' ');
+      const satNormalized = normalizeName(satName);
+      const identityNormalized = normalizeName(identityName);
+      
+      // Check if names are similar (allowing for word order differences)
+      const satWords = new Set(satNormalized.split(' ').filter(w => w.length > 2));
+      const identityWords = new Set(identityNormalized.split(' ').filter(w => w.length > 2));
+      const commonWords = [...satWords].filter(w => identityWords.has(w));
+      const matchRatio = commonWords.length / Math.max(satWords.size, identityWords.size);
+      
+      // Only flag if match ratio is low (less than 50% common words)
+      if (matchRatio < 0.5) {
+        flags.push({
+          code: "IDENTITY_MISMATCH",
+          level: "warning",
+          message: `SAT name (${satName}) does not match identity document name (${identityName}).`
+        });
+        score -= 0.1;
+      }
+    }
   }
 
   // E. Freshness

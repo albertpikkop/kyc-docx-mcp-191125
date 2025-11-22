@@ -1,11 +1,7 @@
-import OpenAI from 'openai';
-import * as fs from 'fs';
 import * as path from 'path';
-import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { ProofOfAddressSchema } from '../schemas/mx/proofOfAddress.js';
-import { withRetry } from '../utils/retry.js';
 import { normalizeEmptyToNull, sanitizeRfc, sanitizeInvoiceNumber, sanitizeCurrency } from '../kyc/validators.js';
-import { optimizeDocument } from '../utils/documentOptimizer.js';
+import { extractWithGemini } from '../utils/geminiExtractor.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Telmex bills (comprobantes de domicilio).
@@ -142,11 +138,19 @@ async function extractOptimizedDocument(fileUrl: string, schema: any, instructio
 }
 
 export async function extractTelmexProofOfAddress(fileUrl: string): Promise<any> {
-  console.log(`Extracting Telmex Proof of Address from: ${fileUrl}`);
+  console.log(`Extracting Telmex Proof of Address using Gemini 2.5`);
+  console.log(`Processing file: ${fileUrl}`);
   
   try {
-    // Use our local optimized extractor instead of the generic one
-    const result = await extractOptimizedDocument(fileUrl, ProofOfAddressSchema, EXTRACTION_INSTRUCTIONS);
+    // Determine MIME type
+    const ext = path.extname(fileUrl).toLowerCase();
+    const mimeType = ext === '.pdf' ? 'application/pdf' : 
+                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+                     ext === '.png' ? 'image/png' :
+                     ext === '.webp' ? 'image/webp' : 'application/pdf';
+
+    // Use Gemini for extraction
+    const result = await extractWithGemini(fileUrl, mimeType, ProofOfAddressSchema, EXTRACTION_INSTRUCTIONS);
     
     // Ensure document_type is set if model missed it
     if (!result.document_type) {

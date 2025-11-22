@@ -1,5 +1,5 @@
 import { KycProfile, KycValidationResult } from "./types.js";
-import { resolveUbo, resolveSignatories, checkFreshness, buildTrace, checkEquityConsistency } from "./validation.js";
+import { resolveUbo, resolveSignatories, checkFreshness, buildTrace, checkEquityConsistency, isPersonaFisica } from "./validation.js";
 import { DEMO_CONFIG } from "../core/demoConfig.js";
 
 export interface KycReportSection {
@@ -65,38 +65,65 @@ export function buildKycReport(
   }
 
   const sections: KycReportSection[] = [];
+  const isPF = isPersonaFisica(profile);
 
   // --- SECTION I: HECHOS EXTRAÍDOS ---
   let hechosBody = "";
 
-  // 1. Identidad Corporativa (Acta)
-  hechosBody += "### 1. Identidad Corporativa (Fuente: Acta Constitutiva)\n";
-  if (profile.companyIdentity) {
-      const id = profile.companyIdentity;
-      hechosBody += `- **Razón Social:** ${id.razon_social}\n`;
-      hechosBody += `- **Fecha Constitución:** ${id.incorporation_date}\n`;
-      
-      // Fix: Handle empty/null founding address explicitly
-      // Only show full address if street-level details exist, otherwise show friendly message
-      if (id.founding_address && id.founding_address.street && id.founding_address.ext_number) {
-          hechosBody += `- **Domicilio Fundacional (Histórico):** ${formatAddress(id.founding_address, options.redacted)}\n`;
-      } else if (id.founding_address && id.founding_address.municipio) {
-          // Only jurisdiction provided (e.g., "Ciudad de México")
-          hechosBody += `- **Domicilio Fundacional (Histórico):** No especificado en la escritura (solo se indica ${id.founding_address.municipio}).\n`;
+  // 1. Identidad (Acta for Corporate, Identity Doc for PF)
+  if (isPF) {
+      hechosBody += "### 1. Identidad Personal (Fuente: INE/FM2)\n";
+      if (profile.representativeIdentity) {
+          const id = profile.representativeIdentity;
+          hechosBody += `- **Nombre Completo:** ${id.full_name || "N/A"}\n`;
+          hechosBody += `- **CURP:** ${id.curp || "N/A"}\n`;
+          hechosBody += `- **Documento:** ${id.document_type || "N/A"}\n`;
+          hechosBody += `- **Número de Documento:** ${id.document_number || "N/A"}\n`;
+          if (id.date_of_birth) {
+              hechosBody += `- **Fecha de Nacimiento:** ${id.date_of_birth}\n`;
+          }
       } else {
-          hechosBody += `- **Domicilio Fundacional (Histórico):** No especificado en la escritura.\n`;
+          hechosBody += "- *No se encontró documento de identidad (INE/FM2).*\n";
       }
+      hechosBody += "\n";
+      hechosBody += "**Nota:** Acta constitutiva no aplica para Persona Física.\n";
+      hechosBody += "\n";
   } else {
-      hechosBody += "- *No se encontró Acta Constitutiva.*\n";
+      hechosBody += "### 1. Identidad Corporativa (Fuente: Acta Constitutiva)\n";
+      if (profile.companyIdentity) {
+          const id = profile.companyIdentity;
+          hechosBody += `- **Razón Social:** ${id.razon_social}\n`;
+          hechosBody += `- **Fecha Constitución:** ${id.incorporation_date}\n`;
+          
+          // Fix: Handle empty/null founding address explicitly
+          // Only show full address if street-level details exist, otherwise show friendly message
+          if (id.founding_address && id.founding_address.street && id.founding_address.ext_number) {
+              hechosBody += `- **Domicilio Fundacional (Histórico):** ${formatAddress(id.founding_address, options.redacted)}\n`;
+          } else if (id.founding_address && id.founding_address.municipio) {
+              // Only jurisdiction provided (e.g., "Ciudad de México")
+              hechosBody += `- **Domicilio Fundacional (Histórico):** No especificado en la escritura (solo se indica ${id.founding_address.municipio}).\n`;
+          } else {
+              hechosBody += `- **Domicilio Fundacional (Histórico):** No especificado en la escritura.\n`;
+          }
+      } else {
+          hechosBody += "- *No se encontró Acta Constitutiva.*\n";
+      }
+      hechosBody += "\n";
   }
-  hechosBody += "\n";
 
   // 2. Perfil Fiscal (SAT)
-  hechosBody += "### 2. Perfil Fiscal (Fuente: SAT Constancia)\n";
+  if (isPF) {
+      hechosBody += "### 2. Perfil Fiscal (Fuente: SAT Constancia)\n";
+  } else {
+      hechosBody += "### 2. Perfil Fiscal (Fuente: SAT Constancia)\n";
+  }
   if (profile.companyTaxProfile) {
       const tax = profile.companyTaxProfile;
       hechosBody += `- **RFC:** ${tax.rfc}\n`;
       hechosBody += `- **Régimen Fiscal:** ${tax.tax_regime}\n`;
+      if (isPF && tax.tax_regime && tax.tax_regime.toUpperCase().includes('SIN OBLIGACIONES FISCALES')) {
+          hechosBody += `- **Nota:** Régimen fiscal: Sin obligaciones fiscales (no implica exención; solo indica ausencia de actividad económica registrada).\n`;
+      }
       hechosBody += `- **Estatus:** ${tax.status}\n`;
       hechosBody += `- **Domicilio Fiscal (Actual):** ${formatAddress(tax.fiscal_address, options.redacted)}\n`;
       
@@ -241,102 +268,116 @@ export function buildKycReport(
   }
   conclusionesBody += "\n";
 
-  // UBOs - Consistency Check
-  conclusionesBody += "### 2. Propietarios Beneficiarios (UBOs > 25%)\n";
-  // Use trace percentages directly to avoid re-calculation mismatch
-  const trace = buildTrace(profile); // Re-building trace here just for data access is okay
-  
-  if (trace.ubos && trace.ubos.length > 0) {
-      const ubos = trace.ubos.filter(u => u.isUbo);
-      if (ubos.length > 0) {
-          ubos.forEach(ubo => {
-              const pctText = ubo.computedPercentage !== null ? `${ubo.computedPercentage.toFixed(2)}%` : "Porcentaje no declarado";
-              conclusionesBody += `- **${ubo.name}:** ${pctText}\n`;
-          });
-      } else {
-          conclusionesBody += "- *No se detectaron accionistas con >25% de participación directa.*\n";
-      }
+  // UBOs / Shareholders (SKIP for Persona Física)
+  if (isPF) {
+      conclusionesBody += "### 2. Propietarios Beneficiarios\n";
+      conclusionesBody += "- **No existen accionistas; el titular es Persona Física.**\n";
+      conclusionesBody += "\n";
   } else {
-      // Fallback to previous logic if trace fails (should not happen)
-      const ubos = resolveUbo(profile);
-      if (ubos.length > 0) {
-        ubos.forEach(ubo => {
-            const pctText = ubo.percentage !== null ? `${ubo.percentage.toFixed(2)}%` : "Porcentaje no declarado";
-            conclusionesBody += `- **${ubo.name}:** ${pctText}\n`;
-        });
+      conclusionesBody += "### 2. Propietarios Beneficiarios (UBOs > 25%)\n";
+      // Use trace percentages directly to avoid re-calculation mismatch
+      const trace = buildTrace(profile); // Re-building trace here just for data access is okay
+      
+      if (trace.ubos && trace.ubos.length > 0) {
+          const ubos = trace.ubos.filter(u => u.isUbo);
+          if (ubos.length > 0) {
+              ubos.forEach(ubo => {
+                  const pctText = ubo.computedPercentage !== null ? `${ubo.computedPercentage.toFixed(2)}%` : "Porcentaje no declarado";
+                  conclusionesBody += `- **${ubo.name}:** ${pctText}\n`;
+              });
+          } else {
+              conclusionesBody += "- *No se detectaron accionistas con >25% de participación directa.*\n";
+          }
       } else {
-        conclusionesBody += "- *No se detectaron accionistas con >25% de participación directa.*\n";
+          // Fallback to previous logic if trace fails (should not happen)
+          const ubos = resolveUbo(profile);
+          if (ubos.length > 0) {
+            ubos.forEach(ubo => {
+                const pctText = ubo.percentage !== null ? `${ubo.percentage.toFixed(2)}%` : "Porcentaje no declarado";
+                conclusionesBody += `- **${ubo.name}:** ${pctText}\n`;
+            });
+          } else {
+            conclusionesBody += "- *No se detectaron accionistas con >25% de participación directa.*\n";
+          }
       }
+      conclusionesBody += "\n";
   }
-  
-  conclusionesBody += "\n";
 
-  // Signatories - Match with Representative Identity
+  // Signatories - Match with Representative Identity (PF Mode: Individual is signatory)
   conclusionesBody += "### 3. Capacidad Legal (Firmantes)\n";
-  const signers = resolveSignatories(profile);
   
-  // Helper function to fuzzy match names (handles variations like "Ashish Punj" vs "ASHISH PUNJ")
-  const namesMatch = (name1: string, name2: string): boolean => {
-      const normalize = (n: string) => n.toUpperCase().trim().replace(/\s+/g, ' ');
-      return normalize(name1) === normalize(name2);
-  };
-  
-  // Find verified signing authority (matches representative identity)
-  const repIdentityName = profile.representativeIdentity?.full_name || null;
-  const verifiedSignatory = repIdentityName 
-      ? signers.find(s => namesMatch(s.name, repIdentityName))
-      : null;
-  
-  // Deduplicate by name for the summary list
-  const seenSigners = new Set<string>();
-  
-  if (verifiedSignatory) {
-      // Highlight the verified signing authority
-      const scopeLabel = verifiedSignatory.scope === "full" 
-          ? "Poderes Amplios (Administración, Dominio, Títulos)" 
-          : verifiedSignatory.scope === "limited"
-          ? "Poderes Limitados / Específicos"
-          : "Sin Poderes";
-      
-      conclusionesBody += `**✅ Autoridad Firmante Verificada** (ID verificado: ${profile.representativeIdentity?.document_type || "N/A"}):\n`;
-      conclusionesBody += `- **${verifiedSignatory.name}** (${verifiedSignatory.role}) - ${scopeLabel}\n`;
-      seenSigners.add(verifiedSignatory.name);
-      
-      // Show other signatories as informational
-      const otherSigners = signers.filter(s => !namesMatch(s.name, repIdentityName!));
-      if (otherSigners.length > 0) {
-          conclusionesBody += `\n**ℹ️ Otras Autoridades con Poderes** (informacional, ID no verificado):\n`;
-          otherSigners.forEach(s => {
-              if (!seenSigners.has(s.name)) {
-                  const scopeLabel = s.scope === "full" 
-                      ? "Poderes Amplios" 
-                      : s.scope === "limited"
-                      ? "Poderes Limitados"
-                      : "Sin Poderes";
-                  conclusionesBody += `- ${s.name} (${s.role}) - ${scopeLabel}\n`;
-                  seenSigners.add(s.name);
-              }
-          });
-      }
+  if (isPF) {
+      // Persona Física: The individual is the sole legal signatory
+      const identityName = profile.representativeIdentity?.full_name || profile.companyTaxProfile?.razon_social || "N/A";
+      conclusionesBody += `**✅ Autoridad Firmante Verificada:**\n`;
+      conclusionesBody += `- **${identityName}** - La persona titular es la autoridad firmante y representante legal de sí misma.\n`;
+      conclusionesBody += `- **Documento de Identidad:** ${profile.representativeIdentity?.document_type || "N/A"} (${profile.representativeIdentity?.document_number || "N/A"})\n`;
+      conclusionesBody += "\n";
   } else {
-      // No match found - show all signatories normally
-      const fullSigners = signers.filter(s => s.scope === "full");
+      const signers = resolveSignatories(profile);
       
-      if (fullSigners.length > 0) {
-          conclusionesBody += "**Poderes Amplios (Administración, Dominio, Títulos):**\n";
-          fullSigners.forEach(s => {
-              if (!seenSigners.has(s.name)) {
-                  conclusionesBody += `- ${s.name} (${s.role})\n`;
-                  seenSigners.add(s.name);
-              }
-          });
+      // Helper function to fuzzy match names (handles variations like "Ashish Punj" vs "ASHISH PUNJ")
+      const namesMatch = (name1: string, name2: string): boolean => {
+          const normalize = (n: string) => n.toUpperCase().trim().replace(/\s+/g, ' ');
+          return normalize(name1) === normalize(name2);
+      };
+      
+      // Find verified signing authority (matches representative identity)
+      const repIdentityName = profile.representativeIdentity?.full_name || null;
+      const verifiedSignatory = repIdentityName 
+          ? signers.find(s => namesMatch(s.name, repIdentityName))
+          : null;
+      
+      // Deduplicate by name for the summary list
+      const seenSigners = new Set<string>();
+      
+      if (verifiedSignatory) {
+          // Highlight the verified signing authority
+          const scopeLabel = verifiedSignatory.scope === "full" 
+              ? "Poderes Amplios (Administración, Dominio, Títulos)" 
+              : verifiedSignatory.scope === "limited"
+              ? "Poderes Limitados / Específicos"
+              : "Sin Poderes";
+          
+          conclusionesBody += `**✅ Autoridad Firmante Verificada** (ID verificado: ${profile.representativeIdentity?.document_type || "N/A"}):\n`;
+          conclusionesBody += `- **${verifiedSignatory.name}** (${verifiedSignatory.role}) - ${scopeLabel}\n`;
+          seenSigners.add(verifiedSignatory.name);
+          
+          // Show other signatories as informational
+          const otherSigners = signers.filter(s => !namesMatch(s.name, repIdentityName!));
+          if (otherSigners.length > 0) {
+              conclusionesBody += `\n**ℹ️ Otras Autoridades con Poderes** (informacional, ID no verificado):\n`;
+              otherSigners.forEach(s => {
+                  if (!seenSigners.has(s.name)) {
+                      const scopeLabel = s.scope === "full" 
+                          ? "Poderes Amplios" 
+                          : s.scope === "limited"
+                          ? "Poderes Limitados"
+                          : "Sin Poderes";
+                      conclusionesBody += `- ${s.name} (${s.role}) - ${scopeLabel}\n`;
+                      seenSigners.add(s.name);
+                  }
+              });
+          }
       } else {
-          conclusionesBody += "- **Alerta:** No se detectaron apoderados con facultades plenas.\n";
-      }
-      
-      // List Limited powers
-      const limitedSigners = signers.filter(s => s.scope === "limited");
-      if (limitedSigners.length > 0) {
+          // No match found - show all signatories normally
+          const fullSigners = signers.filter(s => s.scope === "full");
+          
+          if (fullSigners.length > 0) {
+              conclusionesBody += "**Poderes Amplios (Administración, Dominio, Títulos):**\n";
+              fullSigners.forEach(s => {
+                  if (!seenSigners.has(s.name)) {
+                      conclusionesBody += `- ${s.name} (${s.role})\n`;
+                      seenSigners.add(s.name);
+                  }
+              });
+          } else {
+              conclusionesBody += "- **Alerta:** No se detectaron apoderados con facultades plenas.\n";
+          }
+          
+          // List Limited powers
+          const limitedSigners = signers.filter(s => s.scope === "limited");
+          if (limitedSigners.length > 0) {
            const newLimited = limitedSigners.filter(s => !seenSigners.has(s.name));
            if (newLimited.length > 0) {
                conclusionesBody += "\n**Poderes Limitados / Específicos:**\n";
@@ -347,9 +388,10 @@ export function buildKycReport(
            }
       }
       
-      // Warn if we have representative identity but no match
-      if (repIdentityName) {
-          conclusionesBody += `\n⚠️ **Nota:** Se verificó identidad de "${repIdentityName}" pero no se encontró coincidencia exacta en los apoderados del Acta.`;
+          // Warn if we have representative identity but no match (only for corporate)
+          if (repIdentityName) {
+              conclusionesBody += `\n⚠️ **Nota:** Se verificó identidad de "${repIdentityName}" pero no se encontró coincidencia exacta en los apoderados del Acta.`;
+          }
       }
   }
 
@@ -434,8 +476,8 @@ export function buildKycReport(
       const trace = buildTrace(profile);
       const lines: string[] = [];
       
-      // UBO trace
-      if (trace.ubos && trace.ubos.length > 0) {
+      // UBO trace (SKIP for Persona Física)
+      if (!isPF && trace.ubos && trace.ubos.length > 0) {
           lines.push("### 1. Propietarios Beneficiarios – Cálculo de Porcentajes");
           lines.push("");
           lines.push("| Accionista | Acciones | Total Acciones | % Calculado | Umbral UBO | Es UBO |");
@@ -446,6 +488,11 @@ export function buildKycReport(
               const isUboLabel = u.isUbo ? "Sí" : "No";
               lines.push(`| ${u.name} | ${u.shares ?? "-"} | ${u.totalShares ?? "-"} | ${pct} | ${thr} | ${isUboLabel} |`);
           }
+          lines.push("");
+      } else if (isPF) {
+          lines.push("### 1. Propietarios Beneficiarios");
+          lines.push("");
+          lines.push("No existen accionistas; el titular es Persona Física.");
           lines.push("");
       }
       
@@ -482,8 +529,14 @@ export function buildKycReport(
           lines.push("");
       }
       
-      // Powers trace
-      if (trace.powers && trace.powers.length > 0) {
+      // Powers trace (PF Mode: Individual is signatory)
+      if (isPF) {
+          lines.push("### 3. Facultades / Poderes");
+          lines.push("");
+          const identityName = profile.representativeIdentity?.full_name || profile.companyTaxProfile?.razon_social || "N/A";
+          lines.push(`La persona titular (${identityName}) es la autoridad firmante y representante legal de sí misma.`);
+          lines.push("");
+      } else if (trace.powers && trace.powers.length > 0) {
           lines.push("### 3. Facultades / Poderes – Justificación");
           for (const p of trace.powers) {
               lines.push(`- **${p.personName}** (${p.role}) – Alcance: ${p.scope}`);
