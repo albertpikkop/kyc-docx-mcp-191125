@@ -6,13 +6,14 @@ import { extractWithGemini } from '../utils/geminiExtractor.js';
 import { GEMINI_PRO_MODEL, GEMINI_FLASH_MODEL } from '../modelGemini.js';
 import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
+import { PassportIdentitySchema } from '../schemas/mx/passportIdentity.js';
 import { ImmigrationProfileSchema } from '../schemas/mx/immigrationProfile.js';
 import { ProofOfAddressSchema } from '../schemas/mx/proofOfAddress.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
 import { buildKycProfile } from '../kyc/profileBuilder.js';
 import { validateKycProfile } from '../kyc/validation.js';
 import { saveRun } from '../kyc/storage.js';
-import { KycRun, KycDocument, DocumentType } from '../kyc/types.js';
+import { KycRun, KycDocument, DocumentType, PassportIdentity } from '../kyc/types.js';
 // import { DEMO_CONFIG } from "../core/demoConfig.js";
 import { normalizeEmptyToNull, sanitizeRfc, sanitizeCurp, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 
@@ -30,12 +31,25 @@ GLOBAL HARDENING RULES:
 
 EXTRACT THE FOLLOWING DEEP KYC DATA:
 
-1. SHAREHOLDERS:
+1. SHAREHOLDERS (CRITICAL FOR UBO CALCULATION):
    - Extract full names of initial shareholders (socios/accionistas).
    - Extract number of shares and percentage of ownership (calculate only if explicitly clear from the text).
    - Use 0-100 scale for percentages (e.g. 60 = 60%, 0.5 = 0.5%). Never use 0-1 scale (decimals).
    - Identify beneficial owners (usually >25% or control).
-   - Capture share class (e.g., "Serie A", "Capital Fijo").
+   
+   - SHARE CLASSIFICATION (CRITICAL FOR VOTING RIGHTS):
+     * share_series: Extract the series/type (e.g., "Serie A", "Serie B", "Serie I", "Serie II")
+     * share_class: Extract capital type: "FIJO" (Fixed Capital) or "VARIABLE" (Variable Capital)
+     * share_type: Classify as "ORDINARIAS" (ordinary shares) or "PREFERENTES" (preferred shares)
+     * has_voting_rights: 
+       - TRUE for ordinary shares (Serie A, Serie I) - these have voting rights in assemblies
+       - FALSE for preferred shares (Serie B, Serie II) - these typically have NO voting rights but priority in dividends
+       - Look for explicit statements like "sin derecho a voto" or "con voto limitado"
+   
+   - LEGAL NOTE: Under Mexican LGSM (Ley General de Sociedades Mercantiles):
+     * Acciones Ordinarias (Serie A) = full voting rights
+     * Acciones Preferentes (Serie B) = typically NO voting rights, but priority in dividends
+     * This distinction is CRITICAL for UBO calculation - only VOTING shares count for control (>25%).
 
 2. CORPORATE PURPOSE (Objeto Social):
    - Extract the list of business activities allowed as individual items.
@@ -86,9 +100,13 @@ EXTRACT THE FOLLOWING DEEP KYC DATA:
    - If the Acta labels someone as "apoderado general" AND grants all four canonical powers (even if spread across pages), include all four in poder_scope.
    - joint_signature_required: Check if powers must be exercised jointly ("mancomunadamente") or individually ("indistintamente"). Set to null if not specified.
 
-6. FOUNDING ADDRESS (HISTORICAL ONLY):
+6. FOUNDING ADDRESS (DOMICILIO SOCIAL - HISTORICAL):
    - Extract the corporate domicile (domicilio social) mentioned in the deed as founding_address.
-   - This is a HISTORICAL address. Do NOT label it as current.
+   - IMPORTANT LEGAL DISTINCTION (per Mexican corporate law):
+     * DOMICILIO SOCIAL = The jurisdiction (entidad federativa) stated in the Acta Constitutiva where shareholder assemblies are held
+     * DOMICILIO FISCAL = The tax address registered with SAT (may be different from Domicilio Social)
+     * These addresses do NOT need to match - this is legally permissible
+   - This is a HISTORICAL address from incorporation. Do NOT label it as current.
    - CRITICAL: If the Acta only specifies a jurisdiction (e.g., "Ciudad de México") without street-level details:
      * Set street, ext_number, int_number, colonia, and cp to null
      * Only populate municipio and estado if explicitly stated
@@ -114,11 +132,26 @@ GLOBAL HARDENING RULES:
 - Normalize all dates to YYYY-MM-DD.
 - RFC: Extract EXACTLY as printed.`;
 
-const FM2_INSTRUCTIONS = `You are a strict KYC extractor for Mexican immigration cards (FM2). Extract ImmigrationProfile.
-GLOBAL HARDENING RULES:
-- Never infer or generate data.
-- Normalize all dates to YYYY-MM-DD.
-- Document Number: PRIMARY number on front.`;
+const FM2_INSTRUCTIONS = `You are a strict KYC extractor for Mexican immigration documents (FM2/FM3/Tarjeta de Residente).
+Extract ImmigrationProfile from the document.
+
+CRITICAL FIELDS TO EXTRACT:
+- full_name: Complete name as printed on the card
+- nationality: Country of origin (e.g., "INDIA", "USA", "FRANCIA")
+- document_type: Type of document (FM2, FM3, RESIDENTE TEMPORAL, RESIDENTE PERMANENTE)
+- document_number: The primary document/card number
+- date_of_birth: In YYYY-MM-DD format
+- curp: Mexican CURP if present (18 characters)
+- sex: M or F
+- issue_date: When the card was issued (YYYY-MM-DD)
+- expiry_date: When the card expires (YYYY-MM-DD)
+- issuing_office: INM office that issued (e.g., "CDMX", "GUADALAJARA")
+- issuer_country: Always "MX" for Mexican immigration documents
+
+GLOBAL RULES:
+- Never infer or generate data not clearly printed
+- If a field is not visible, set to null
+- Normalize all dates to YYYY-MM-DD`;
 
 const CFE_INSTRUCTIONS = `You are a strict KYC extractor for Mexican CFE electricity bills. Extract ProofOfAddress.
 GLOBAL HARDENING RULES:
@@ -151,6 +184,38 @@ GLOBAL RULES:
 - If a field is not present, set to null
 - Normalize all dates to YYYY-MM-DD`;
 
+// PASSPORT EXTRACTION INSTRUCTIONS
+const PASSPORT_INSTRUCTIONS = `You are a strict KYC extractor for Passports (Mexican or foreign).
+Your job is to extract identity information from the passport image.
+
+CRITICAL: This is a PASSPORT document. Look for:
+1. The DATA PAGE (page with photo, name, passport number)
+2. Machine Readable Zone (MRZ) at the bottom - two lines of text with <<< characters
+
+EXTRACTION RULES:
+- full_name: Extract SURNAME (Apellidos) + GIVEN NAMES (Nombres) as printed
+  - Usually in format "SURNAME / GIVEN NAMES" or separate fields
+- nationality: The nationality printed (e.g., "MEXICANA", "INDIA", "AMERICAN")
+- document_type: Always "PASSPORT" or "PASAPORTE"
+- document_number: The passport number (alphanumeric, usually 8-9 characters)
+  - Look for "Passport No." or "No. de Pasaporte"
+- date_of_birth: Date of birth in YYYY-MM-DD format
+- sex: M/F or H/M (Hombre/Mujer for Mexican)
+- place_of_birth: City/State/Country of birth
+- issue_date: Date passport was issued (YYYY-MM-DD)
+- expiry_date: Date passport expires (YYYY-MM-DD)
+- issuing_authority: Who issued it (e.g., "SRE" for Mexican passports)
+- issuer_country: Country code (MX, US, IN, etc.)
+- mrz_line_1: First line of MRZ if visible (starts with P<)
+- mrz_line_2: Second line of MRZ if visible
+- curp: CURP if present (Mexican passports only, 18 characters)
+
+IMPORTANT:
+- If this is the BACKSIDE of a passport, you may only see partial data or MRZ
+- Extract whatever is visible
+- Never infer or fabricate data
+- If a field is not visible, set to null`;
+
 const customerId = "grupo-pounj-gemini";
 const fixtureRoot = "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj";
 
@@ -163,10 +228,19 @@ function resolveFixture(fileName: string): string {
 }
 
 // Grupo Pounj Document Set for Gemini
+// Complete KYC package for Alta de Proveedor (Persona Moral) - Foreign Representative
+// Documents:
+//   1. Acta Constitutiva - Corporate identity, shareholders, legal representatives
+//   2. Constancia SAT - Tax registration, RFC, fiscal address
+//   3. Pasaporte del Representante Legal - Primary identity (foreign national)
+//   4. FM2/Tarjeta de Residente - Immigration status (required for foreigners)
+//   5. Comprobante de Domicilio (CFE) - Operational address
+//   6. Estado de Cuenta Bancario - Bank identity for payment setup
 const docs = [
   { type: "acta" as DocumentType,           fileUrl: resolveFixture("1. Acta Grupo Pounj.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
-  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS copy.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
-  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("3. FM2 .pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
+  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("2. Constancia_GPO.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
+  { type: "passport" as DocumentType,       fileUrl: resolveFixture("New passport - Sep 18 2018 - 12-33 PM - p1.jpeg"), instructions: PASSPORT_INSTRUCTIONS, schema: PassportIdentitySchema },
+  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2 (1).pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
   { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_OCTUBRE.pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
   { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("October 2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
 ];
@@ -178,7 +252,8 @@ async function main() {
   
   let companyIdentity;
   let companyTaxProfile;
-  let representativeIdentity;
+  let representativeIdentity;  // FM2/INE - Immigration document
+  let passportIdentity: PassportIdentity | undefined;  // Passport - Primary identity for foreigners
   const proofsOfAddress: any[] = [];
   const bankAccounts: any[] = []; 
 
@@ -192,8 +267,15 @@ async function main() {
         const modelToUse = doc.type === 'acta' ? GEMINI_PRO_MODEL : GEMINI_FLASH_MODEL;
         console.log(`   Using model: ${modelToUse}`);
 
-        // Assume PDF for now, can detect mime type if needed
-        const mimeType = "application/pdf"; 
+        // Detect mime type based on file extension
+        const ext = doc.fileUrl.toLowerCase().split('.').pop();
+        let mimeType = "application/pdf";
+        if (ext === 'jpg' || ext === 'jpeg') mimeType = "image/jpeg";
+        else if (ext === 'png') mimeType = "image/png";
+        else if (ext === 'gif') mimeType = "image/gif";
+        else if (ext === 'webp') mimeType = "image/webp";
+        
+        console.log(`   Mime type: ${mimeType}`);
         const rawData = await extractWithGemini(doc.fileUrl, mimeType, doc.schema, doc.instructions, modelToUse);
         
         // Normalization & Sanitization logic (replicated from extractors)
@@ -222,12 +304,36 @@ async function main() {
             if (profile.fiscal_address) profile.fiscal_address.country = "MX";
             extractedPayload = profile;
             companyTaxProfile = extractedPayload;
-        } else if (doc.type === 'fm2') {
+        } else if (doc.type === 'fm2' || doc.type === 'ine') {
             const profile = extractedPayload.immigration_profile || extractedPayload;
             if (profile.issuer_country === "MEXICO" || profile.issuer_country === "MEX") profile.issuer_country = "MX";
              if (profile.curp) profile.curp = sanitizeCurp(profile.curp);
+             profile.document_type = doc.type.toUpperCase(); // FM2 or INE
              extractedPayload = profile;
              representativeIdentity = extractedPayload;
+        } else if (doc.type === 'passport') {
+            // Passport identity - stored separately from FM2/INE
+            const passport = extractedPayload.passport_identity || extractedPayload;
+            if (passport.issuer_country === "MEXICO" || passport.issuer_country === "MEX") passport.issuer_country = "MX";
+            if (passport.curp) passport.curp = sanitizeCurp(passport.curp);
+            // Store passport in its own field (not representativeIdentity)
+            passportIdentity = {
+                full_name: passport.full_name,
+                nationality: passport.nationality,
+                document_type: "PASAPORTE" as const,
+                document_number: passport.document_number,
+                date_of_birth: passport.date_of_birth,
+                sex: passport.sex,
+                place_of_birth: passport.place_of_birth || null,
+                issue_date: passport.issue_date,
+                expiry_date: passport.expiry_date,
+                issuing_authority: passport.issuing_authority || null,
+                issuer_country: passport.issuer_country || null,
+                mrz_line_1: passport.mrz_line_1 || null,
+                mrz_line_2: passport.mrz_line_2 || null,
+                curp: passport.curp || null
+            };
+            extractedPayload = passportIdentity;
         } else if (doc.type === 'telmex' || doc.type === 'cfe') {
              const proof = extractedPayload.proof_of_address || extractedPayload;
              if (!proof.document_type) proof.document_type = doc.type === 'telmex' ? 'telmex_bill' : 'cfe_receipt';
@@ -268,6 +374,7 @@ async function main() {
     companyIdentity,
     companyTaxProfile,
     representativeIdentity,
+    passportIdentity,
     proofsOfAddress,
     bankAccounts
   });

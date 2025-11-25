@@ -185,7 +185,9 @@ export type CompanyTaxProfile = {
 export type ImportableDocumentType =
   | "acta"
   | "sat_constancia"
-  | "fm2"
+  | "fm2"                    // FM2/FM3 Residente Temporal/Permanente
+  | "ine"                    // INE/IFE Credencial para Votar
+  | "passport"               // Pasaporte (mexicano o extranjero)
   | "telmex"
   | "cfe"
   | "bank_statement"
@@ -226,13 +228,36 @@ export interface BankIdentity {
 }
 
 /**
+ * Passport Identity for foreign nationals
+ */
+export interface PassportIdentity {
+  full_name: string | null;
+  nationality: string | null;
+  document_type: "PASSPORT" | "PASAPORTE";
+  document_number: string | null;
+  date_of_birth: string | null;
+  sex: string | null;
+  place_of_birth?: string | null;
+  issue_date: string | null;
+  expiry_date: string | null;
+  issuing_authority?: string | null;
+  issuer_country: string | null;
+  mrz_line_1?: string | null;
+  mrz_line_2?: string | null;
+  curp?: string | null;  // Only for Mexican passports
+}
+
+/**
  * Complete KYC Profile aggregating all document sources
  */
 export interface KycProfile {
   customerId: string;
   companyIdentity?: CompanyIdentity;
   companyTaxProfile?: CompanyTaxProfile;
-  representativeIdentity?: ImmigrationProfile;
+  
+  // Representative Identity Documents (for foreign nationals, need BOTH)
+  representativeIdentity?: ImmigrationProfile;  // FM2/FM3/INE - Immigration status
+  passportIdentity?: PassportIdentity;          // Passport - Primary identity for foreigners
   
   foundingAddress?: Address;             // from Acta (historical)
   currentFiscalAddress?: Address;        // from SAT

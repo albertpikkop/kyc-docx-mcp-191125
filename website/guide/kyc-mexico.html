@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Complete Guide to KYC in Mexico (2024) | Mexican KYC Requirements | MexKYC</title>
+    <meta name="description" content="Everything you need to know about KYC requirements in Mexico. Learn about required documents, RFC validation, SAT compliance, AML regulations, and how to implement KYC for Mexican businesses.">
+    <meta name="keywords" content="KYC Mexico, Mexican KYC requirements, know your customer Mexico, AML Mexico, RFC validation, SAT compliance, Mexican business verification, customer due diligence Mexico">
+    
+    <link rel="canonical" href="https://mexkyc.com/guide/kyc-mexico">
+    
+    <!-- FAQ Schema for AEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Complete Guide to KYC in Mexico (2024)",
+        "description": "Comprehensive guide to Know Your Customer (KYC) requirements in Mexico, including required documents, regulatory framework, and best practices.",
+        "author": {
+            "@type": "Organization",
+            "name": "MexKYC"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "MexKYC",
+            "url": "https://mexkyc.com"
+        },
+        "datePublished": "2024-01-15",
+        "dateModified": "2024-11-25"
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What documents are required for KYC in Mexico?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "For business KYC in Mexico, the essential documents are: 1) SAT Constancia de Situación Fiscal (tax status certificate with RFC), 2) Acta Constitutiva (incorporation deed), 3) INE/IFE of legal representatives, 4) Proof of address (CFE or Telmex bill), 5) Bank statements. For individuals, you need INE/IFE, CURP, proof of address, and RFC if applicable."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is RFC and why is it important for Mexican KYC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "RFC (Registro Federal de Contribuyentes) is Mexico's tax identification number issued by SAT (Tax Administration Service). It's crucial for KYC because: 1) It uniquely identifies individuals and businesses for tax purposes, 2) It's required for all formal business transactions, 3) It contains encoded information about the entity (founding date, name), 4) It must be validated against SAT records to confirm active status."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What are Mexico's AML regulations for KYC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Mexico's Anti-Money Laundering (AML) regulations are governed by the Federal Law for the Prevention and Identification of Operations with Resources of Illicit Origin (LFPIORPI). Key requirements include: Customer identification and verification, beneficial ownership identification, transaction monitoring, suspicious activity reporting to UIF (Financial Intelligence Unit), and record keeping for 5 years minimum."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do you validate a Mexican company's identity?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "To validate a Mexican company's identity: 1) Verify RFC format and check against SAT database, 2) Review Acta Constitutiva for legal incorporation details, 3) Confirm current SAT Constancia shows active status, 4) Verify legal representatives through INE and powers granted in Acta, 5) Cross-reference addresses across documents, 6) Check for any SAT tax obligations or issues."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is the SAT Constancia de Situación Fiscal?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The SAT Constancia de Situación Fiscal is an official document issued by Mexico's Tax Administration Service (SAT) that certifies a taxpayer's current fiscal status. It contains: RFC number, legal name, fiscal address, tax regime, economic activities (CFDI codes), tax obligations, and status (active/inactive). It's the primary document for verifying a business's legitimate tax registration in Mexico."
+                }
+            }
+        ]
+    }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #00875A;
+            --bg-dark: #0A0F1C;
+            --bg-card: #111827;
+            --text: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --border: #1F2937;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.8;
+        }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+        
+        header {
+            padding: 100px 0 60px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .breadcrumb {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        
+        .meta {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        
+        article {
+            padding: 60px 0;
+        }
+        
+        h2 {
+            font-size: 1.75rem;
+            margin: 48px 0 20px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        
+        h3 {
+            font-size: 1.25rem;
+            margin: 32px 0 16px;
+            color: var(--primary);
+        }
+        
+        p {
+            margin-bottom: 20px;
+            color: var(--text-muted);
+        }
+        
+        ul, ol {
+            margin: 20px 0;
+            padding-left: 24px;
+        }
+        
+        li {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+        
+        strong { color: var(--text); }
+        
+        .highlight-box {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            padding: 24px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .highlight-box h4 {
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+        }
+        
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-card);
+            font-weight: 600;
+        }
+        
+        td { color: var(--text-muted); }
+        
+        code {
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, #006847 0%, #00875A 100%);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 48px 0;
+        }
+        
+        .cta-box h3 { color: white; margin-bottom: 12px; }
+        .cta-box p { color: rgba(255,255,255,0.9); }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="https://mexkyc.com">MexKYC</a> / <a href="/guide">Guides</a> / KYC in Mexico
+            </div>
+            <h1>Complete Guide to KYC in Mexico (2024)</h1>
+            <p class="meta">Last updated: November 2024 • 15 min read</p>
+        </div>
+    </header>
+    
+    <article>
+        <div class="container">
+            <p><strong>Know Your Customer (KYC)</strong> in Mexico refers to the regulatory requirements for businesses to verify the identity of their customers before establishing a business relationship. This guide covers everything you need to know about Mexican KYC requirements, required documents, and compliance best practices.</p>
+            
+            <div class="highlight-box">
+                <h4>Key Takeaway</h4>
+                <p>Mexican KYC requires verifying customer identity through official documents like the SAT Constancia (tax certificate), Acta Constitutiva (for companies), INE (national ID), and proof of address. All financial institutions and many businesses must comply with AML regulations enforced by the UIF (Financial Intelligence Unit).</p>
+            </div>
+            
+            <h2>What is KYC in Mexico?</h2>
+            
+            <p>KYC (Know Your Customer) is the process of verifying a customer's identity and assessing potential risks before doing business with them. In Mexico, KYC requirements are mandated by:</p>
+            
+            <ul>
+                <li><strong>LFPIORPI</strong> - Federal Law for Prevention and Identification of Operations with Illicit Resources</li>
+                <li><strong>CNBV</strong> - National Banking and Securities Commission regulations</li>
+                <li><strong>SAT</strong> - Tax Administration Service requirements</li>
+                <li><strong>UIF</strong> - Financial Intelligence Unit reporting requirements</li>
+            </ul>
+            
+            <h2>Required Documents for Business KYC in Mexico</h2>
+            
+            <p>When onboarding a Mexican business customer, you typically need to collect and verify these documents:</p>
+            
+            <h3>1. SAT Constancia de Situación Fiscal</h3>
+            <p>The SAT Constancia is the most important document for business verification. It's an official certificate from Mexico's tax authority that confirms:</p>
+            <ul>
+                <li>RFC (Tax ID number) - unique identifier for the business</li>
+                <li>Legal business name</li>
+                <li>Fiscal address (official registered address)</li>
+                <li>Tax regime and status</li>
+                <li>Economic activities (CFDI codes)</li>
+                <li>Tax obligations</li>
+            </ul>
+            
+            <h3>2. Acta Constitutiva</h3>
+            <p>The incorporation deed (Acta Constitutiva) establishes the legal existence of the company and provides:</p>
+            <ul>
+                <li>Company identity and legal name</li>
+                <li>Shareholders and ownership structure</li>
+                <li>Legal representatives and their powers</li>
+                <li>Corporate purpose and activities</li>
+                <li>Registered capital</li>
+                <li>Notary information and registration details</li>
+            </ul>
+            
+            <h3>3. INE/IFE of Legal Representatives</h3>
+            <p>The INE (Instituto Nacional Electoral) voter ID is Mexico's primary identification document. For business KYC, you need INE copies of:</p>
+            <ul>
+                <li>Legal representatives</li>
+                <li>Authorized signatories</li>
+                <li>Beneficial owners (if applicable)</li>
+            </ul>
+            
+            <h3>4. Proof of Address</h3>
+            <p>Recent utility bills (no more than 3 months old) serve as proof of address:</p>
+            <ul>
+                <li><strong>CFE</strong> - Electricity bill (most common)</li>
+                <li><strong>Telmex</strong> - Phone/internet bill</li>
+                <li>Water bill</li>
+                <li>Bank statement showing address</li>
+            </ul>
+            
+            <h3>5. Bank Statements</h3>
+            <p>Recent bank statements provide additional verification and financial context:</p>
+            <ul>
+                <li>Account holder name (must match other documents)</li>
+                <li>Account address</li>
+                <li>Transaction history</li>
+                <li>Average balances</li>
+            </ul>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Purpose</th>
+                        <th>Key Data Extracted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>SAT Constancia</td>
+                        <td>Tax status verification</td>
+                        <td>RFC, fiscal address, tax regime</td>
+                    </tr>
+                    <tr>
+                        <td>Acta Constitutiva</td>
+                        <td>Legal existence</td>
+                        <td>Company structure, representatives</td>
+                    </tr>
+                    <tr>
+                        <td>INE/IFE</td>
+                        <td>Identity verification</td>
+                        <td>Name, CURP, photo, address</td>
+                    </tr>
+                    <tr>
+                        <td>CFE/Telmex Bill</td>
+                        <td>Proof of address</td>
+                        <td>Service address, account details</td>
+                    </tr>
+                    <tr>
+                        <td>Bank Statement</td>
+                        <td>Financial verification</td>
+                        <td>Account info, transactions</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2>RFC Validation</h2>
+            
+            <p>The RFC (Registro Federal de Contribuyentes) is Mexico's tax identification number and is critical for KYC. A valid RFC:</p>
+            
+            <ul>
+                <li>For individuals: 13 characters (4 letters + 6 digits + 3 alphanumeric)</li>
+                <li>For companies: 12 characters (3 letters + 6 digits + 3 alphanumeric)</li>
+                <li>Contains encoded information about the entity's name and founding date</li>
+            </ul>
+            
+            <div class="highlight-box">
+                <h4>RFC Format Example</h4>
+                <p>Company: <code>ABC123456XY9</code><br>
+                Individual: <code>GAPA850101ABC</code></p>
+                <p>The first characters come from the name, followed by the date of birth/founding, and a verification code.</p>
+            </div>
+            
+            <h2>Mexican AML Regulations</h2>
+            
+            <p>Mexico's Anti-Money Laundering framework requires "vulnerable activities" (actividades vulnerables) to implement KYC procedures:</p>
+            
+            <h3>Key AML Requirements</h3>
+            <ul>
+                <li><strong>Customer Due Diligence (CDD)</strong> - Identify and verify all customers</li>
+                <li><strong>Enhanced Due Diligence (EDD)</strong> - Additional scrutiny for high-risk customers</li>
+                <li><strong>Beneficial Ownership</strong> - Identify ultimate beneficial owners (UBOs)</li>
+                <li><strong>Transaction Monitoring</strong> - Monitor for suspicious patterns</li>
+                <li><strong>Reporting</strong> - File reports with UIF for relevant transactions</li>
+                <li><strong>Record Keeping</strong> - Maintain records for minimum 5 years</li>
+            </ul>
+            
+            <h2>KYC Validation Best Practices</h2>
+            
+            <ol>
+                <li><strong>Cross-reference documents</strong> - Verify that names, addresses, and RFC numbers match across all documents</li>
+                <li><strong>Check document recency</strong> - Proof of address should be no more than 3 months old</li>
+                <li><strong>Validate RFC with SAT</strong> - Confirm RFC is active and matches SAT records</li>
+                <li><strong>Verify representative powers</strong> - Ensure legal representatives have proper authority per Acta</li>
+                <li><strong>Address discrepancy handling</strong> - Understand fiscal vs. operational address differences</li>
+                <li><strong>Maintain audit trail</strong> - Document all verification steps and decisions</li>
+            </ol>
+            
+            <div class="cta-box">
+                <h3>Automate Your Mexican KYC</h3>
+                <p>MexKYC extracts and validates data from all Mexican KYC documents automatically using AI.</p>
+                <a href="https://mexkyc.com" class="btn">Try MexKYC Free →</a>
+            </div>
+            
+            <h2>Common KYC Challenges in Mexico</h2>
+            
+            <ul>
+                <li><strong>Document variations</strong> - Mexican documents come in many formats and layouts</li>
+                <li><strong>Address inconsistencies</strong> - Fiscal and operational addresses often differ</li>
+                <li><strong>Manual processing</strong> - Traditional KYC requires significant manual effort</li>
+                <li><strong>RFC validation complexity</strong> - Checking RFC status requires SAT system access</li>
+                <li><strong>Multi-document correlation</strong> - Matching data across multiple documents is error-prone</li>
+            </ul>
+            
+            <h2>Summary</h2>
+            
+            <p>KYC in Mexico requires collecting and verifying multiple documents to establish customer identity and comply with AML regulations. The core documents are:</p>
+            
+            <ol>
+                <li><strong>SAT Constancia</strong> - Tax status and RFC verification</li>
+                <li><strong>Acta Constitutiva</strong> - Legal company structure</li>
+                <li><strong>INE</strong> - Representative identity</li>
+                <li><strong>Proof of Address</strong> - CFE or Telmex bills</li>
+                <li><strong>Bank Statements</strong> - Financial verification</li>
+            </ol>
+            
+            <p>Effective KYC combines document collection with data extraction, validation, and cross-referencing. AI-powered tools like MexKYC can automate much of this process, reducing manual effort and improving accuracy.</p>
+        </div>
+    </article>
+</body>
+</html>
+

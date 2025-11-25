@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>SAT Constancia de Situación Fiscal Guide | How to Extract & Validate | MexKYC</title>
+    <meta name="description" content="Complete guide to SAT Constancia de Situación Fiscal. Learn what it contains, how to extract RFC, fiscal address, tax regime, and validate tax status for Mexican KYC compliance.">
+    <meta name="keywords" content="SAT Constancia, Constancia de Situación Fiscal, RFC extraction, Mexican tax certificate, SAT document, fiscal address Mexico, tax regime Mexico">
+    
+    <link rel="canonical" href="https://mexkyc.com/guide/sat-constancia">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is a SAT Constancia de Situación Fiscal?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The SAT Constancia de Situación Fiscal is an official document issued by Mexico's Tax Administration Service (SAT) that certifies a taxpayer's current fiscal status. It contains the RFC (tax ID), legal name, fiscal address, tax regime, economic activities, and current tax obligations. It's essential for KYC verification of Mexican businesses."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do I get a SAT Constancia?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "You can obtain a SAT Constancia through: 1) The SAT portal (sat.gob.mx) using your RFC and e.firma or password, 2) SAT mobile app, 3) In-person at SAT offices. The document can be downloaded as a PDF and is valid at the moment of generation. For KYC purposes, request a recent constancia (no more than 3 months old)."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What information does a SAT Constancia contain?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "A SAT Constancia contains: RFC (Registro Federal de Contribuyentes), legal/business name, fiscal address (domicilio fiscal), tax regime (régimen fiscal), economic activities (actividades económicas) with CFDI codes, tax obligations (obligaciones fiscales), taxpayer status (active/inactive), and date of issue."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do I validate a SAT Constancia for KYC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "To validate a SAT Constancia: 1) Verify the RFC format is correct (12 chars for companies, 13 for individuals), 2) Check that the legal name matches other KYC documents, 3) Confirm the fiscal address, 4) Verify the taxpayer is 'Activo' (active) status, 5) Review tax obligations are current, 6) Check the document date is recent. AI tools like MexKYC can automate this validation."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is the fiscal address (domicilio fiscal) on SAT Constancia?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The fiscal address (domicilio fiscal) is the officially registered address with SAT for tax purposes. This is the canonical address for a Mexican business and takes precedence over addresses on other documents. Changes to the fiscal address must be reported to SAT. The fiscal address includes: street, exterior/interior number, colony (colonia), postal code, municipality, and state."
+                }
+            }
+        ]
+    }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #00875A;
+            --bg-dark: #0A0F1C;
+            --bg-card: #111827;
+            --text: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --border: #1F2937;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.8;
+        }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+        
+        header { padding: 100px 0 60px; border-bottom: 1px solid var(--border); }
+        
+        .breadcrumb { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        
+        h1 { font-size: 2.5rem; margin-bottom: 16px; line-height: 1.2; }
+        
+        .meta { color: var(--text-muted); font-size: 0.95rem; }
+        
+        article { padding: 60px 0; }
+        
+        h2 { font-size: 1.75rem; margin: 48px 0 20px; padding-top: 24px; border-top: 1px solid var(--border); }
+        h3 { font-size: 1.25rem; margin: 32px 0 16px; color: var(--primary); }
+        
+        p { margin-bottom: 20px; color: var(--text-muted); }
+        
+        ul, ol { margin: 20px 0; padding-left: 24px; }
+        li { margin-bottom: 12px; color: var(--text-muted); }
+        
+        strong { color: var(--text); }
+        
+        .highlight-box {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            padding: 24px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .highlight-box h4 { margin-bottom: 12px; color: var(--primary); }
+        
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+        th, td { padding: 12px 16px; text-align: left; border: 1px solid var(--border); }
+        th { background: var(--bg-card); font-weight: 600; }
+        td { color: var(--text-muted); }
+        
+        code {
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, #006847 0%, #00875A 100%);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 48px 0;
+        }
+        
+        .cta-box h3 { color: white; margin-bottom: 12px; }
+        .cta-box p { color: rgba(255,255,255,0.9); }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="https://mexkyc.com">MexKYC</a> / <a href="/guide">Guides</a> / SAT Constancia
+            </div>
+            <h1>SAT Constancia de Situación Fiscal</h1>
+            <p class="meta">Complete guide to Mexico's tax status certificate</p>
+        </div>
+    </header>
+    
+    <article>
+        <div class="container">
+            <p>The <strong>SAT Constancia de Situación Fiscal</strong> is the most important document for verifying Mexican businesses. This official certificate from Mexico's Tax Administration Service (SAT) confirms a taxpayer's current fiscal status and is essential for KYC compliance.</p>
+            
+            <div class="highlight-box">
+                <h4>Quick Summary</h4>
+                <p>The SAT Constancia contains: RFC (tax ID), legal name, fiscal address, tax regime, economic activities (CFDI codes), and tax obligations. It's the authoritative source for a business's tax registration status in Mexico.</p>
+            </div>
+            
+            <h2>What is a SAT Constancia?</h2>
+            
+            <p>The Constancia de Situación Fiscal is an official document issued by the Servicio de Administración Tributaria (SAT), Mexico's tax authority. It certifies that a person or business is registered in the Federal Taxpayer Registry (RFC) and shows their current tax situation.</p>
+            
+            <p>For KYC purposes, the SAT Constancia serves as:</p>
+            <ul>
+                <li>Primary verification of business existence and registration</li>
+                <li>Source of truth for the RFC (tax ID number)</li>
+                <li>Official record of the fiscal address</li>
+                <li>Confirmation of active tax status</li>
+            </ul>
+            
+            <h2>Information in a SAT Constancia</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Description</th>
+                        <th>KYC Use</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>RFC</strong></td>
+                        <td>Registro Federal de Contribuyentes - Tax ID</td>
+                        <td>Primary business identifier</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nombre / Razón Social</strong></td>
+                        <td>Legal name of individual or business</td>
+                        <td>Verify against other documents</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Domicilio Fiscal</strong></td>
+                        <td>Official fiscal address</td>
+                        <td>Canonical address for the business</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Régimen Fiscal</strong></td>
+                        <td>Tax regime (e.g., General, Simplified)</td>
+                        <td>Business structure classification</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Actividades Económicas</strong></td>
+                        <td>Economic activities with CFDI codes</td>
+                        <td>Understand business type</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Obligaciones Fiscales</strong></td>
+                        <td>Tax obligations and filing requirements</td>
+                        <td>Compliance verification</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Estatus</strong></td>
+                        <td>Active (Activo) or Inactive</td>
+                        <td>Verify business is operational</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2>RFC Format and Validation</h2>
+            
+            <p>The RFC (Registro Federal de Contribuyentes) follows specific formats:</p>
+            
+            <h3>For Companies (Personas Morales)</h3>
+            <p>12 characters: <code>XXX000000XX0</code></p>
+            <ul>
+                <li>3 letters from company name</li>
+                <li>6 digits for founding date (YYMMDD)</li>
+                <li>3-character homoclave (verification code)</li>
+            </ul>
+            
+            <h3>For Individuals (Personas Físicas)</h3>
+            <p>13 characters: <code>XXXX000000XXX</code></p>
+            <ul>
+                <li>4 letters from name (paternal surname, maternal surname, first name)</li>
+                <li>6 digits for birth date (YYMMDD)</li>
+                <li>3-character homoclave (verification code)</li>
+            </ul>
+            
+            <div class="highlight-box">
+                <h4>RFC Validation Tips</h4>
+                <p>When validating an RFC:<br>
+                ✓ Check correct length (12 or 13 characters)<br>
+                ✓ Verify date portion is valid<br>
+                ✓ Confirm against SAT database for active status<br>
+                ✓ Cross-reference name encoding matches legal name</p>
+            </div>
+            
+            <h2>Fiscal Address (Domicilio Fiscal)</h2>
+            
+            <p>The fiscal address on the SAT Constancia is the <strong>official registered address</strong> for tax purposes. It includes:</p>
+            
+            <ul>
+                <li><strong>Calle</strong> - Street name</li>
+                <li><strong>Número Exterior</strong> - External number</li>
+                <li><strong>Número Interior</strong> - Internal number (if applicable)</li>
+                <li><strong>Colonia</strong> - Neighborhood/colony</li>
+                <li><strong>Código Postal</strong> - Postal code</li>
+                <li><strong>Municipio/Delegación</strong> - Municipality</li>
+                <li><strong>Estado</strong> - State</li>
+            </ul>
+            
+            <p>For KYC purposes, the fiscal address takes precedence over addresses on other documents. However, businesses may operate from different locations, so it's important to also verify operational addresses through proof of address documents.</p>
+            
+            <h2>How to Validate a SAT Constancia</h2>
+            
+            <ol>
+                <li><strong>Check document authenticity</strong> - Verify it's an official SAT document (check format and QR code if present)</li>
+                <li><strong>Validate RFC format</strong> - Ensure correct length and structure</li>
+                <li><strong>Verify active status</strong> - Status should show "Activo" (Active)</li>
+                <li><strong>Cross-reference legal name</strong> - Match with Acta Constitutiva and other documents</li>
+                <li><strong>Confirm fiscal address</strong> - Document as the canonical address</li>
+                <li><strong>Check document date</strong> - Should be recent (within 3 months for most KYC requirements)</li>
+                <li><strong>Review obligations</strong> - Note any compliance flags or issues</li>
+            </ol>
+            
+            <h2>Extracting Data from SAT Constancia</h2>
+            
+            <p>SAT Constancias come in PDF format with a consistent structure. Key extraction points:</p>
+            
+            <ul>
+                <li><strong>Header section</strong> - Contains RFC and legal name</li>
+                <li><strong>Address block</strong> - Fiscal address components</li>
+                <li><strong>Tax regime section</strong> - Current regime and history</li>
+                <li><strong>Activities table</strong> - CFDI codes and descriptions</li>
+                <li><strong>Obligations list</strong> - Filing requirements and schedules</li>
+            </ul>
+            
+            <p>AI-powered extraction tools like MexKYC can automatically parse these sections and return structured JSON data for integration into your systems.</p>
+            
+            <div class="cta-box">
+                <h3>Automate SAT Constancia Extraction</h3>
+                <p>MexKYC extracts all data from SAT Constancias automatically with AI.</p>
+                <a href="https://mexkyc.com" class="btn">Try MexKYC Free →</a>
+            </div>
+            
+            <h2>Common Issues and Solutions</h2>
+            
+            <h3>Expired or Old Constancia</h3>
+            <p>Request a fresh constancia from the customer. The document should typically be no more than 3 months old for KYC purposes.</p>
+            
+            <h3>Status Shows Inactive</h3>
+            <p>An inactive status may indicate tax issues. The customer should resolve their status with SAT before proceeding with business relationships.</p>
+            
+            <h3>Name Mismatch</h3>
+            <p>The name on SAT Constancia may differ slightly from other documents due to formatting. Focus on key identifiers like RFC and fiscal address for verification.</p>
+            
+            <h2>Summary</h2>
+            
+            <p>The SAT Constancia de Situación Fiscal is essential for Mexican business KYC. It provides authoritative verification of:</p>
+            
+            <ul>
+                <li>RFC (tax ID) and legal name</li>
+                <li>Fiscal address (official registered address)</li>
+                <li>Tax regime and obligations</li>
+                <li>Active/inactive status</li>
+            </ul>
+            
+            <p>Always validate RFC format, check active status, and cross-reference information with other KYC documents for comprehensive verification.</p>
+        </div>
+    </article>
+</body>
+</html>
+

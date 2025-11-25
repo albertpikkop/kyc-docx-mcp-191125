@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { KycRun } from './types.js';
 import * as XLSX from 'xlsx';
 import { logRunCost, calculateRunCost } from './costTracker.js';
+import { classifyEntityType, getClientOnboardingLabel, EntityType } from './validation.js';
 
 // Root directory for data, relative to this file
 // src/kyc/storage.ts -> ../../data/
@@ -251,17 +252,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   const { buildKycReport } = await import('./reportBuilder.js');
   const report = buildKycReport(run.profile!, run.validation!, { includeTrace: true });
   
-  // Determine Status Color
+  // Score for calculations
   const score = run.validation!.score;
-  let statusColor = "bg-green-100 text-green-800";
-  let statusText = t.header.approved;
-  if (score < 0.7) {
-    statusColor = "bg-red-100 text-red-800";
-    statusText = t.header.rejected;
-  } else if (score < 0.9) {
-    statusColor = "bg-yellow-100 text-yellow-800";
-    statusText = t.header.reviewNeeded;
-  }
 
   // Safe Accessors
   const companyName = run.profile!.companyIdentity?.razon_social || run.profile!.companyTaxProfile?.razon_social || "Unknown Company";
@@ -305,7 +297,9 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   const docNames: Record<string, { en: string; es: string }> = {
     'acta': { en: 'Acta Constitutiva', es: 'Acta Constitutiva' },
     'sat_constancia': { en: 'SAT Constancia', es: 'Constancia SAT' },
-    'fm2': { en: 'FM2 Immigration', es: 'FM2 Inmigración' },
+    'fm2': { en: 'FM2 Immigration', es: 'FM2 Residente' },
+    'ine': { en: 'INE Voter ID', es: 'INE Credencial' },
+    'passport': { en: 'Passport', es: 'Pasaporte' },
     'telmex': { en: 'Telmex Bill', es: 'Recibo Telmex' },
     'cfe': { en: 'CFE Bill', es: 'Recibo CFE' },
     'bank_identity_page': { en: 'Bank Identity', es: 'Identidad Bancaria' },
@@ -317,6 +311,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         'acta': '📋',
         'sat_constancia': '🏛️',
         'fm2': '🛂',
+        'ine': '🪪',
+        'passport': '🛂',
         'telmex': '📞',
         'cfe': '⚡',
         'bank_identity_page': '🏦',
@@ -494,9 +490,21 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   }).join("");
 
   // Build Executive Summary Data
-  const repIdentityName = run.profile!.representativeIdentity?.full_name || null;
+  // FM2/INE (Immigration document)
+  const repIdentityName = run.profile!.representativeIdentity?.full_name || run.profile!.passportIdentity?.full_name || null;
   const repDocType = run.profile!.representativeIdentity?.document_type || null;
   const repDocNumber = run.profile!.representativeIdentity?.document_number || null;
+  const repCurp = run.profile!.representativeIdentity?.curp || null;
+  
+  // Passport (Primary identity for foreigners)
+  // passportName is same as repIdentityName when no FM2 - used in name matching
+  const passportNumber = run.profile!.passportIdentity?.document_number || null;
+  const passportNationality = run.profile!.passportIdentity?.nationality || null;
+  const passportExpiry = run.profile!.passportIdentity?.expiry_date || null;
+  const passportIssuer = run.profile!.passportIdentity?.issuer_country || null;
+  
+  // Check if foreigner (has passport from non-MX country)
+  const isForeignNational = passportIssuer && passportIssuer !== 'MX' && passportIssuer !== 'MEXICO';
   
   // Find matching signatory in Acta
   const legalReps = run.profile!.companyIdentity?.legal_representatives || [];
@@ -537,11 +545,22 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   
   const matchedPowerInfo = matchedRep ? getPowerScope(matchedRep) : null;
   
-  // ========== PERSONA FÍSICA DETECTION ==========
-  // A Persona Física has NO Acta Constitutiva - they ARE the business
-  // Their INE/FM2 IS their authority to sign - no corporate powers needed
-  const hasActaConstitutiva = !!run.profile!.companyIdentity;
-  const isPersonaFisica = !hasActaConstitutiva;
+  // ========== ENTITY TYPE CLASSIFICATION ==========
+  // Use the new comprehensive classification system that considers:
+  // 1. RFC pattern (4 letters = individual, 3 letters = corporate)
+  // 2. Tax regime from SAT Constancia
+  // 3. Presence of Acta Constitutiva
+  // 
+  // Three types:
+  // - PERSONA_MORAL: Corporate entity (e.g., PFDS SAPI DE CV)
+  // - PERSONA_FISICA_EMPRESARIAL: Individual with business (e.g., freelancer)
+  // - PERSONA_FISICA_SIN_OBLIGACIONES: Individual without tax obligations (e.g., Enrique Cello)
+  const entityTypeClassification: EntityType = classifyEntityType(run.profile!);
+  const isPersonaFisica = entityTypeClassification === 'PERSONA_FISICA_EMPRESARIAL' || 
+                          entityTypeClassification === 'PERSONA_FISICA_SIN_OBLIGACIONES';
+  
+  // Get the proper onboarding label based on entity type
+  const clientOnboardingLabel = getClientOnboardingLabel(entityTypeClassification);
   
   // Determine if the verified person CAN SIGN
   // For Persona Física: If identity is verified, they CAN sign (they are the business)
@@ -580,9 +599,41 @@ async function generateVisualReport(run: KycRun): Promise<string> {
     </div>
   ` : '';
   
+  // ========== ENTITY HEADER - Shows at VERY TOP ==========
+  // This immediately tells the user WHAT entity they're looking at
+  // Use the proper entity type label based on classification
+  const entityTypeLabels: Record<EntityType, string> = {
+    'PERSONA_MORAL': 'Persona Moral',
+    'PERSONA_FISICA_EMPRESARIAL': 'Persona Física (Empresarial)',
+    'PERSONA_FISICA_SIN_OBLIGACIONES': 'Persona Física (Sin Actividad)',
+    'UNKNOWN': 'Tipo Desconocido'
+  };
+  const entityType = entityTypeLabels[entityTypeClassification] || 'Persona';
+  const entityName = companyName;
+  const entityStatus = run.validation!.score >= 0.9 ? 'APROBADO' : (run.validation!.score >= 0.7 ? 'EN REVISIÓN' : 'RECHAZADO');
+  const entityStatusClass = run.validation!.score >= 0.9 ? 'approved' : (run.validation!.score >= 0.7 ? 'review' : 'rejected');
+  
+  const entityHeaderHtml = `
+    <div class="entity-header">
+        <div class="entity-header-main">
+            <div class="entity-type-badge ${isPersonaFisica ? 'entity-type-pf' : 'entity-type-pm'}">
+                ${isPersonaFisica ? '👤' : '🏢'} ${entityType}
+            </div>
+            <h1 class="entity-name">${entityName}</h1>
+            <div class="entity-rfc">RFC: <strong>${rfc}</strong></div>
+        </div>
+        <div class="entity-header-status">
+            <div class="entity-status-badge entity-status-${entityStatusClass}">
+                ${entityStatus}
+            </div>
+            <div class="entity-score">Puntuación: ${Math.round(run.validation!.score * 100)}%</div>
+        </div>
+    </div>
+  `;
+  
   // Executive Summary HTML - Redesigned for clarity on WHO CAN SIGN
   // DIFFERENT LOGIC FOR PERSONA FÍSICA vs PERSONA MORAL
-  const executiveSummaryHtml = alertBannerHtml + (isPersonaFisica ? `
+  const executiveSummaryHtml = entityHeaderHtml + alertBannerHtml + (isPersonaFisica ? `
     <!-- ========== PERSONA FÍSICA LAYOUT ========== -->
     <div class="exec-summary-grid">
         <!-- PRIMARY: Signing Authority Card - PERSONA FÍSICA -->
@@ -595,7 +646,33 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                 ${repIdentityName ? `
                     <div class="exec-signing-authority">
                         <div class="exec-main-value">${repIdentityName}</div>
-                        <div class="exec-sub-value">${repDocType || 'Documento'} ${repDocNumber ? `(${repDocNumber})` : ''}</div>
+                        
+                        <!-- Identity Documents Section for Persona Física -->
+                        <div class="exec-identity-docs">
+                            ${passportNumber ? `
+                                <div class="exec-doc-item exec-doc-passport">
+                                    <span class="exec-doc-icon">🛂</span>
+                                    <span class="exec-doc-label">Pasaporte:</span>
+                                    <span class="exec-doc-value">${passportNumber}</span>
+                                    <span class="exec-doc-detail">(${passportNationality || 'N/A'}, vence: ${passportExpiry || 'N/A'})</span>
+                                </div>
+                            ` : ''}
+                            ${repDocType && repDocNumber ? `
+                                <div class="exec-doc-item exec-doc-fm2">
+                                    <span class="exec-doc-icon">🪪</span>
+                                    <span class="exec-doc-label">${repDocType}:</span>
+                                    <span class="exec-doc-value">${repDocNumber}</span>
+                                    ${repCurp ? `<span class="exec-doc-detail">(CURP: ${repCurp})</span>` : ''}
+                                </div>
+                            ` : ''}
+                            ${!passportNumber && !repDocNumber ? `
+                                <div class="exec-doc-item">
+                                    <span class="exec-doc-icon">📄</span>
+                                    <span class="exec-doc-label">Documento:</span>
+                                    <span class="exec-doc-value">Pendiente de verificación</span>
+                                </div>
+                            ` : ''}
+                        </div>
                         
                         <div class="exec-can-sign-badge exec-can-sign-yes">
                             <span class="exec-can-sign-icon">✅</span>
@@ -630,7 +707,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                 <span class="exec-title">Régimen Fiscal</span>
             </div>
             <div class="exec-card-body">
-                <div class="exec-info-note">ℹ️ Alta de Cliente - Persona Física con Actividad Empresarial</div>
+                <div class="exec-info-note">ℹ️ ${clientOnboardingLabel}</div>
                 <div class="exec-pf-info">
                     <div class="exec-pf-item">
                         <span class="exec-pf-label">RFC:</span>
@@ -663,7 +740,33 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                 ${matchedRep && repIdentityName ? `
                     <div class="exec-signing-authority">
                         <div class="exec-main-value">${repIdentityName}</div>
-                        <div class="exec-sub-value">${repDocType || 'Documento'} ${repDocNumber ? `(${repDocNumber})` : ''}</div>
+                        
+                        <!-- Identity Documents Section -->
+                        <div class="exec-identity-docs">
+                            ${passportNumber ? `
+                                <div class="exec-doc-item exec-doc-passport">
+                                    <span class="exec-doc-icon">🛂</span>
+                                    <span class="exec-doc-label">Pasaporte:</span>
+                                    <span class="exec-doc-value">${passportNumber}</span>
+                                    <span class="exec-doc-detail">(${passportNationality || 'N/A'}, vence: ${passportExpiry || 'N/A'})</span>
+                                </div>
+                            ` : ''}
+                            ${repDocType && repDocNumber ? `
+                                <div class="exec-doc-item exec-doc-fm2">
+                                    <span class="exec-doc-icon">🪪</span>
+                                    <span class="exec-doc-label">${repDocType}:</span>
+                                    <span class="exec-doc-value">${repDocNumber}</span>
+                                    ${repCurp ? `<span class="exec-doc-detail">(CURP: ${repCurp})</span>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${isForeignNational && !repDocType ? `
+                            <div class="exec-warning-badge">
+                                <span class="exec-warning-icon">⚠️</span>
+                                <span class="exec-warning-text">Extranjero sin FM2/FM3 - Documento migratorio requerido</span>
+                            </div>
+                        ` : ''}
                         
                         ${canSign ? `
                             <div class="exec-can-sign-badge exec-can-sign-yes">
@@ -746,29 +849,29 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             </div>
         </div>
         
-        <!-- Quick Status Card -->
+        <!-- Quick Status Card - Simplified (RFC now in header) -->
         <div class="exec-card">
             <div class="exec-card-header">
-                <span class="exec-icon">📋</span>
-                <span class="exec-title">Estado Rápido</span>
+                <span class="exec-icon">✅</span>
+                <span class="exec-title">Checklist Rápido</span>
             </div>
             <div class="exec-card-body">
-                <div class="exec-status-grid">
-                    <div class="exec-status-item">
-                        <span class="exec-status-label">Documentos</span>
-                        <span class="exec-status-value exec-status-ok">${run.documents.length} ✓</span>
+                <div class="exec-checklist">
+                    <div class="exec-check-item ${run.documents.length >= 3 ? 'exec-check-pass' : 'exec-check-warn'}">
+                        <span class="exec-check-icon">${run.documents.length >= 3 ? '✓' : '⚠️'}</span>
+                        <span class="exec-check-text">Documentos: ${run.documents.length} procesados</span>
                     </div>
-                    <div class="exec-status-item">
-                        <span class="exec-status-label">Banderas</span>
-                        <span class="exec-status-value ${run.validation!.flags.length === 0 ? 'exec-status-ok' : 'exec-status-warn'}">${run.validation!.flags.length} ${run.validation!.flags.length === 0 ? '✓' : '⚠️'}</span>
+                    <div class="exec-check-item ${run.validation!.flags.length === 0 ? 'exec-check-pass' : (run.validation!.flags.filter(f => f.level === 'critical').length > 0 ? 'exec-check-fail' : 'exec-check-warn')}">
+                        <span class="exec-check-icon">${run.validation!.flags.length === 0 ? '✓' : '⚠️'}</span>
+                        <span class="exec-check-text">Banderas: ${run.validation!.flags.length === 0 ? 'Sin observaciones' : run.validation!.flags.length + ' pendiente(s)'}</span>
                     </div>
-                    <div class="exec-status-item">
-                        <span class="exec-status-label">RFC</span>
-                        <span class="exec-status-value exec-status-ok">${rfc !== 'N/A' ? '✓' : '❌'}</span>
+                    <div class="exec-check-item ${run.profile!.currentOperationalAddress ? 'exec-check-pass' : 'exec-check-fail'}">
+                        <span class="exec-check-icon">${run.profile!.currentOperationalAddress ? '✓' : '❌'}</span>
+                        <span class="exec-check-text">Domicilio: ${run.profile!.currentOperationalAddress ? 'Verificado' : 'Pendiente'}</span>
                     </div>
-                    <div class="exec-status-item">
-                        <span class="exec-status-label">Domicilio</span>
-                        <span class="exec-status-value exec-status-ok">${run.profile!.currentOperationalAddress ? '✓' : '❌'}</span>
+                    <div class="exec-check-item ${run.profile!.companyTaxProfile?.status === 'ACTIVO' ? 'exec-check-pass' : 'exec-check-fail'}">
+                        <span class="exec-check-icon">${run.profile!.companyTaxProfile?.status === 'ACTIVO' ? '✓' : '❌'}</span>
+                        <span class="exec-check-text">SAT: ${run.profile!.companyTaxProfile?.status || 'No verificado'}</span>
                     </div>
                 </div>
             </div>
@@ -826,9 +929,11 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         }
         table thead th { 
             background: linear-gradient(to bottom, #1e3a5f, #2d4a6f);
+            color: #ffffff !important;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.75rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             letter-spacing: 0.05em;
             color: #ffffff;
             line-height: 1.5;
@@ -917,6 +1022,96 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3);
         }
         
+        /* ========== ENTITY HEADER - TOP OF REPORT ========== */
+        .entity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%);
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+        }
+        .entity-header-main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .entity-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            width: fit-content;
+        }
+        .entity-type-pm {
+            background: rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+            border: 1px solid rgba(147, 197, 253, 0.3);
+        }
+        .entity-type-pf {
+            background: rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+            border: 1px solid rgba(110, 231, 183, 0.3);
+        }
+        .entity-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin: 0.25rem 0;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .entity-rfc {
+            font-size: 1rem;
+            color: #cbd5e1;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        .entity-rfc strong {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+        .entity-header-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        .entity-status-badge {
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .entity-status-approved {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        .entity-status-review {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        .entity-status-rejected {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        .entity-score {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        
         /* ========== EXECUTIVE SUMMARY STYLES ========== */
         .exec-summary-grid {
             display: grid;
@@ -974,6 +1169,61 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             font-size: 0.875rem;
             color: #64748b;
             margin-bottom: 0.75rem;
+        }
+        /* Identity Documents Section */
+        .exec-identity-docs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 0.75rem 0;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .exec-doc-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .exec-doc-icon {
+            font-size: 1rem;
+        }
+        .exec-doc-label {
+            font-weight: 600;
+            color: #475569;
+        }
+        .exec-doc-value {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .exec-doc-detail {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .exec-doc-passport {
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .exec-warning-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 6px;
+            margin: 0.5rem 0;
+        }
+        .exec-warning-icon {
+            font-size: 1rem;
+        }
+        .exec-warning-text {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #92400e;
         }
         .exec-match-badge {
             display: inline-flex;
@@ -1173,6 +1423,60 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             border-radius: 8px;
             border-left: 3px solid #3b82f6;
             margin-top: 0.5rem;
+        }
+        
+        /* Checklist Styles */
+        .exec-checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .exec-check-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        .exec-check-pass {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+        .exec-check-pass .exec-check-icon {
+            color: #16a34a;
+            font-weight: 700;
+        }
+        .exec-check-pass .exec-check-text {
+            color: #166534;
+        }
+        .exec-check-warn {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+        }
+        .exec-check-warn .exec-check-icon {
+            color: #d97706;
+        }
+        .exec-check-warn .exec-check-text {
+            color: #92400e;
+        }
+        .exec-check-fail {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+        .exec-check-fail .exec-check-icon {
+            color: #dc2626;
+        }
+        .exec-check-fail .exec-check-text {
+            color: #991b1b;
+        }
+        .exec-check-icon {
+            font-size: 1rem;
+            width: 1.25rem;
+            text-align: center;
+        }
+        .exec-check-text {
+            font-weight: 500;
         }
         .exec-role-box {
             background: #f1f5f9;
@@ -1487,46 +1791,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         
         <!-- Executive Summary - Quick Glance for Analysts -->
         <div class="mb-8">
-            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span class="text-2xl">📊</span> ${t.sections.executiveSummary}
-            </h2>
             ${executiveSummaryHtml}
-        </div>
-        
-        <!-- Header -->
-        <div class="fluent-card rounded-xl shadow-md p-8 mb-8">
-            <div class="md:flex md:items-center md:justify-between">
-                <div class="flex-1 min-w-0">
-                    <h1 class="text-3xl font-semibold leading-snug text-gray-900 mb-4 break-words" style="font-size: 28px; line-height: 1.3;">
-                        ${companyName}
-                    </h1>
-                    <div class="flex flex-wrap gap-6 text-gray-700">
-                        <div class="flex items-start">
-                            <svg class="w-4 h-4 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <div class="min-w-0">
-                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">${t.header.rfc}:</span> <span class="text-gray-700">${rfc}</span></div>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <svg class="w-4 h-4 mr-2 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <div class="min-w-0">
-                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">${t.header.generated}:</span> <span class="text-gray-700">${new Date(run.createdAt).toLocaleString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 flex md:mt-0 md:ml-4">
-                    <div class="flex flex-col items-end">
-                      <span class="${statusColor} px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide uppercase shadow-sm border whitespace-nowrap">
-                          ${statusText}
-                      </span>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1543,14 +1808,14 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                         <span class="break-words">${t.sidebar.riskScore}</span>
                     </h3>
                     <div class="flex flex-col items-center justify-center">
-                        <div class="relative w-36 h-36 mb-3">
+                        <div class="relative w-40 h-40 mb-3">
                             <svg class="w-full h-full transform -rotate-90 score-ring" viewBox="0 0 36 36">
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="3" />
-                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${score > 0.9 ? '#107c10' : (score > 0.7 ? '#ffaa44' : '#d13438')}" stroke-width="3" stroke-dasharray="${score * 100}, 100" stroke-linecap="round" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="2.5" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="${score > 0.9 ? '#107c10' : (score > 0.7 ? '#ffaa44' : '#d13438')}" stroke-width="2.5" stroke-dasharray="${score * 100}, 100" stroke-linecap="round" />
                             </svg>
-                            <div class="absolute inset-0 flex items-center justify-center flex-col">
-                                <span class="text-4xl font-semibold text-gray-900" style="font-size: 42px; line-height: 1.2;">${(score * 100).toFixed(0)}</span>
-                                <span class="text-xs text-gray-600 uppercase tracking-wider mt-1.5" style="font-size: 11px; line-height: 1.4;">${t.sidebar.trustScore}</span>
+                            <div class="absolute inset-3 flex items-center justify-center flex-col">
+                                <span class="text-4xl font-semibold text-gray-900" style="font-size: 38px; line-height: 1.2;">${(score * 100).toFixed(0)}</span>
+                                <span class="text-xs text-gray-600 uppercase tracking-wider mt-1" style="font-size: 9px; line-height: 1.3; max-width: 80px; text-align: center;">${t.sidebar.trustScore}</span>
                             </div>
                         </div>
                     </div>
@@ -1774,8 +2039,9 @@ async function generateExcelReport(run: KycRun): Promise<string> {
     summaryData.push(['Incorporation Date / Fecha de Constitución', profile.companyIdentity.incorporation_date]);
     if (profile.companyIdentity.founding_address) {
       const addr = profile.companyIdentity.founding_address;
-      summaryData.push(['Founding Address / Domicilio Fundacional', 
-        [addr.street, addr.ext_number, addr.colonia, addr.municipio, addr.estado, addr.cp].filter(Boolean).join(', ') || 'Not specified']);
+      // DOMICILIO SOCIAL: Jurisdiction for shareholder assemblies (may differ from fiscal address - this is legal)
+      summaryData.push(['Domicilio Social (Acta) - Para Asambleas', 
+        [addr.street, addr.ext_number, addr.colonia, addr.municipio, addr.estado, addr.cp].filter(Boolean).join(', ') || 'Solo jurisdicción especificada']);
     }
     summaryData.push([]);
   }
@@ -1788,7 +2054,8 @@ async function generateExcelReport(run: KycRun): Promise<string> {
     summaryData.push(['Status / Estatus', profile.companyTaxProfile.status]);
     if (profile.currentFiscalAddress) {
       const addr = profile.currentFiscalAddress;
-      summaryData.push(['Fiscal Address / Domicilio Fiscal', 
+      // DOMICILIO FISCAL: Tax address registered with SAT (may differ from social address - this is legal)
+      summaryData.push(['Domicilio Fiscal (SAT) - Para Obligaciones Fiscales', 
         [addr.street, addr.ext_number, addr.colonia, addr.municipio, addr.estado, addr.cp].filter(Boolean).join(', ')]);
     }
     summaryData.push([]);
@@ -1797,27 +2064,107 @@ async function generateExcelReport(run: KycRun): Promise<string> {
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
   
-  // Sheet 2: Shareholders / UBO
+  // Sheet 2: Shareholders / UBO - Enhanced with Share Types and Voting Rights (per Arturo's comments)
   if (profile.companyIdentity?.shareholders && profile.companyIdentity.shareholders.length > 0) {
     const uboData = [
-      ['Shareholder / Accionista', 'Shares / Acciones', 'Percentage / Porcentaje', 'UBO Status / Estado UBO']
+      [
+        'Accionista / Shareholder', 
+        'Acciones / Shares', 
+        'Serie / Series',
+        'Tipo / Type',
+        'Derecho a Voto / Voting Rights',
+        '% Total', 
+        '% Voto / Voting %',
+        'Es UBO / Is UBO',
+        'Notas / Notes'
+      ]
     ];
     
-    const totalShares = profile.companyIdentity.shareholders.reduce((sum, s) => sum + (s.shares || 0), 0);
+    const shareholders = profile.companyIdentity.shareholders;
+    const totalShares = shareholders.reduce((sum, s) => sum + (s.shares || 0), 0);
     
-    profile.companyIdentity.shareholders.forEach(sh => {
-      const percentage = totalShares > 0 ? ((sh.shares || 0) / totalShares * 100).toFixed(2) : (sh.percentage || 0).toFixed(2);
-      const isUbo = (parseFloat(percentage) > 25);
+    // Calculate total VOTING shares only (Serie A / Ordinarias have voting rights)
+    const totalVotingShares = shareholders.reduce((sum, s) => {
+      const hasVoting = determineShareholderVotingRights(s);
+      return sum + (hasVoting ? (s.shares || 0) : 0);
+    }, 0);
+    
+    shareholders.forEach(sh => {
+      const shares = sh.shares || 0;
+      const percentage = totalShares > 0 ? (shares / totalShares * 100).toFixed(2) : (sh.percentage || 0).toFixed(2);
+      
+      // Determine voting rights based on share type
+      const hasVotingRights = determineShareholderVotingRights(sh);
+      const votingPercentage = hasVotingRights && totalVotingShares > 0 
+        ? (shares / totalVotingShares * 100).toFixed(2) 
+        : '0.00';
+      
+      // UBO is determined by VOTING percentage, not total ownership
+      const isUbo = hasVotingRights && parseFloat(votingPercentage) > 25;
+      
+      // Extract share series and type
+      const shareSeries = (sh as any).share_series || (sh as any).class || 'No especificada';
+      const shareType = (sh as any).share_type || (hasVotingRights ? 'Ordinarias' : 'Preferentes');
+      
+      // Notes for clarity
+      let notes = '';
+      if (!hasVotingRights) {
+        notes = 'Sin voto en asambleas ordinarias';
+      } else if (isUbo) {
+        notes = 'Beneficiario Controlador (>25% voto)';
+      }
+      
       uboData.push([
         sh.name || 'N/A',
-        sh.shares?.toString() || 'N/A',
+        shares.toString(),
+        shareSeries,
+        shareType,
+        hasVotingRights ? 'SÍ' : 'NO',
         `${percentage}%`,
-        isUbo ? 'YES / SÍ' : 'NO'
+        `${votingPercentage}%`,
+        isUbo ? 'SÍ' : 'NO',
+        notes
       ]);
     });
     
+    // Add summary row
+    uboData.push([]);
+    uboData.push([
+      'TOTALES',
+      totalShares.toString(),
+      '',
+      '',
+      '',
+      '100%',
+      totalVotingShares > 0 ? '100%' : '0%',
+      '',
+      `Total acciones con voto: ${totalVotingShares}`
+    ]);
+    
     const uboSheet = XLSX.utils.aoa_to_sheet(uboData);
-    XLSX.utils.book_append_sheet(workbook, uboSheet, 'Shareholders');
+    XLSX.utils.book_append_sheet(workbook, uboSheet, 'Accionistas-UBO');
+  }
+  
+  // Helper function to determine voting rights (duplicated here for Excel export)
+  function determineShareholderVotingRights(shareholder: any): boolean {
+    // If explicitly set, use it
+    if (shareholder.has_voting_rights === true) return true;
+    if (shareholder.has_voting_rights === false) return false;
+    
+    // Check share_type
+    const shareType = (shareholder.share_type || '').toUpperCase();
+    if (shareType.includes('PREFERENTE') || shareType.includes('PREFERRED')) return false;
+    if (shareType.includes('ORDINARIA') || shareType.includes('ORDINARY')) return true;
+    
+    // Check share_series
+    const series = (shareholder.share_series || shareholder.class || '').toUpperCase();
+    if (series.includes('SERIE B') || series.includes('SERIES B') || series === 'B' ||
+        series.includes('SERIE II') || series.includes('SERIES II') || series === 'II') {
+      return false;
+    }
+    
+    // Default: assume voting rights (conservative for UBO detection)
+    return true;
   }
   
   // Sheet 3: Signatories
@@ -1849,7 +2196,73 @@ async function generateExcelReport(run: KycRun): Promise<string> {
     XLSX.utils.book_append_sheet(workbook, signatorySheet, 'Signatories');
   }
   
-  // Sheet 4: Risk Flags
+  // Sheet 4: Identity Documents (Passport, FM2, INE)
+  const identityData = [
+    ['Documento / Document', 'Campo / Field', 'Valor / Value']
+  ];
+  
+  // Passport Information
+  if (profile.passportIdentity) {
+    const passport = profile.passportIdentity;
+    identityData.push(['--- PASAPORTE / PASSPORT ---', '', '']);
+    identityData.push(['Pasaporte', 'Nombre Completo / Full Name', passport.full_name || 'N/A']);
+    identityData.push(['Pasaporte', 'Número / Number', passport.document_number || 'N/A']);
+    identityData.push(['Pasaporte', 'Nacionalidad / Nationality', passport.nationality || 'N/A']);
+    identityData.push(['Pasaporte', 'País Emisor / Issuing Country', passport.issuer_country || 'N/A']);
+    identityData.push(['Pasaporte', 'Fecha de Nacimiento / DOB', passport.date_of_birth || 'N/A']);
+    identityData.push(['Pasaporte', 'Sexo / Sex', passport.sex || 'N/A']);
+    identityData.push(['Pasaporte', 'Lugar de Nacimiento / Place of Birth', passport.place_of_birth || 'N/A']);
+    identityData.push(['Pasaporte', 'Fecha de Expedición / Issue Date', passport.issue_date || 'N/A']);
+    identityData.push(['Pasaporte', 'Fecha de Vencimiento / Expiry Date', passport.expiry_date || 'N/A']);
+    identityData.push(['Pasaporte', 'Autoridad Emisora / Issuing Authority', passport.issuing_authority || 'N/A']);
+    if (passport.mrz_line_1) identityData.push(['Pasaporte', 'MRZ Línea 1', passport.mrz_line_1]);
+    if (passport.mrz_line_2) identityData.push(['Pasaporte', 'MRZ Línea 2', passport.mrz_line_2]);
+    identityData.push(['', '', '']);
+  }
+  
+  // FM2/INE Information
+  if (profile.representativeIdentity) {
+    const rep = profile.representativeIdentity;
+    const docType = rep.document_type?.toUpperCase() || 'FM2/INE';
+    identityData.push([`--- ${docType} ---`, '', '']);
+    identityData.push([docType, 'Nombre Completo / Full Name', rep.full_name || 'N/A']);
+    identityData.push([docType, 'Número de Documento / Document Number', rep.document_number || 'N/A']);
+    identityData.push([docType, 'CURP', rep.curp || 'N/A']);
+    identityData.push([docType, 'Nacionalidad / Nationality', rep.nationality || 'N/A']);
+    identityData.push([docType, 'Fecha de Nacimiento / DOB', rep.date_of_birth || 'N/A']);
+    identityData.push([docType, 'Sexo / Sex', rep.sex || 'N/A']);
+    if (rep.issue_date) identityData.push([docType, 'Fecha de Expedición / Issue Date', rep.issue_date]);
+    if (rep.expiry_date) identityData.push([docType, 'Fecha de Vencimiento / Expiry Date', rep.expiry_date]);
+    identityData.push(['', '', '']);
+  }
+  
+  // If no identity documents
+  if (!profile.passportIdentity && !profile.representativeIdentity) {
+    identityData.push(['N/A', 'N/A', 'No se encontraron documentos de identidad / No identity documents found']);
+  }
+  
+  // Add verification status
+  identityData.push(['--- VERIFICACIÓN / VERIFICATION ---', '', '']);
+  const hasPassport = !!profile.passportIdentity?.document_number;
+  const hasFm2 = !!profile.representativeIdentity?.document_number;
+  const passportIssuer = profile.passportIdentity?.issuer_country?.toUpperCase() || '';
+  const isForeign = passportIssuer && passportIssuer !== 'MX' && passportIssuer !== 'MEX' && passportIssuer !== 'MEXICO';
+  
+  if (isForeign) {
+    identityData.push(['Verificación', 'Tipo de Persona', 'Extranjero / Foreign National']);
+    identityData.push(['Verificación', 'Pasaporte Requerido', hasPassport ? '✓ Presente' : '❌ Faltante']);
+    identityData.push(['Verificación', 'FM2/FM3 Requerido', hasFm2 ? '✓ Presente' : '❌ Faltante']);
+    identityData.push(['Verificación', 'Cumple Requisitos', (hasPassport && hasFm2) ? '✓ SÍ' : '❌ NO - Faltan documentos']);
+  } else {
+    identityData.push(['Verificación', 'Tipo de Persona', 'Mexicano / Mexican National']);
+    identityData.push(['Verificación', 'INE/Pasaporte', (hasPassport || hasFm2) ? '✓ Presente' : '❌ Faltante']);
+    identityData.push(['Verificación', 'Cumple Requisitos', (hasPassport || hasFm2) ? '✓ SÍ' : '❌ NO']);
+  }
+  
+  const identitySheet = XLSX.utils.aoa_to_sheet(identityData);
+  XLSX.utils.book_append_sheet(workbook, identitySheet, 'Identidad-Docs');
+  
+  // Sheet 5: Risk Flags
   const flagsData = [
     ['Code / Código', 'Level / Nivel', 'Message / Mensaje']
   ];
@@ -1867,7 +2280,7 @@ async function generateExcelReport(run: KycRun): Promise<string> {
   }
   
   const flagsSheet = XLSX.utils.aoa_to_sheet(flagsData);
-  XLSX.utils.book_append_sheet(workbook, flagsSheet, 'Risk Flags');
+  XLSX.utils.book_append_sheet(workbook, flagsSheet, 'Banderas-Riesgo');
   
   // Sheet 5: Documents
   const docsData = [
@@ -1886,23 +2299,27 @@ async function generateExcelReport(run: KycRun): Promise<string> {
   XLSX.utils.book_append_sheet(workbook, docsSheet, 'Documents');
   
   // Sheet 6: Addresses
+  // LEGAL NOTE: Domicilio Social (from Acta) may differ from Domicilio Fiscal (from SAT) - this is legally permissible
   const addressData = [
-    ['Type / Tipo', 'Street / Calle', 'Number / Número', 'Colonia', 'Municipio', 'Estado', 'Postal Code / CP']
+    ['Type / Tipo', 'Legal Purpose / Propósito Legal', 'Street / Calle', 'Number / Número', 'Colonia', 'Municipio', 'Estado', 'Postal Code / CP']
   ];
   
   if (profile.foundingAddress) {
     const addr = profile.foundingAddress;
-    addressData.push(['Founding / Fundacional', addr.street || '', addr.ext_number || '', addr.colonia || '', addr.municipio || '', addr.estado || '', addr.cp || '']);
+    // Domicilio Social: Where shareholder assemblies are held (per Acta Constitutiva)
+    addressData.push(['Domicilio Social (Acta)', 'Lugar para Asambleas de Accionistas', addr.street || '', addr.ext_number || '', addr.colonia || '', addr.municipio || '', addr.estado || '', addr.cp || '']);
   }
   
   if (profile.currentFiscalAddress) {
     const addr = profile.currentFiscalAddress;
-    addressData.push(['Fiscal / Fiscal', addr.street || '', addr.ext_number || '', addr.colonia || '', addr.municipio || '', addr.estado || '', addr.cp || '']);
+    // Domicilio Fiscal: Tax address registered with SAT
+    addressData.push(['Domicilio Fiscal (SAT)', 'Dirección para Obligaciones Fiscales', addr.street || '', addr.ext_number || '', addr.colonia || '', addr.municipio || '', addr.estado || '', addr.cp || '']);
   }
   
   if (profile.currentOperationalAddress) {
     const addr = profile.currentOperationalAddress;
-    addressData.push(['Operational / Operativo', addr.street || '', addr.ext_number || '', addr.colonia || '', addr.municipio || '', addr.estado || '', addr.cp || '']);
+    // Operational address: Where the business actually operates (from bank/utility bills)
+    addressData.push(['Domicilio Operativo', 'Ubicación Real de Operaciones', addr.street || '', addr.ext_number || '', addr.colonia || '', addr.municipio || '', addr.estado || '', addr.cp || '']);
   }
   
   profile.addressEvidence?.forEach((poa, idx) => {

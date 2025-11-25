@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>RFC Validation Guide | Mexican Tax ID Verification | MexKYC</title>
+    <meta name="description" content="How to validate Mexican RFC (Registro Federal de Contribuyentes). Learn RFC format, validation rules, SAT verification, and common validation errors for KYC compliance.">
+    <meta name="keywords" content="RFC validation, Mexican RFC, Registro Federal de Contribuyentes, tax ID Mexico, RFC format, validate RFC, SAT verification, Mexican tax ID">
+    
+    <link rel="canonical" href="https://mexkyc.com/guide/rfc-validation">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is an RFC in Mexico?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "RFC (Registro Federal de Contribuyentes) is Mexico's tax identification number issued by SAT (Tax Administration Service). Every individual and business conducting economic activities in Mexico must have an RFC. It's a unique alphanumeric code that identifies taxpayers for all tax-related purposes and is essential for KYC verification."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is the format of a Mexican RFC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "RFC format differs by entity type: For companies (Personas Morales): 12 characters - 3 letters from company name + 6 digits for founding date (YYMMDD) + 3 alphanumeric homoclave. For individuals (Personas Físicas): 13 characters - 4 letters from name + 6 digits for birth date (YYMMDD) + 3 alphanumeric homoclave. Example company RFC: ABC210315XY9. Example individual RFC: GAPA850101ABC."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do I validate a Mexican RFC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "To validate a Mexican RFC: 1) Check length (12 chars for companies, 13 for individuals), 2) Verify first letters match name initials, 3) Validate date portion (YYMMDD) is a real date, 4) Check against SAT database for active status, 5) Confirm the name on SAT records matches expected name. Tools like MexKYC can automate this validation."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is the RFC homoclave?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The homoclave is the last 3 characters of an RFC that SAT assigns to differentiate taxpayers who would otherwise have identical RFCs (same name initials and date). It's calculated using a SAT algorithm based on the full name and date. The homoclave cannot be predicted and must be verified against SAT records."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I verify an RFC online with SAT?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, you can verify RFC status through SAT's online services at sat.gob.mx. SAT provides tools to: 1) Check if an RFC is registered and active, 2) Verify the associated legal name, 3) Confirm fiscal address, 4) Download the Constancia de Situación Fiscal. API access is available for businesses needing automated verification."
+                }
+            }
+        ]
+    }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #00875A;
+            --bg-dark: #0A0F1C;
+            --bg-card: #111827;
+            --text: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --border: #1F2937;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.8;
+        }
+        
+        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+        
+        header { padding: 100px 0 60px; border-bottom: 1px solid var(--border); }
+        
+        .breadcrumb { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        
+        h1 { font-size: 2.5rem; margin-bottom: 16px; line-height: 1.2; }
+        .meta { color: var(--text-muted); font-size: 0.95rem; }
+        
+        article { padding: 60px 0; }
+        
+        h2 { font-size: 1.75rem; margin: 48px 0 20px; padding-top: 24px; border-top: 1px solid var(--border); }
+        h3 { font-size: 1.25rem; margin: 32px 0 16px; color: var(--primary); }
+        
+        p { margin-bottom: 20px; color: var(--text-muted); }
+        
+        ul, ol { margin: 20px 0; padding-left: 24px; }
+        li { margin-bottom: 12px; color: var(--text-muted); }
+        
+        strong { color: var(--text); }
+        
+        .highlight-box {
+            background: var(--bg-card);
+            border-left: 4px solid var(--primary);
+            padding: 24px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .highlight-box h4 { margin-bottom: 12px; color: var(--primary); }
+        
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+        th, td { padding: 12px 16px; text-align: left; border: 1px solid var(--border); }
+        th { background: var(--bg-card); font-weight: 600; }
+        td { color: var(--text-muted); }
+        
+        code {
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+        
+        .code-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+        
+        .cta-box {
+            background: linear-gradient(135deg, #006847 0%, #00875A 100%);
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 48px 0;
+        }
+        
+        .cta-box h3 { color: white; margin-bottom: 12px; }
+        .cta-box p { color: rgba(255,255,255,0.9); }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: white;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .valid { color: #34D399; }
+        .invalid { color: #F87171; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="https://mexkyc.com">MexKYC</a> / <a href="/guide">Guides</a> / RFC Validation
+            </div>
+            <h1>RFC Validation Guide</h1>
+            <p class="meta">How to validate Mexican tax identification numbers</p>
+        </div>
+    </header>
+    
+    <article>
+        <div class="container">
+            <p>The <strong>RFC (Registro Federal de Contribuyentes)</strong> is Mexico's tax identification number. Validating RFC numbers is a critical step in Mexican KYC processes. This guide covers RFC format, validation rules, and best practices.</p>
+            
+            <div class="highlight-box">
+                <h4>Quick Reference</h4>
+                <p><strong>Company RFC:</strong> 12 characters (3 letters + 6 digits + 3 alphanumeric)<br>
+                <strong>Individual RFC:</strong> 13 characters (4 letters + 6 digits + 3 alphanumeric)<br>
+                <strong>Example:</strong> <code>ABC210315XY9</code> (company) | <code>GAPA850101ABC</code> (individual)</p>
+            </div>
+            
+            <h2>What is an RFC?</h2>
+            
+            <p>The RFC (Registro Federal de Contribuyentes) is a unique tax identification code assigned by Mexico's SAT (Servicio de Administración Tributaria). Every person or entity conducting economic activities in Mexico must have an RFC.</p>
+            
+            <p>The RFC is used for:</p>
+            <ul>
+                <li>Tax filing and payments</li>
+                <li>Issuing electronic invoices (CFDI)</li>
+                <li>Opening bank accounts</li>
+                <li>Business contracts and transactions</li>
+                <li>KYC verification</li>
+            </ul>
+            
+            <h2>RFC Format Structure</h2>
+            
+            <h3>Company RFC (Persona Moral) - 12 Characters</h3>
+            
+            <div class="code-block">
+Position:  1  2  3  4  5  6  7  8  9  10 11 12
+Example:   A  B  C  2  1  0  3  1  5  X  Y  9
+           └──┬──┘  └─────┬─────┘  └──┬───┘
+            Name      Date (YYMMDD)  Homoclave
+            (3 chars)  (6 digits)    (3 chars)
+            </div>
+            
+            <ul>
+                <li><strong>Positions 1-3:</strong> First 3 consonants from company name</li>
+                <li><strong>Positions 4-9:</strong> Founding date (YYMMDD format)</li>
+                <li><strong>Positions 10-12:</strong> Homoclave (SAT-assigned verification code)</li>
+            </ul>
+            
+            <h3>Individual RFC (Persona Física) - 13 Characters</h3>
+            
+            <div class="code-block">
+Position:  1  2  3  4  5  6  7  8  9  10 11 12 13
+Example:   G  A  P  A  8  5  0  1  0  1  A  B  C
+           └────┬────┘  └─────┬─────┘  └───┬───┘
+            Name (4 chars)  Date (YYMMDD)  Homoclave
+                           Birth date      (3 chars)
+            </div>
+            
+            <ul>
+                <li><strong>Position 1:</strong> First letter of paternal surname</li>
+                <li><strong>Position 2:</strong> First vowel of paternal surname</li>
+                <li><strong>Position 3:</strong> First letter of maternal surname</li>
+                <li><strong>Position 4:</strong> First letter of first name</li>
+                <li><strong>Positions 5-10:</strong> Birth date (YYMMDD format)</li>
+                <li><strong>Positions 11-13:</strong> Homoclave (SAT-assigned)</li>
+            </ul>
+            
+            <h2>RFC Validation Rules</h2>
+            
+            <h3>1. Length Validation</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Entity Type</th>
+                        <th>Length</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Company (Persona Moral)</td>
+                        <td>12 characters</td>
+                        <td><code>ABC210315XY9</code></td>
+                    </tr>
+                    <tr>
+                        <td>Individual (Persona Física)</td>
+                        <td>13 characters</td>
+                        <td><code>GAPA850101ABC</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>2. Character Validation</h3>
+            <ul>
+                <li><strong>Name portion:</strong> Must be uppercase letters (A-Z), excluding Ñ in some systems</li>
+                <li><strong>Date portion:</strong> Must be valid digits (0-9)</li>
+                <li><strong>Homoclave:</strong> Alphanumeric (A-Z, 0-9)</li>
+            </ul>
+            
+            <h3>3. Date Validation</h3>
+            <p>The date portion (positions 4-9 for companies, 5-10 for individuals) must represent a valid date:</p>
+            <ul>
+                <li>Year (YY): 00-99 (interpreted as 1900-2099)</li>
+                <li>Month (MM): 01-12</li>
+                <li>Day (DD): 01-31 (must be valid for the given month)</li>
+            </ul>
+            
+            <div class="highlight-box">
+                <h4>Date Validation Example</h4>
+                <p><code>850101</code> = January 1, 1985 <span class="valid">✓ Valid</span><br>
+                <code>210315</code> = March 15, 2021 <span class="valid">✓ Valid</span><br>
+                <code>211301</code> = Month 13 <span class="invalid">✗ Invalid</span><br>
+                <code>210230</code> = February 30 <span class="invalid">✗ Invalid</span></p>
+            </div>
+            
+            <h3>4. Name-RFC Correlation</h3>
+            <p>For additional validation, verify that the name portion of the RFC corresponds to the entity's actual name:</p>
+            
+            <ul>
+                <li><strong>Company:</strong> First 3 consonants should come from company name</li>
+                <li><strong>Individual:</strong> Letters should match surname/name pattern</li>
+            </ul>
+            
+            <p>Note: This correlation is approximate since SAT has special rules for certain names and handles duplicates.</p>
+            
+            <h2>RFC Validation Regex</h2>
+            
+            <p>Use these regular expressions for basic format validation:</p>
+            
+            <div class="code-block">
+// Company RFC (12 characters)
+const companyRfcRegex = /^[A-ZÑ&]{3}[0-9]{6}[A-Z0-9]{3}$/;
+
+// Individual RFC (13 characters)
+const individualRfcRegex = /^[A-ZÑ&]{4}[0-9]{6}[A-Z0-9]{3}$/;
+
+// Combined (accepts both)
+const rfcRegex = /^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/;
+            </div>
+            
+            <h2>Complete Validation Algorithm</h2>
+            
+            <div class="code-block">
+function validateRfc(rfc: string): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const upperRfc = rfc.toUpperCase().trim();
+  
+  // 1. Length check
+  if (upperRfc.length !== 12 && upperRfc.length !== 13) {
+    errors.push('RFC must be 12 (company) or 13 (individual) characters');
+    return { valid: false, errors };
+  }
+  
+  // 2. Character pattern check
+  const pattern = upperRfc.length === 12 
+    ? /^[A-ZÑ&]{3}[0-9]{6}[A-Z0-9]{3}$/
+    : /^[A-ZÑ&]{4}[0-9]{6}[A-Z0-9]{3}$/;
+    
+  if (!pattern.test(upperRfc)) {
+    errors.push('RFC format is invalid');
+    return { valid: false, errors };
+  }
+  
+  // 3. Extract and validate date
+  const dateStart = upperRfc.length === 12 ? 3 : 4;
+  const dateStr = upperRfc.substring(dateStart, dateStart + 6);
+  
+  const year = parseInt(dateStr.substring(0, 2));
+  const month = parseInt(dateStr.substring(2, 4));
+  const day = parseInt(dateStr.substring(4, 6));
+  
+  if (month < 1 || month > 12) {
+    errors.push('Invalid month in RFC date');
+  }
+  
+  if (day < 1 || day > 31) {
+    errors.push('Invalid day in RFC date');
+  }
+  
+  // Check days per month
+  const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (day > daysInMonth[month - 1]) {
+    errors.push('Day exceeds maximum for given month');
+  }
+  
+  return { valid: errors.length === 0, errors };
+}
+            </div>
+            
+            <h2>SAT Verification</h2>
+            
+            <p>Format validation alone is not sufficient for KYC. You must also verify the RFC against SAT records to confirm:</p>
+            
+            <ol>
+                <li><strong>RFC is registered</strong> - The RFC exists in SAT's database</li>
+                <li><strong>Status is active</strong> - The taxpayer is currently active</li>
+                <li><strong>Name matches</strong> - The registered name matches expected name</li>
+                <li><strong>Address is current</strong> - Fiscal address is up to date</li>
+            </ol>
+            
+            <div class="highlight-box">
+                <h4>SAT Verification Methods</h4>
+                <p><strong>Manual:</strong> Use SAT portal at sat.gob.mx to look up RFC status<br>
+                <strong>Automated:</strong> Request SAT Constancia from customer and extract/validate data<br>
+                <strong>API:</strong> Use services like MexKYC that integrate SAT validation</p>
+            </div>
+            
+            <h2>Common Validation Errors</h2>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Error</th>
+                        <th>Cause</th>
+                        <th>Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Wrong length</td>
+                        <td>Missing or extra characters</td>
+                        <td>Check for typos, request correct RFC</td>
+                    </tr>
+                    <tr>
+                        <td>Invalid characters</td>
+                        <td>Lowercase, special chars, or O/0 confusion</td>
+                        <td>Convert to uppercase, clarify ambiguous chars</td>
+                    </tr>
+                    <tr>
+                        <td>Invalid date</td>
+                        <td>Impossible date in RFC</td>
+                        <td>Likely a typo, request SAT Constancia</td>
+                    </tr>
+                    <tr>
+                        <td>Name mismatch</td>
+                        <td>RFC letters don't match name</td>
+                        <td>May be valid (SAT has special rules), verify with SAT</td>
+                    </tr>
+                    <tr>
+                        <td>Not in SAT</td>
+                        <td>RFC not registered or deactivated</td>
+                        <td>Request updated SAT Constancia from customer</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2>Special RFC Cases</h2>
+            
+            <h3>Generic RFC</h3>
+            <p>Mexico has a generic RFC <code>XAXX010101000</code> used for anonymous cash sales. This should NOT be accepted for KYC purposes.</p>
+            
+            <h3>Foreign RFC</h3>
+            <p>Foreign entities without Mexican tax presence use <code>XEXX010101000</code>. Additional documentation is required for KYC of foreign entities.</p>
+            
+            <h3>Name Exceptions</h3>
+            <p>SAT has rules to handle offensive words, common names, and duplicates. The name portion may not always match the obvious initials.</p>
+            
+            <div class="cta-box">
+                <h3>Automate RFC Validation</h3>
+                <p>MexKYC validates RFC format and cross-references with SAT Constancia automatically.</p>
+                <a href="https://mexkyc.com" class="btn">Try MexKYC Free →</a>
+            </div>
+            
+            <h2>Summary</h2>
+            
+            <p>RFC validation is essential for Mexican KYC. Key steps:</p>
+            
+            <ol>
+                <li><strong>Format validation:</strong> Check length (12/13 chars) and character patterns</li>
+                <li><strong>Date validation:</strong> Verify the embedded date is valid</li>
+                <li><strong>Name correlation:</strong> Check letters correspond to entity name</li>
+                <li><strong>SAT verification:</strong> Confirm RFC is registered and active</li>
+                <li><strong>Cross-reference:</strong> Match RFC data with other KYC documents</li>
+            </ol>
+            
+            <p>Always combine format validation with SAT verification for complete KYC compliance.</p>
+        </div>
+    </article>
+</body>
+</html>
+

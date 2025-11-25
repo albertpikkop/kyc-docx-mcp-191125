@@ -1,95 +1,95 @@
-# KYC Document Extractor (MCP Server)
+# MexKYC - AI-Powered KYC for Mexico
 
-A production-ready Node.js + TypeScript MCP (Model Context Protocol) server for extracting structured KYC (Know Your Customer) data from Mexican business documents using OpenAI GPT-5.1.
+<div align="center">
 
-## Overview
+![MexKYC Logo](https://mexkyc.com/logo.png)
 
-This project provides an MCP server that extracts structured data from various Mexican KYC documents, aggregates them into unified customer profiles, validates the data, and generates comprehensive KYC reports. It's designed for financial institutions, compliance teams, and businesses requiring automated KYC document processing.
+**Know Your Customer. Know Mexico.**
 
-## Features
+[![npm version](https://badge.fury.io/js/@mexkyc%2Fmcp.svg)](https://www.npmjs.com/package/@mexkyc/mcp)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-- **Multi-Document Support**: Extract data from 6 types of Mexican business documents
-- **Intelligent Aggregation**: Build unified KYC profiles from multiple document sources
-- **Address Resolution**: Smart address precedence logic (fiscal vs operational vs historical)
-- **Validation Engine**: Comprehensive validation with scoring and flagging
-- **MCP Protocol**: Standardized Model Context Protocol server for easy integration
-- **Type-Safe**: Full TypeScript with Zod schema validation
+[Website](https://mexkyc.com) • [Documentation](https://docs.mexkyc.com) • [API Reference](https://api.mexkyc.com/docs)
 
-## Supported Document Types
+</div>
 
-1. **Acta Constitutiva** (`acta`) - Company incorporation deed
-   - Extracts: Company identity, shareholders, legal representatives, corporate purpose, notary info
+---
 
-2. **SAT Constancia** (`sat_constancia`) - Tax status certificate
-   - Extracts: Tax profile, fiscal address, economic activities, tax obligations
+## 🇲🇽 What is MexKYC?
 
-3. **FM2/Residente Card** (`fm2`) - Immigration document
-   - Extracts: Representative identity, nationality, document numbers, dates
+**MexKYC** is a production-ready AI-powered KYC (Know Your Customer) document extraction platform designed specifically for Mexican business documents. Built as an MCP (Model Context Protocol) server, it seamlessly integrates with AI assistants and automated workflows.
 
-4. **Telmex Bill** (`telmex`) - Proof of address (telephone)
-   - Extracts: Client/vendor addresses, billing information, service details
+Extract structured data from Mexican regulatory documents, build unified customer profiles, validate compliance requirements, and generate comprehensive KYC reports—all with AI precision.
 
-5. **CFE Bill** (`cfe`) - Proof of address (electricity)
-   - Extracts: Client/vendor addresses, billing information, service details
+## ✨ Features
 
-6. **Bank Statement** (`bank_statement`) - Bank account statement
-   - Extracts: Account profile, transactions, address on statement
+- 🔍 **Multi-Document Support** - Extract data from 7+ types of Mexican business documents
+- 🤖 **AI-Powered Extraction** - Uses advanced vision models for accurate OCR and data extraction
+- 📊 **Intelligent Aggregation** - Build unified KYC profiles from multiple document sources
+- 🏠 **Smart Address Resolution** - Intelligent address precedence logic (fiscal vs operational vs historical)
+- ✅ **Validation Engine** - Comprehensive validation with scoring and risk flagging
+- 🔌 **MCP Protocol** - Standardized Model Context Protocol for easy AI integration
+- 📝 **Type-Safe** - Full TypeScript with Zod schema validation
+- 🔐 **Enterprise Ready** - Multi-tenant, audit logging, and compliance features
 
-## Architecture
+## 📄 Supported Document Types
+
+| Document | Type Code | What It Extracts |
+|----------|-----------|------------------|
+| **Acta Constitutiva** | `acta` | Company identity, shareholders, legal representatives, corporate purpose, notary info |
+| **SAT Constancia** | `sat_constancia` | Tax profile, RFC, fiscal address, economic activities, tax obligations |
+| **FM2/Residente Card** | `fm2` | Representative identity, nationality, immigration status, document validity |
+| **INE (Voter ID)** | `ine` | Personal identity, CURP, address, photo verification |
+| **Telmex Bill** | `telmex` | Proof of address, billing information, service details |
+| **CFE Bill** | `cfe` | Proof of address, electricity account, consumption data |
+| **Bank Statement** | `bank_statement` | Account profile, transactions, balances, bank address |
+
+## 🏗️ Architecture
 
 ```
-┌─────────────────┐
-│   MCP Client    │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  MCP Server     │  ← src/mcp/server.ts
-└────────┬────────┘
-         │
-    ┌────┴────┬──────────┬──────────┬──────────┐
-    ▼        ▼          ▼          ▼          ▼
-┌────────┐ ┌──────┐ ┌────────┐ ┌────────┐ ┌────────┐
-│Extract │ │Build │ │Validate│ │Report  │ │Storage │
-│        │ │Profile│ │        │ │        │ │        │
-└────────┘ └──────┘ └────────┘ └────────┘ └────────┘
+┌─────────────────────┐
+│   AI Assistant      │  (ChatGPT, Claude, Custom)
+│   or MCP Client     │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│   MexKYC MCP        │  ← @mexkyc/mcp
+│   Server            │
+└──────────┬──────────┘
+           │
+    ┌──────┴──────┬──────────┬──────────┬──────────┐
+    ▼             ▼          ▼          ▼          ▼
+┌────────┐  ┌──────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+│Extract │  │Build     │ │Validate│ │Report  │ │Storage │
+│Docs    │  │Profile   │ │        │ │        │ │        │
+└────────┘  └──────────┘ └────────┘ └────────┘ └────────┘
     │
     ▼
-┌─────────────────┐
-│  Document       │
-│  Extractors     │  ← src/extractors/
-└─────────────────┘
+┌─────────────────────┐
+│  Document           │
+│  Extractors         │  ← AI Vision Models
+└─────────────────────┘
 ```
 
-### Key Components
-
-- **MCP Server** (`src/mcp/`): Protocol server exposing tools for document import, profile building, validation, and reporting
-- **Extractors** (`src/extractors/`): Document-specific extraction logic using GPT-5.1 vision API
-- **KYC Core** (`src/kyc/`): Profile building, validation, and report generation
-- **Schemas** (`src/schemas/mx/`): Zod schemas for Mexican document structures
-- **Storage** (`src/kyc/storage.ts`): JSON-based run storage system
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 20+
-- OpenAI API key with GPT-5.1 access
 - TypeScript 5.5+
+- API key (OpenAI or Google Gemini)
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
-cd kyc-docx-mcp
+# Install from npm
+npm install @mexkyc/mcp
 
-# Install dependencies
+# Or clone the repository
+git clone https://github.com/mexkyc/mexkyc-mcp.git
+cd mexkyc-mcp
 npm install
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env and add your OPENAI_API_KEY
 ```
 
 ### Configuration
@@ -97,227 +97,217 @@ cp .env.example .env
 Create a `.env` file:
 
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
+# AI Model (choose one)
+OPENAI_API_KEY=your_openai_api_key
+# OR
+GOOGLE_API_KEY=your_gemini_api_key
+
+# Optional: Server configuration
+PORT=3000
+MCP_TRANSPORT=sse  # 'sse' for HTTP, omit for stdio
 ```
 
-### Development
+### Run the Server
 
 ```bash
-# Run in development mode (watch mode)
+# Development mode
 npm run dev
 
-# Build TypeScript
+# Production build
 npm run build
-
-# Run production build
 npm run start
 
-# Run MCP server
-npm run build && ./dist/mcp/cli.js
+# Run MCP server directly
+npx mexkyc
 ```
 
-## MCP Tools API
+## 📡 MCP Tools API
 
-The server exposes 5 MCP tools:
-
-> **Response format:** Each tool returns `{ "ok": true, "data": { ... } }` on success and `{ "ok": false, "error_code": "...", "message": "..." }` on failure. Parse the JSON and inspect the `ok` flag before using `data`.
+MexKYC exposes 5 MCP tools for document processing:
 
 ### 1. `list_supported_doc_types`
 
-Lists all supported document types and their descriptions.
+Lists all supported Mexican document types.
 
-**Response:**
-```json
-[
-  {
-    "type": "acta",
-    "description": "Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers"
-  },
-  ...
-]
+```typescript
+// No parameters required
+const result = await mcpClient.callTool("list_supported_doc_types", {});
 ```
 
 ### 2. `import_kyc_document`
 
 Imports and extracts data from a KYC document.
 
-**Parameters:**
-- `customer_id` (string): Unique customer identifier
-- `doc_type` (enum): Document type (`acta`, `sat_constancia`, `fm2`, `telmex`, `cfe`, `bank_statement`)
-- `file_url` (string): URL or path to the document file
-- `source_name` (string, optional): Human-readable source name
-
-**Response:**
-```json
-{
-  "customer_id": "pfds",
-  "run_id": "uuid",
-  "doc_id": "uuid",
-  "doc_type": "sat_constancia",
-  "status": "imported"
-}
+```typescript
+await mcpClient.callTool("import_kyc_document", {
+  customer_id: "empresa-xyz",
+  doc_type: "sat_constancia",
+  file_url: "https://storage.example.com/constancia.pdf",
+  source_name: "SAT_2024.pdf"  // optional
+});
 ```
 
 ### 3. `build_kyc_profile`
 
 Aggregates all imported documents into a unified KYC profile.
 
-**Parameters:**
-- `customer_id` (string): Customer identifier
-
-**Response:** Complete `KycProfile` object with all aggregated data
+```typescript
+await mcpClient.callTool("build_kyc_profile", {
+  customer_id: "empresa-xyz"
+});
+```
 
 ### 4. `validate_kyc_profile`
 
-Validates a KYC profile and generates validation results.
+Validates a KYC profile and generates compliance scores.
 
-**Parameters:**
-- `customer_id` (string): Customer identifier
-
-**Response:** `KycValidationResult` with score (0-1) and flags
+```typescript
+await mcpClient.callTool("validate_kyc_profile", {
+  customer_id: "empresa-xyz"
+});
+```
 
 ### 5. `get_kyc_report`
 
 Generates a comprehensive KYC report combining profile and validation.
 
-**Parameters:**
-- `customer_id` (string): Customer identifier
+```typescript
+await mcpClient.callTool("get_kyc_report", {
+  customer_id: "empresa-xyz",
+  include_trace: true  // optional: include extraction details
+});
+```
 
-**Response:** Complete KYC report JSON
-
-## Usage Examples
-
-### Basic Workflow
+## 💡 Usage Example
 
 ```typescript
-// 1. Import documents
+// Complete KYC workflow
+const customerId = "mi-empresa-sa";
+
+// 1. Import SAT Constancia (tax certificate)
 await import_kyc_document({
-  customer_id: "customer-123",
+  customer_id: customerId,
   doc_type: "sat_constancia",
   file_url: "https://example.com/constancia.pdf"
 });
 
+// 2. Import Acta Constitutiva (incorporation deed)
 await import_kyc_document({
-  customer_id: "customer-123",
+  customer_id: customerId,
   doc_type: "acta",
   file_url: "https://example.com/acta.pdf"
 });
 
-// 2. Build profile
-await build_kyc_profile({ customer_id: "customer-123" });
+// 3. Import proof of address
+await import_kyc_document({
+  customer_id: customerId,
+  doc_type: "cfe",
+  file_url: "https://example.com/cfe_bill.pdf"
+});
 
-// 3. Validate
-await validate_kyc_profile({ customer_id: "customer-123" });
+// 4. Build unified profile
+await build_kyc_profile({ customer_id: customerId });
 
-// 4. Get report
-await get_kyc_report({ customer_id: "customer-123" });
+// 5. Validate for compliance
+await validate_kyc_profile({ customer_id: customerId });
+
+// 6. Generate KYC report
+const report = await get_kyc_report({ customer_id: customerId });
 ```
 
-## Testing
+## 🏠 Address Resolution Logic
 
-Run individual test suites:
+MexKYC implements intelligent address resolution:
 
-```bash
-# Test SAT Constancia extraction
-npm run test:constancia
+| Address Type | Source Priority |
+|--------------|-----------------|
+| **Fiscal Address** | SAT Constancia (canonical) |
+| **Operational Address** | Bank Statement > CFE/Telmex > SAT (fallback) |
+| **Historical Addresses** | All addresses preserved with source tracking |
+| **Founding Address** | Acta Constitutiva (historical reference only) |
 
-# Test CFE proof of address
-npm run test:cfe
+## 🔒 Security & Compliance
 
-# Test bank statements
-npm run test:bank
+- **Multi-tenant isolation** - Organization-level data separation
+- **Audit logging** - Complete audit trail for compliance
+- **API key authentication** - Secure API access
+- **Rate limiting** - Protection against abuse
+- **HTTPS required** - Encrypted data transmission
 
-# Test Acta extraction
-npm run test:acta
-
-# Test KYC profile builder
-npm run test:kyc-builder
-
-# Test end-to-end PFDS workflow
-npm run test:kyc-pfds
-
-# Test KYC report generation
-npm run test:kyc-report-pfds
-```
-
-> **Fixture Paths**  
-> Integration tests expect real PDF fixtures. Set `KYC_FIXTURES_DIR` to the directory containing your documents (e.g. `export KYC_FIXTURES_DIR=/path/to/pfds/docs`). If the variable is unset the tests look for a local `fixtures/` directory and will fail with a descriptive error if the files are missing.
-
-## Data Flow
-
-1. **Document Import**: Document URL → Extractor → Structured JSON payload
-2. **Storage**: Extracted payload stored in `KycRun` with document metadata
-3. **Profile Building**: All documents aggregated → Unified `KycProfile`
-4. **Validation**: Profile analyzed → Validation flags and score
-5. **Reporting**: Profile + Validation → Comprehensive report
-
-## Address Resolution Logic
-
-The system implements intelligent address resolution:
-
-- **Fiscal Address**: Always from SAT Constancia (canonical)
-- **Operational Address**: Bank Statement > Proof of Address (CFE/Telmex) > SAT (fallback)
-- **Historical Addresses**: All addresses preserved with source tracking
-- **Founding Address**: From Acta (historical only, never overrides current)
-
-## Model Constraints
-
-**IMPORTANT**: This project ONLY supports:
-- `gpt-5.1`
-- `gpt-5.1-mini`
-
-These constraints are enforced in code, types, and comments. Any other model will throw an error.
-
-## API Usage
-
-This project uses OpenAI's new `responses.create` API (NOT chat completions). See `src/model.ts` for model configuration.
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
-├── extractors/          # Document-specific extractors
+├── extractors/          # Document-specific AI extractors
 │   ├── actaCompanyIdentity.ts
 │   ├── companyTaxProfileExtractor.ts
+│   ├── ineIdentity.ts
 │   ├── fm2Immigration.ts
 │   ├── telmexProofOfAddress.ts
 │   ├── cfeProofOfAddress.ts
-│   ├── bankStatementProfile.ts
-│   └── bankStatementTransactions.ts
+│   └── bankStatementProfile.ts
 ├── kyc/                 # Core KYC logic
 │   ├── types.ts         # Domain types
 │   ├── profileBuilder.ts
 │   ├── validation.ts
-│   ├── validators.ts
-│   ├── reportBuilder.ts
-│   └── storage.ts
-├── mcp/                 # MCP server
+│   └── reportBuilder.ts
+├── mcp/                 # MCP server implementation
 │   ├── server.ts        # Main server with tool handlers
-│   └── cli.ts          # CLI entry point
+│   └── cli.ts           # CLI entry point
 ├── schemas/             # Zod schemas
 │   └── mx/              # Mexican document schemas
-└── tests/               # Test suites
+└── utils/               # Utilities
 ```
 
-## Storage
+## 🧪 Testing
 
-Runs are stored as JSON files in `data/{customer_id}/run-{uuid}.json`. Each run contains:
-- Customer ID
-- Documents array with extracted payloads
-- Generated profile (if built)
-- Validation results (if validated)
+```bash
+# Run all tests
+npm test
 
-## Contributing
+# Test specific extractors
+npm run test:constancia   # SAT Constancia
+npm run test:acta         # Acta Constitutiva
+npm run test:cfe          # CFE bills
+npm run test:bank         # Bank statements
 
-1. Follow TypeScript best practices
-2. Maintain Zod schema validation for all extracted data
-3. Add tests for new extractors
-4. Update documentation for API changes
+# End-to-end KYC tests
+npm run test:kyc-pfds
+npm run test:kyc-report-pfds
+```
 
-## License
+## 🤝 Contributing
 
-ISC
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Support
+## 📄 License
 
-For issues or questions, please open an issue on GitHub.
+ISC License - see [LICENSE](LICENSE) for details.
+
+## 🔗 Links
+
+- **Website**: [https://mexkyc.com](https://mexkyc.com)
+- **Documentation**: [https://docs.mexkyc.com](https://docs.mexkyc.com)
+- **API Reference**: [https://api.mexkyc.com/docs](https://api.mexkyc.com/docs)
+- **GitHub**: [https://github.com/mexkyc/mexkyc-mcp](https://github.com/mexkyc/mexkyc-mcp)
+- **npm**: [https://www.npmjs.com/package/@mexkyc/mcp](https://www.npmjs.com/package/@mexkyc/mcp)
+
+## 💬 Support
+
+- **Issues**: [GitHub Issues](https://github.com/mexkyc/mexkyc-mcp/issues)
+- **Email**: support@mexkyc.com
+- **Twitter**: [@mexkyc](https://twitter.com/mexkyc)
+
+---
+
+<div align="center">
+
+**Built with ❤️ for Mexico's fintech ecosystem**
+
+*MexKYC - Know Your Customer. Know Mexico.*
+
+</div>

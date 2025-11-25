@@ -23,15 +23,34 @@ const LegalRepresentativeSchema = {
 const ShareholderSchema = {
   type: "object",
   additionalProperties: false,
-  description: "Shareholder / Partner details",
+  description: "Shareholder / Partner details with share classification",
   properties: {
     name: { type: "string", description: "Full name of shareholder" },
     shares: { type: "number", description: "Number of shares/equity units", nullable: true },
     percentage: { type: "number", description: "Percentage of ownership (0-100 scale, e.g. 50.5 for 50.5%)", minimum: 0, maximum: 100, nullable: true },
-    class: { type: "string", description: "Class of shares (e.g. Series A, Fixed Capital)", nullable: true },
+    share_series: { 
+      type: "string", 
+      description: "Share series/type (e.g. 'Serie A', 'Serie B', 'Serie I', 'Serie II'). Serie A/I are typically ordinary shares, Serie B/II are typically preferred shares.", 
+      nullable: true 
+    },
+    share_class: { 
+      type: "string", 
+      description: "Capital classification: 'FIJO' (Fixed Capital) or 'VARIABLE' (Variable Capital)", 
+      nullable: true 
+    },
+    has_voting_rights: { 
+      type: "boolean", 
+      description: "Whether these shares have voting rights in shareholder assemblies. Ordinary shares (Serie A) typically have voting rights, preferred shares (Serie B) typically do NOT.", 
+      nullable: true 
+    },
+    share_type: {
+      type: "string",
+      description: "Type of shares: 'ORDINARIAS' (ordinary - with voting rights) or 'PREFERENTES' (preferred - typically no voting rights, but priority in dividends)",
+      nullable: true
+    },
     is_beneficial_owner: { type: "boolean", description: "Whether this person is a beneficial owner (>25% usually)", nullable: true }
   },
-  required: ["name", "shares", "percentage", "class", "is_beneficial_owner"]
+  required: ["name", "shares", "percentage", "share_series", "share_class", "has_voting_rights", "share_type", "is_beneficial_owner"]
 };
 
 const NotarySchema = {

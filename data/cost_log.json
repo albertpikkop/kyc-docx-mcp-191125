@@ -2224,5 +2224,467 @@
     "estimatedCost": 0.34,
     "documentCount": 4,
     "reportType": "kyc_full"
+  },
+  {
+    "runId": "8acf3f69-e7e9-46e2-9012-6f7306182d71",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T03:50:13.414Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "97acedba-5a42-4d8c-9e39-994a69212611",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T03:50:14.902Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "d0eff8b8-5855-4e43-90dd-3be4a016fefd",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T03:50:16.212Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "96116669-84a4-4a77-9ea1-ef0fde953eaf",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T03:54:37.721Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "9be2ace2-1c8c-42c7-b18b-184d8466bad4",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T03:57:54.500Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "ece81992-c102-4c4c-aca4-327fad1d0b86",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T03:59:21.863Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "c13aae7d-af28-486c-9a02-452fe908ad77",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:04:15.197Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "72b067b7-d8b5-4cd2-8570-7d1ae6cea627",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:09:20.323Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "465740e6-7170-49fe-95c1-0767e34c72ad",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:12:05.226Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "be96872e-62a3-41f0-98d6-0316fe44bdc8",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:21:18.055Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "70a7af53-380e-48b3-bf21-05914b2815c7",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:25:30.326Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "eb933d5d-2986-49ca-8122-1ed7e881d2c6",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:33:50.626Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "3f4fe33c-57bd-49ae-ba48-8f5bba98eb15",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:41:30.229Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "a1ffa599-d9ed-45a2-979d-3608c5efc482",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T04:54:54.727Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "2e0c985f-17c4-4c32-aa8e-b1895d4074e8",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T04:57:43.962Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "839aab91-fd7c-4bb0-99b6-74e844dc9d25",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T04:59:35.355Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "e2810dd4-8cee-469f-8c5e-6badfe43264c",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T05:19:06.764Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "4d27792a-47d5-443c-b39d-baa14be08700",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T05:21:43.944Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 150000,
+      "completion_tokens": 5000,
+      "total_tokens": 155000
+    },
+    "estimatedCost": 0.425,
+    "documentCount": 5,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "90d93162-b64c-4d4d-9da6-d65d03aa5c23",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T05:23:17.366Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "64736e1b-ffe0-4352-a689-bee3b2379503",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T05:28:20.981Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "e90568f2-3fb6-4912-bddb-9cd604be647f",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T05:30:48.836Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "f4cc29cc-2b02-4658-aa4b-6a072010ebec",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T05:35:53.060Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "48cc7670-f95a-476d-9a3b-e3d09bb605b4",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T05:38:32.321Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "25f4af15-a3e4-48e3-b011-4a213ae812a3",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T05:40:14.195Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "13b4122f-71ef-4ec5-82f7-901c1d37f9c5",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T05:43:22.002Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "e910c39c-a845-4a9c-9159-1af973f8cfee",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T05:49:12.321Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "9aafcca9-5963-4d0f-8519-c0c572fe191c",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T05:55:45.224Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "3b6ff37f-573c-4bcd-9b6b-e6658297984f",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T05:58:37.253Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "154f8918-a10c-4a41-bea3-a17a59e4ff39",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T06:00:22.623Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "56c24069-d6b0-4ec4-9936-7f738fbe587f",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T06:03:49.775Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "62aa8bd1-3498-4586-bfcb-9955656a315a",
+    "customerId": "pfds-gemini",
+    "timestamp": "2025-11-25T06:11:22.232Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "dd394d4b-1873-4f25-98d2-ba02930c19ad",
+    "customerId": "grupo-pounj-gemini",
+    "timestamp": "2025-11-25T06:14:10.275Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 180000,
+      "completion_tokens": 6000,
+      "total_tokens": 186000
+    },
+    "estimatedCost": 0.51,
+    "documentCount": 6,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "f674d669-26bb-47fd-b461-7194475d606d",
+    "customerId": "enrique-cello-gemini",
+    "timestamp": "2025-11-25T06:15:49.799Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 120000,
+      "completion_tokens": 4000,
+      "total_tokens": 124000
+    },
+    "estimatedCost": 0.34,
+    "documentCount": 4,
+    "reportType": "kyc_full"
   }
 ]

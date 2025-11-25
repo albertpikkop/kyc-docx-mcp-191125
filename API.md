@@ -1,13 +1,14 @@
-# MCP Tools API Reference
+# MexKYC API Reference
 
-This document describes all MCP tools exposed by the KYC Document Extractor server.
+This document describes all MCP tools exposed by the MexKYC server.
 
 ## Base Information
 
-- **Server Name**: `mx-kyc-mcp`
+- **Server Name**: `mexkyc-mcp`
 - **Version**: `1.0.0`
 - **Protocol**: Model Context Protocol (MCP)
-- **Transport**: stdio
+- **Transport**: stdio or SSE (HTTP)
+- **Website**: [https://mexkyc.com](https://mexkyc.com)
 
 ## Tools
 

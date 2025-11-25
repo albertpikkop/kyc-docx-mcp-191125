@@ -47,7 +47,9 @@ const BASE_DOCUMENTS_FOLDER = "/Users/ashishpunj/Desktop/mcp-docs";
 const DOCUMENT_PATTERNS: Record<DocumentType, string[]> = {
   acta: ["acta", "constitutiva", "escritura", "constitución"],
   sat_constancia: ["constancia", "sat", "situacion fiscal", "rfc"],
-  fm2: ["fm2", "immigration", "migración"],
+  fm2: ["fm2", "immigration", "migración", "residente"],
+  ine: ["ine", "ife", "credencial", "votar"],
+  passport: ["passport", "pasaporte"],
   telmex: ["telmex", "telefono", "recibo telmex"],
   cfe: ["cfe", "luz", "electricidad", "recibo cfe"],
   bank_identity_page: ["banco", "bank", "estado cuenta", "cuenta", "clabe", "kapital"],

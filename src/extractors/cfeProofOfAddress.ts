@@ -10,26 +10,103 @@ import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 import * as path from 'path';
 
 const EXTRACTION_INSTRUCTIONS = `
-You are a strict KYC extractor for Mexican CFE electricity bills (comprobantes de domicilio).
-Your job is to fill the ProofOfAddress JSON schema accurately using ONLY information printed on the bill.
+You are a STRICT KYC extractor for Mexican CFE electricity bills (Comprobantes de Domicilio CFE).
+Your job is to extract data EXACTLY as printed - ZERO HALLUCINATIONS, ZERO INFERENCE.
 
-GLOBAL HARDENING RULES:
-- Never infer or generate data not clearly printed.
-- If a field is not present, set to null. Do NOT use "N/A", "Unknown", "--", or empty strings.
-- Normalize all dates to YYYY-MM-DD.
-- Convert amounts to numeric values (no currency symbols).
-- Never invent service numbers, RFCs, or names.
-- Currency: Assume "MXN" for Mexican documents unless the document explicitly uses "USD", "US$", "DÓLARES", or "DLS", in which case set to "USD". Never treat "$" alone as USD; in this context "$" means pesos (MXN).
+═══════════════════════════════════════════════════════════════════════════════
+ANTI-HALLUCINATION RULES (MANDATORY):
+═══════════════════════════════════════════════════════════════════════════════
+1. ONLY extract text that is PHYSICALLY PRINTED on the document
+2. If a field is not visible, set to null - NEVER guess or infer
+3. NEVER use placeholder values like "N/A", "--", "Unknown", or empty strings ""
+4. Copy names and addresses EXACTLY as printed
+5. Convert ALL dates to YYYY-MM-DD format
+6. Convert amounts to NUMERIC values (remove currency symbols)
+7. Currency is MXN unless document explicitly shows "USD" or "DLS"
 
-EXTRACT:
-- Provider info: vendor_name (CFE) and vendor_tax_id from the issuer block.
-- Holder info: the customer/contract holder name exactly as printed. Do NOT assume it is "PFDS".
-- Service address: Split strictly into street, exterior number, interior number (if any), colonia, municipio/alcaldía, estado, CP, country="MX". Include cross streets if printed.
-- Service identifiers: service or contract number / account number printed on the bill.
-- Billing info: billing_period_start, billing_period_end, due_date, issue_datetime (if printed), currency, total_due.
-- Doc metadata: mark document_type as "cfe_receipt" and fill evidence_meta (issuer_country="MX", original_filename, pages).
+═══════════════════════════════════════════════════════════════════════════════
+CFE BILL STRUCTURE - WHERE TO FIND DATA:
+═══════════════════════════════════════════════════════════════════════════════
+CFE bills typically have this layout:
 
-Do not infer who the ultimate client is and do not merge with other documents. Only extract what this single CFE bill says.
+TOP SECTION (Header):
+- CFE logo and company info
+- Bill date (Fecha de emisión)
+- Service number / Número de servicio
+
+CUSTOMER SECTION:
+- Account holder name (Nombre del titular)
+- Service address (Domicilio del servicio)
+- Contract/Account number (No. de contrato / No. de cuenta)
+
+CONSUMPTION SECTION:
+- Billing period (Periodo de facturación)
+- kWh consumed
+- Previous/Current readings
+
+PAYMENT SECTION:
+- Total due (Total a pagar)
+- Due date (Fecha límite de pago)
+- Payment locations
+
+═══════════════════════════════════════════════════════════════════════════════
+FIELD EXTRACTION RULES:
+═══════════════════════════════════════════════════════════════════════════════
+
+1. VENDOR INFO (Always CFE):
+   - vendor_name: "Comisión Federal de Electricidad" or "CFE"
+   - vendor_tax_id: CFE's RFC if printed (usually "CFE370814QI0")
+
+2. CLIENT NAME (client_name) - CRITICAL:
+   - Extract the EXACT name of the account holder as printed
+   - May be a person name: "ENRIQUE DE CELLO DIAZ"
+   - May be a company name: "PFDS SAPI DE CV"
+   - NEVER assume or guess the client name
+
+3. SERVICE ADDRESS (client_address) - CRITICAL:
+   - Extract the service address (Domicilio del servicio), NOT payment address
+   - Split into components:
+     * street: Street name (e.g., "CERRADA AZTECAS")
+     * ext_number: Exterior number (e.g., "MZA 48", "23")
+     * int_number: Interior/Lot if present (e.g., "LT 9", "DEPTO 3")
+     * colonia: Neighborhood (e.g., "AMPLIACION SAN PEDRO")
+     * municipio: Municipality/Delegación (e.g., "IZTAPALAPA")
+     * estado: State (e.g., "CIUDAD DE MEXICO", "MEXICO")
+     * cp: 5-digit postal code (e.g., "09630")
+     * country: Always "MX"
+   - Include cross_streets if printed (e.g., "ENTRE CALLE X Y CALLE Y")
+
+4. SERVICE IDENTIFIERS:
+   - account_reference: The service/contract number (Número de servicio)
+   - invoice_number: The bill number if different from service number
+
+5. BILLING DATES:
+   - billing_period_start: Start of billing period (YYYY-MM-DD)
+   - billing_period_end: End of billing period (YYYY-MM-DD)
+   - due_date: Payment due date (YYYY-MM-DD)
+   - issue_datetime: Date bill was generated (YYYY-MM-DD)
+
+6. AMOUNTS:
+   - total_due: Total amount to pay (numeric, no symbols)
+   - currency: "MXN" (default for CFE)
+
+7. DOCUMENT METADATA:
+   - document_type: "cfe_receipt"
+   - evidence_meta.issuer_country: "MX"
+   - evidence_meta.original_filename: From file path
+   - evidence_meta.pages: Usually 1
+
+═══════════════════════════════════════════════════════════════════════════════
+VALIDATION CHECKLIST:
+═══════════════════════════════════════════════════════════════════════════════
+□ client_name is populated with ACTUAL printed name (not assumed)
+□ client_address has at least: street, colonia, municipio, estado, cp
+□ All dates are YYYY-MM-DD format
+□ total_due is a numeric value (no "$" symbols)
+□ account_reference contains the service/contract number
+□ No placeholder values anywhere
+
+Return ONLY valid JSON matching the schema. Zero hallucinations.
 `;
 
 export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {

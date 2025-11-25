@@ -22,6 +22,7 @@ import type {
   BankAccountProfile,
   HistoricalAddress,
   ImmigrationProfile,
+  PassportIdentity,
   Address,
   BankIdentity
 } from './types.js';
@@ -268,21 +269,26 @@ export class KycProfileBuilder {
   }
 
   /**
-   * Adds representative identity (Immigration/FM2)
+   * Adds representative identity (Immigration/FM2/INE)
+   * This is the Mexican immigration document that proves legal right to work
    */
   addRepresentativeIdentity(identity: ImmigrationProfile): void {
     // In demo mode, we only want one. If we already have one, maybe keep the first or overwrite?
     // Requirement: "1 rep identity: prefer fm2, else ine, else passport"
-    // Since the extractor type tells us what it is, we can check.
-    // But `ImmigrationProfile` struct doesn't explicitly carry the "source doc type" field easily accessible unless it's in `document_type` field.
     if (this.profile.representativeIdentity && DEMO_CONFIG.enabled) {
-       // If existing is FM2 and new is not, keep existing.
-       // For simplicity in this demo run, we just overwrite or keep first.
-       // PFDS demo uses FM2, so let's just allow it.
        return;
     }
     
     this.profile.representativeIdentity = identity;
+    this.updateTimestamp();
+  }
+
+  /**
+   * Adds passport identity (for foreign nationals)
+   * This is the primary identity document from the person's country of origin
+   */
+  addPassportIdentity(passport: PassportIdentity): void {
+    this.profile.passportIdentity = passport;
     this.updateTimestamp();
   }
 
@@ -419,6 +425,7 @@ export function buildKycProfile(options: {
   proofsOfAddress?: ProofOfAddress[];
   bankAccounts?: BankAccountProfile[];
   representativeIdentity?: ImmigrationProfile;
+  passportIdentity?: PassportIdentity;
 }): KycProfile {
   const builder = new KycProfileBuilder(options.customerId);
 
@@ -444,6 +451,10 @@ export function buildKycProfile(options: {
 
   if (options.representativeIdentity) {
     builder.addRepresentativeIdentity(options.representativeIdentity);
+  }
+
+  if (options.passportIdentity) {
+    builder.addPassportIdentity(options.passportIdentity);
   }
 
   return builder.build();

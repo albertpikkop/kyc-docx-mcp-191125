@@ -2,40 +2,166 @@ import { KycProfile, KycValidationResult, KycValidationFlag, TraceSection, UboTr
 import { differenceInDays } from "date-fns";
 import { DEMO_CONFIG } from '../core/demoConfig.js';
 
-// --- 0. Persona Física Detection ---
+// --- 0. Entity Type Classification ---
 
 /**
- * Detects if the profile represents a Persona Física (individual) vs Persona Moral (corporate)
- * Triggers PF Mode when:
- * - SAT Constancia shows "Régimen: Persona Física" OR
- * - SAT Constancia shows "Régimen: Sin obligaciones fiscales" OR
- * - No Acta uploaded AND RFC pattern = persona física (ends with letters/numbers, not "KQ7" corporate pattern)
+ * Entity Type Classification for Mexican Tax Entities
+ * 
+ * Three main categories based on SAT Constancia:
+ * 
+ * 1. PERSONA_MORAL - Corporate entities (S.A., S.A.P.I., S.C., etc.)
+ *    - Has Acta Constitutiva
+ *    - RFC pattern: 3 letters + 6 digits + 3 homoclave (e.g., "PFD210830KQ7")
+ *    - Examples: PFDS SAPI DE CV, Grupo Pounj SA DE CV
+ * 
+ * 2. PERSONA_FISICA_EMPRESARIAL - Individual with business activity
+ *    - Has registered economic activities in SAT
+ *    - RFC pattern: 4 letters + 6 digits + 3 homoclave (e.g., "GAPA750101ABC")
+ *    - Tax regimes: "Actividades Empresariales", "RESICO", "RIF", etc.
+ * 
+ * 3. PERSONA_FISICA_SIN_OBLIGACIONES - Individual without tax obligations
+ *    - Registered in RFC but NO economic activities
+ *    - Tax regime: "Sin obligaciones fiscales"
+ *    - Examples: Students, housewives, people needing RFC for banking only
+ *    - Like: Enrique Cello (CEDE981004E67)
+ */
+export type EntityType = 
+  | 'PERSONA_MORAL'                    // Corporate entity (S.A., S.A.P.I., etc.)
+  | 'PERSONA_FISICA_EMPRESARIAL'       // Individual with business activities
+  | 'PERSONA_FISICA_SIN_OBLIGACIONES'  // Individual without tax obligations
+  | 'UNKNOWN';
+
+/**
+ * Classifies the entity type based on SAT Constancia data
+ */
+export function classifyEntityType(profile: KycProfile): EntityType {
+  const taxProfile = profile.companyTaxProfile;
+  const hasActa = !!profile.companyIdentity;
+  
+  // 1. Check RFC pattern first
+  if (taxProfile?.rfc) {
+    const rfc = taxProfile.rfc.toUpperCase().trim();
+    const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;  // 3 letters = corporate
+    const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/; // 4 letters = individual
+    
+    // If RFC indicates Persona Moral
+    if (personaMoralPattern.test(rfc) && hasActa) {
+      return 'PERSONA_MORAL';
+    }
+    
+    // If RFC indicates Persona Física, check tax regime
+    if (personaFisicaPattern.test(rfc)) {
+      return classifyPersonaFisicaSubtype(taxProfile);
+    }
+  }
+  
+  // 2. Fallback to tax regime analysis
+  if (taxProfile?.tax_regime) {
+    const regime = taxProfile.tax_regime.toUpperCase();
+    
+    // Check for "Sin obligaciones fiscales"
+    if (regime.includes('SIN OBLIGACIONES')) {
+      return 'PERSONA_FISICA_SIN_OBLIGACIONES';
+    }
+    
+    // Check for business-related regimes
+    if (regime.includes('ACTIVIDAD') || regime.includes('EMPRESARIAL') || 
+        regime.includes('PROFESIONAL') || regime.includes('RESICO') ||
+        regime.includes('RIF') || regime.includes('SIMPLIFICADO')) {
+      return hasActa ? 'PERSONA_MORAL' : 'PERSONA_FISICA_EMPRESARIAL';
+    }
+    
+    // Check for explicit Persona Física indicators
+    if (regime.includes('PERSONA FÍSICA') || regime.includes('PERSONA FISICA')) {
+      return classifyPersonaFisicaSubtype(taxProfile);
+    }
+  }
+  
+  // 3. If has Acta, it's corporate
+  if (hasActa) {
+    return 'PERSONA_MORAL';
+  }
+  
+  return 'UNKNOWN';
+}
+
+/**
+ * Helper: Classify Persona Física subtype based on activities
+ */
+function classifyPersonaFisicaSubtype(taxProfile: any): EntityType {
+  const regime = (taxProfile?.tax_regime || '').toUpperCase();
+  const hasActivities = taxProfile?.economic_activities && taxProfile.economic_activities.length > 0;
+  
+  // "Sin obligaciones fiscales" = no tax obligations
+  if (regime.includes('SIN OBLIGACIONES')) {
+    return 'PERSONA_FISICA_SIN_OBLIGACIONES';
+  }
+  
+  // Has economic activities registered
+  if (hasActivities) {
+    return 'PERSONA_FISICA_EMPRESARIAL';
+  }
+  
+  // Has business-related regime keywords
+  if (regime.includes('ACTIVIDAD') || regime.includes('EMPRESARIAL') || 
+      regime.includes('PROFESIONAL') || regime.includes('RESICO') ||
+      regime.includes('ARRENDAMIENTO') || regime.includes('RIF')) {
+    return 'PERSONA_FISICA_EMPRESARIAL';
+  }
+  
+  // Default: if no activities and no business keywords, likely sin obligaciones
+  return 'PERSONA_FISICA_SIN_OBLIGACIONES';
+}
+
+/**
+ * Get human-readable entity type label
+ */
+export function getEntityTypeLabel(entityType: EntityType, language: 'es' | 'en' = 'es'): string {
+  const labels: Record<EntityType, { es: string; en: string }> = {
+    'PERSONA_MORAL': {
+      es: 'Persona Moral (Empresa)',
+      en: 'Legal Entity (Corporation)'
+    },
+    'PERSONA_FISICA_EMPRESARIAL': {
+      es: 'Persona Física con Actividad Empresarial',
+      en: 'Individual with Business Activity'
+    },
+    'PERSONA_FISICA_SIN_OBLIGACIONES': {
+      es: 'Persona Física Sin Obligaciones Fiscales',
+      en: 'Individual without Tax Obligations'
+    },
+    'UNKNOWN': {
+      es: 'Tipo de Entidad Desconocido',
+      en: 'Unknown Entity Type'
+    }
+  };
+  
+  return labels[entityType][language];
+}
+
+/**
+ * Get client onboarding type label for reports
+ */
+export function getClientOnboardingLabel(entityType: EntityType): string {
+  switch (entityType) {
+    case 'PERSONA_MORAL':
+      return 'Alta de Cliente - Persona Moral (Empresa)';
+    case 'PERSONA_FISICA_EMPRESARIAL':
+      return 'Alta de Cliente - Persona Física con Actividad Empresarial';
+    case 'PERSONA_FISICA_SIN_OBLIGACIONES':
+      return 'Alta de Cliente - Persona Física (Sin Actividad Económica Registrada)';
+    default:
+      return 'Alta de Cliente';
+  }
+}
+
+/**
+ * Legacy function: Detects if the profile represents a Persona Física (individual) vs Persona Moral (corporate)
+ * @deprecated Use classifyEntityType() for more detailed classification
  */
 export function isPersonaFisica(profile: KycProfile): boolean {
-  // Check SAT Constancia tax regime
-  if (profile.companyTaxProfile?.tax_regime) {
-    const regime = profile.companyTaxProfile.tax_regime.toUpperCase();
-    if (regime.includes('PERSONA FÍSICA') || regime.includes('PERSONA FISICA') || 
-        regime.includes('SIN OBLIGACIONES FISCALES') || regime === 'SIN OBLIGACIONES FISCALES') {
-      return true;
-    }
-  }
-
-  // Check if no Acta AND RFC pattern suggests persona física
-  if (!profile.companyIdentity && profile.companyTaxProfile?.rfc) {
-    const rfc = profile.companyTaxProfile.rfc.toUpperCase();
-    // Persona Física RFC pattern: 4 letters + 6 digits + 3 homoclave (e.g., "CEDE981004E67")
-    // Persona Moral RFC pattern: 3 letters + 6 digits + 3 homoclave (e.g., "PFD210830KQ7")
-    // Both have 12 characters total
-    const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/;
-    const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;
-    
-    if (personaFisicaPattern.test(rfc) && !personaMoralPattern.test(rfc)) {
-      return true;
-    }
-  }
-
-  return false;
+  const entityType = classifyEntityType(profile);
+  return entityType === 'PERSONA_FISICA_EMPRESARIAL' || entityType === 'PERSONA_FISICA_SIN_OBLIGACIONES';
 }
 
 // --- 1. Address Resolution ---
@@ -81,7 +207,9 @@ export function resolveAddresses(profile: KycProfile): KycProfile {
 
 export interface UboInfo {
   name: string;
-  percentage: number | null;
+  percentage: number | null;          // Total ownership percentage (all shares)
+  votingPercentage?: number | null;   // Voting percentage (only voting shares)
+  hasVotingRights?: boolean;          // Whether this shareholder's shares have voting rights
 }
 
 export interface EquityConsistencyResult {
@@ -150,6 +278,20 @@ export function checkEquityConsistency(profile: KycProfile): EquityConsistencyRe
     };
 }
 
+/**
+ * Resolves Ultimate Beneficial Owners (UBOs) from shareholder structure.
+ * 
+ * CRITICAL LEGAL NOTE (per Arturo's comment):
+ * UBO calculation should ONLY count VOTING SHARES for control determination.
+ * - Serie A / Acciones Ordinarias = VOTING shares (count for UBO)
+ * - Serie B / Acciones Preferentes = NON-VOTING shares (do NOT count for control)
+ * 
+ * Per LGSM (Ley General de Sociedades Mercantiles), preferred shares typically
+ * have priority in dividends but NO voting rights in ordinary assemblies.
+ * 
+ * A person with 30% of Serie B shares does NOT control the company because
+ * they cannot vote in shareholder assemblies.
+ */
 export function resolveUbo(profile: KycProfile): UboInfo[] {
   if (!profile.companyIdentity || !profile.companyIdentity.shareholders) {
     return [];
@@ -157,36 +299,116 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
 
   const shareholders = profile.companyIdentity.shareholders;
   
-  // Canonical recalculation for UBO check too
-  let totalShares = 0;
-  shareholders.forEach(s => { totalShares += (s.shares || 0); });
+  // Calculate TOTAL VOTING SHARES only (exclude preferred/non-voting shares)
+  let totalVotingShares = 0;
+  let totalAllShares = 0;
+  
+  shareholders.forEach(s => { 
+    const shares = s.shares || 0;
+    totalAllShares += shares;
+    
+    // Determine if these are voting shares
+    // Default to voting if not specified (conservative approach)
+    const hasVotingRights = determineVotingRights(s);
+    
+    if (hasVotingRights) {
+      totalVotingShares += shares;
+    }
+  });
   
   const ubos: UboInfo[] = [];
   
-    for (const s of shareholders) {
-        let isUbo = false;
-        let pct: number | null = null;
-
-        // Prefer calculated percentage if total shares available
-        if (totalShares > 0 && s.shares !== null && s.shares !== undefined) {
-            pct = (s.shares / totalShares) * 100;
-        } else {
-            pct = s.percentage ?? null;
-        }
-
-        if (pct !== null && pct > 25) {
-            isUbo = true;
-        } else if (s.is_beneficial_owner) {
-            // Fallback if calculation fails but extracted metadata says yes
-            isUbo = true;
-        }
-
-        if (isUbo) {
-            ubos.push({ name: s.name, percentage: pct });
-        }
+  for (const s of shareholders) {
+    let isUbo = false;
+    let pct: number | null = null;
+    let votingPct: number | null = null;
+    
+    const shares = s.shares || 0;
+    const hasVotingRights = determineVotingRights(s);
+    
+    // Calculate ownership percentage (total shares)
+    if (totalAllShares > 0 && s.shares !== null && s.shares !== undefined) {
+      pct = (shares / totalAllShares) * 100;
+    } else {
+      pct = s.percentage ?? null;
     }
     
-    return ubos;
+    // Calculate VOTING percentage (only voting shares count for control)
+    if (hasVotingRights && totalVotingShares > 0) {
+      votingPct = (shares / totalVotingShares) * 100;
+    } else if (!hasVotingRights) {
+      // Non-voting shares = 0% voting control
+      votingPct = 0;
+    }
+    
+    // UBO determination: >25% of VOTING SHARES = control
+    // Per FATF/GAFI and Mexican CNBV regulations, control is measured by voting power
+    if (votingPct !== null && votingPct > 25) {
+      isUbo = true;
+    } else if (s.is_beneficial_owner) {
+      // Fallback: if explicitly marked as beneficial owner (e.g., through other control mechanisms)
+      isUbo = true;
+    }
+    
+    if (isUbo) {
+      ubos.push({ 
+        name: s.name, 
+        percentage: pct,
+        votingPercentage: votingPct,
+        hasVotingRights
+      });
+    }
+  }
+  
+  return ubos;
+}
+
+/**
+ * Determines if a shareholder's shares have voting rights.
+ * 
+ * Mexican corporate law (LGSM):
+ * - Serie A / Acciones Ordinarias = typically have voting rights
+ * - Serie B / Acciones Preferentes = typically NO voting rights
+ * - Serie I = often ordinary (voting)
+ * - Serie II = often preferred (no voting)
+ * 
+ * If has_voting_rights is explicitly set, use that.
+ * Otherwise, infer from share_series and share_type.
+ */
+function determineVotingRights(shareholder: any): boolean {
+  // 1. If explicitly set, use it
+  if (shareholder.has_voting_rights === true) return true;
+  if (shareholder.has_voting_rights === false) return false;
+  
+  // 2. Check share_type
+  const shareType = (shareholder.share_type || '').toUpperCase();
+  if (shareType.includes('PREFERENTE') || shareType.includes('PREFERRED')) {
+    return false; // Preferred shares typically don't vote
+  }
+  if (shareType.includes('ORDINARIA') || shareType.includes('ORDINARY')) {
+    return true; // Ordinary shares have voting rights
+  }
+  
+  // 3. Check share_series
+  const series = (shareholder.share_series || shareholder.class || '').toUpperCase();
+  
+  // Serie B, Serie II are typically preferred (non-voting)
+  if (series.includes('SERIE B') || series.includes('SERIES B') || 
+      series.includes('SERIE II') || series.includes('SERIES II') ||
+      series === 'B' || series === 'II') {
+    return false;
+  }
+  
+  // Serie A, Serie I are typically ordinary (voting)
+  if (series.includes('SERIE A') || series.includes('SERIES A') || 
+      series.includes('SERIE I') || series.includes('SERIES I') ||
+      series === 'A' || series === 'I') {
+    return true;
+  }
+  
+  // 4. Default: assume voting rights (conservative for UBO detection)
+  // Better to flag potential UBOs than miss them
+  return true;
 }
 
 // --- 3. Signatory Helper ---
@@ -503,6 +725,269 @@ export function checkEntityCoherence(profile: KycProfile): EntityCoherenceResult
 // --- 5. Main Validation Function ---
 
 /**
+ * Determines nationality from available identity documents
+ * Returns: 'mexican' | 'foreign' | 'unknown'
+ */
+function determineNationality(profile: KycProfile): 'mexican' | 'foreign' | 'unknown' {
+  const fm2Nationality = profile.representativeIdentity?.nationality?.toUpperCase() || null;
+  const passportNationality = profile.passportIdentity?.nationality?.toUpperCase() || null;
+  const passportIssuer = profile.passportIdentity?.issuer_country?.toUpperCase() || null;
+  const ineDocType = profile.representativeIdentity?.document_type?.toUpperCase() || null;
+  
+  // Mexican indicators
+  const mexicanNationalityTerms = ['MEXICANA', 'MEXICANO', 'MEXICO', 'MX', 'MEX'];
+  
+  // If document is INE, the person is definitely Mexican (only Mexican citizens can have INE)
+  if (ineDocType === 'INE' || ineDocType === 'IFE') {
+    return 'mexican';
+  }
+  
+  // Check explicit nationality fields
+  if (fm2Nationality && mexicanNationalityTerms.includes(fm2Nationality)) {
+    return 'mexican';
+  }
+  if (passportNationality && mexicanNationalityTerms.includes(passportNationality)) {
+    return 'mexican';
+  }
+  if (passportIssuer && mexicanNationalityTerms.includes(passportIssuer)) {
+    return 'mexican';
+  }
+  
+  // If we have FM2/FM3 with non-Mexican nationality, they're foreign
+  if (fm2Nationality && !mexicanNationalityTerms.includes(fm2Nationality)) {
+    return 'foreign';
+  }
+  
+  // If passport is from non-Mexican country, they're foreign
+  if (passportIssuer && !mexicanNationalityTerms.includes(passportIssuer)) {
+    return 'foreign';
+  }
+  if (passportNationality && !mexicanNationalityTerms.includes(passportNationality)) {
+    return 'foreign';
+  }
+  
+  return 'unknown';
+}
+
+/**
+ * Validates identity documents based on nationality and entity type
+ * 
+ * MEXICAN KYC REQUIREMENTS (Based on FATF-GAFI, CNBV, and SAT regulations):
+ * 
+ * 1. MEXICAN NATIONAL - PERSONA FÍSICA:
+ *    - INE (Credencial para Votar) is sufficient
+ *    - Passport NOT required (optional)
+ *    - RFC required for tax purposes
+ *    - Proof of address required
+ * 
+ * 2. MEXICAN NATIONAL - PERSONA MORAL (Legal Representative):
+ *    - INE is sufficient for the representative
+ *    - Passport NOT required
+ *    - Acta Constitutiva required (proves powers)
+ *    - SAT Constancia required
+ * 
+ * 3. FOREIGN NATIONAL - PERSONA FÍSICA:
+ *    - Passport REQUIRED (primary identity from country of origin)
+ *    - FM2/FM3/Tarjeta de Residente REQUIRED (proves legal status in Mexico)
+ *    - CURP comes automatically with FM2/FM3
+ *    - RFC required if conducting business activities
+ * 
+ * 4. FOREIGN NATIONAL - PERSONA MORAL (Legal Representative):
+ *    - Passport REQUIRED (primary identity)
+ *    - FM2/FM3 REQUIRED (proves legal right to work/represent in Mexico)
+ *    - Mexican law requires legal representatives to have work authorization
+ *    - Acta Constitutiva required (proves powers)
+ *    - SAT Constancia required
+ */
+function validateIdentityDocuments(
+  profile: KycProfile, 
+  isPF: boolean, 
+  nationality: 'mexican' | 'foreign' | 'unknown'
+): { flags: KycValidationFlag[]; scorePenalty: number } {
+  const flags: KycValidationFlag[] = [];
+  let scorePenalty = 0;
+  
+  // Helper to check document types
+  const repDocType = profile.representativeIdentity?.document_type?.toUpperCase() || '';
+  const hasIne = !!profile.representativeIdentity?.document_number && 
+                 (repDocType === 'INE' || repDocType === 'IFE');
+  const hasFm2 = !!profile.representativeIdentity?.document_number && 
+                 (repDocType === 'FM2' || repDocType === 'FM3' || 
+                  repDocType.includes('RESIDENTE') || repDocType.includes('TEMPORAL') || 
+                  repDocType.includes('PERMANENTE'));
+  const hasPassport = !!profile.passportIdentity?.document_number;
+  const hasCurp = !!profile.representativeIdentity?.curp;
+  const hasAnyIdentity = hasIne || hasFm2 || hasPassport;
+  
+  // =========================================================
+  // SCENARIO 1: MEXICAN NATIONAL - PERSONA FÍSICA
+  // =========================================================
+  if (nationality === 'mexican' && isPF) {
+    // Mexican PF: INE alone is sufficient, passport optional
+    if (!hasIne && !hasPassport) {
+      flags.push({
+        code: "REP_ID_MISMATCH",
+        level: "critical",
+        message: "Persona Física Mexicana: Falta identificación oficial (INE o Pasaporte Mexicano)."
+      });
+      scorePenalty += 0.3;
+    }
+    // Note: No FM2 needed for Mexican nationals
+  }
+  
+  // =========================================================
+  // SCENARIO 2: MEXICAN NATIONAL - PERSONA MORAL
+  // =========================================================
+  else if (nationality === 'mexican' && !isPF) {
+    // Mexican PM Rep Legal: INE alone is sufficient
+    if (!hasIne && !hasPassport) {
+      flags.push({
+        code: "REP_ID_MISMATCH",
+        level: "critical",
+        message: "Representante Legal Mexicano: Falta identificación oficial (INE o Pasaporte Mexicano). La INE es suficiente para ciudadanos mexicanos."
+      });
+      scorePenalty += 0.3;
+    }
+    // Note: Mexican nationals don't need FM2 - they have automatic right to work
+  }
+  
+  // =========================================================
+  // SCENARIO 3: FOREIGN NATIONAL - PERSONA FÍSICA
+  // =========================================================
+  else if (nationality === 'foreign' && isPF) {
+    // Foreign PF: Need BOTH passport AND FM2/FM3
+    // Per FATF-GAFI Mexico report: "original passport and documentation showing legal status"
+    
+    if (!hasPassport && !hasFm2) {
+      flags.push({
+        code: "REP_ID_MISMATCH",
+        level: "critical",
+        message: "Persona Física Extranjera: Faltan documentos de identidad. Se requiere Pasaporte (identidad) Y FM2/FM3 (estatus migratorio en México)."
+      });
+      scorePenalty += 0.3;
+    } else if (!hasPassport) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "critical",
+        message: "Persona Física Extranjera: Falta Pasaporte. El pasaporte es el documento de identidad primario emitido por el país de origen."
+      });
+      scorePenalty += 0.2;
+    } else if (!hasFm2) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "critical",
+        message: "Persona Física Extranjera: Falta FM2/FM3/Tarjeta de Residente. Este documento acredita el estatus migratorio legal en México."
+      });
+      scorePenalty += 0.2;
+    }
+    
+    // CURP validation - should come with FM2
+    if (hasFm2 && !hasCurp) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "warning",
+        message: "Extranjero con FM2 pero sin CURP detectado. Verificar que el FM2 incluya CURP válido."
+      });
+      scorePenalty += 0.05;
+    }
+  }
+  
+  // =========================================================
+  // SCENARIO 4: FOREIGN NATIONAL - PERSONA MORAL
+  // =========================================================
+  else if (nationality === 'foreign' && !isPF) {
+    // Foreign PM Rep Legal: Need BOTH passport AND FM2/FM3
+    // Mexican law requires foreign legal representatives to have work authorization
+    
+    if (!hasPassport && !hasFm2) {
+      flags.push({
+        code: "REP_ID_MISMATCH",
+        level: "critical",
+        message: "Representante Legal Extranjero: Faltan documentos. Se requiere Pasaporte (identidad) Y FM2/FM3 (autorización para trabajar en México)."
+      });
+      scorePenalty += 0.3;
+    } else if (!hasPassport) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "critical",
+        message: "Representante Legal Extranjero: Falta Pasaporte. El pasaporte acredita la identidad ante su país de origen."
+      });
+      scorePenalty += 0.2;
+    } else if (!hasFm2) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "critical",
+        message: "Representante Legal Extranjero: Falta FM2/FM3. La ley mexicana requiere que representantes legales extranjeros tengan permiso de trabajo (FM2/FM3/Residente)."
+      });
+      scorePenalty += 0.2;
+    }
+    
+    // CURP validation for foreign legal reps
+    if (hasFm2 && !hasCurp) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "warning",
+        message: "Representante Extranjero: FM2 sin CURP. El CURP es necesario para trámites fiscales y bancarios."
+      });
+      scorePenalty += 0.05;
+    }
+    
+    // Both documents present - verify names match
+    if (hasPassport && hasFm2) {
+      const passportName = profile.passportIdentity?.full_name?.toUpperCase().trim() || '';
+      const fm2Name = profile.representativeIdentity?.full_name?.toUpperCase().trim() || '';
+      
+      if (passportName && fm2Name) {
+        // Simple token-based matching
+        const passportTokens = new Set(passportName.split(/\s+/).filter(t => t.length > 1));
+        const fm2Tokens = new Set(fm2Name.split(/\s+/).filter(t => t.length > 1));
+        
+        let matchCount = 0;
+        for (const token of passportTokens) {
+          if (fm2Tokens.has(token)) matchCount++;
+        }
+        
+        const matchRatio = matchCount / Math.min(passportTokens.size, fm2Tokens.size);
+        
+        if (matchRatio < 0.5) {
+          flags.push({
+            code: "IDENTITY_MISMATCH",
+            level: "warning",
+            message: `Los nombres en Pasaporte (${profile.passportIdentity?.full_name}) y FM2 (${profile.representativeIdentity?.full_name}) no coinciden.`
+          });
+          scorePenalty += 0.1;
+        }
+      }
+    }
+  }
+  
+  // =========================================================
+  // SCENARIO 5: NATIONALITY UNKNOWN
+  // =========================================================
+  else {
+    // Can't determine nationality - require at least one identity document
+    if (!hasAnyIdentity) {
+      flags.push({
+        code: "REP_ID_MISMATCH",
+        level: "critical",
+        message: "Falta documento de identidad (INE/Pasaporte/FM2). No se puede verificar la identidad del firmante."
+      });
+      scorePenalty += 0.3;
+    } else {
+      // Have some identity but can't determine nationality
+      flags.push({
+        code: "OTHER",
+        level: "warning",
+        message: "No se pudo determinar la nacionalidad del representante. Verificar si es mexicano (INE suficiente) o extranjero (requiere Pasaporte + FM2)."
+      });
+      scorePenalty += 0.05;
+    }
+  }
+  
+  return { flags, scorePenalty };
+}
+
+/**
  * Validates a KYC Profile against business rules with advanced logic.
  */
 export function validateKycProfile(profile: KycProfile): KycValidationResult {
@@ -511,6 +996,9 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
 
   // A. Detect Persona Física mode
   const isPF = isPersonaFisica(profile);
+  
+  // B. Determine nationality of the representative/individual
+  const nationality = determineNationality(profile);
 
   // 0. Critical Entity Coherence Check (Persona Moral Only)
   if (!isPF) {
@@ -532,10 +1020,22 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       }
   }
 
-  // A. Resolve Addresses (Ensure strictly populated)
+  // C. Resolve Addresses (Ensure strictly populated)
   resolveAddresses(profile);
 
-  // B. Corporate checks (SKIP for Persona Física)
+  // =========================================================
+  // D. IDENTITY DOCUMENT VALIDATION
+  // This is the core logic that handles all 4 scenarios:
+  // 1. Mexican National - Persona Física
+  // 2. Mexican National - Persona Moral
+  // 3. Foreign National - Persona Física  
+  // 4. Foreign National - Persona Moral
+  // =========================================================
+  const identityValidation = validateIdentityDocuments(profile, isPF, nationality);
+  flags.push(...identityValidation.flags);
+  score -= identityValidation.scorePenalty;
+
+  // E. Corporate checks (SKIP for Persona Física)
   if (!isPF) {
     // Compute & Log UBO/Signers (For debugging/info mostly, but could trigger rules)
   const ubos = resolveUbo(profile);
@@ -614,21 +1114,12 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       score -= 0.2;
   }
 
-  // PF Mode: Identity verification (INE/FM2 must match SAT)
+  // PF Mode: Additional name matching check (identity doc requirement already handled above)
   if (isPF) {
-    // Check if identity document exists
-    if (!profile.representativeIdentity) {
-      flags.push({
-        code: "LOW_DOC_COVERAGE",
-        level: "critical",
-        message: "Missing Identity Document (INE/FM2) for Persona Física."
-      });
-      score -= 0.2;
-    }
-    
-    // Check if identity document matches SAT name (only if both exist)
+    // Check if identity document name matches SAT name (only if both exist)
+    // This catches cases where someone provides valid ID but for wrong person
     const satName = profile.companyTaxProfile?.razon_social;
-    const identityName = profile.representativeIdentity?.full_name;
+    const identityName = profile.representativeIdentity?.full_name || profile.passportIdentity?.full_name;
     
     if (satName && identityName) {
       // Normalize names for comparison (uppercase, trim, normalize spaces)
@@ -648,14 +1139,14 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       
       // STRICTER: Require high overlap, but allow order diffs
       // For PF, usually identity name is part of SAT name (which might be full legal name)
-      const matchRatio = commonCount / identityWords.size;
+      const matchRatio = identityWords.size > 0 ? commonCount / identityWords.size : 0;
       
       // Only flag if match ratio is low (less than 75% of identity tokens found in SAT)
       if (matchRatio < 0.75) {
         flags.push({
           code: "IDENTITY_MISMATCH",
           level: "warning",
-          message: `SAT name (${satName}) does not match identity document name (${identityName}).`
+          message: `El nombre en SAT (${satName}) no coincide con el documento de identidad (${identityName}).`
         });
         score -= 0.1;
       }

@@ -38,6 +38,7 @@ import {
 import { buildKycProfile } from "../kyc/profileBuilder.js";
 import { validateKycProfile } from "../kyc/validation.js";
 import { buildKycReport } from "../kyc/reportBuilder.js";
+import { assessCredit } from "../kyc/creditAssessment.js";
 import { apiKeyAuth, rateLimitConfig } from "./middleware.js";
 import { handleKycCheck, handleCreditAssess, handleGetAudit } from "./restApi.js";
 import { AsyncLocalStorage } from "async_hooks";
@@ -387,11 +388,601 @@ export async function handleGetKycReport({ customer_id, include_trace = false }:
   return okResponse(report);
 }
 
+// --- NEW MVP TOOLS (Top 5 for $5M Pitch) ---
+
+/**
+ * Tool 1: ASSESS CREDIT - THE MONEY MAKER 💰
+ * Deterministic credit scoring with full transparency
+ */
+export async function handleAssessCredit({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
+  const orgId = requireOrgId();
+  
+  let dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
+    return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
+  }
+
+  let profile = dbRun.profile as KycProfile | null;
+  let validation = dbRun.validation as KycValidationResult | null;
+
+  // Auto-build and validate if needed
+  if (!profile || !validation) {
+    await handleValidateKycProfile({ customer_id });
+    dbRun = await getLatestRunDb(orgId, customer_id);
+    if (!dbRun) {
+      return errorResponse("DB_ERROR", "Failed to reload run");
+    }
+    profile = dbRun.profile as KycProfile | null;
+    validation = dbRun.validation as KycValidationResult | null;
+  }
+
+  if (!profile || !validation) {
+    return errorResponse("PROFILE_OR_VALIDATION_MISSING", "Unable to assess credit without profile and validation");
+  }
+
+  // Get transactions from bank_statement_transactions documents
+  const txDoc = dbRun.docs.find(d => d.docType === 'bank_statement_transactions');
+  const transactions = txDoc?.extractedPayload as Array<{
+    date: string;
+    direction: 'credit' | 'debit';
+    amount: number;
+    currency: string;
+  }> | null;
+
+  const assessment = assessCredit(profile, validation, transactions);
+
+  // Log audit event
+  await logAudit(orgId, "credit_assessed", {
+    customerId: customer_id,
+    runId: dbRun.id,
+    decision: assessment.decision,
+    limit: assessment.limit,
+    confidence: assessment.confidence,
+  });
+
+  return okResponse(assessment);
+}
+
+/**
+ * Tool 2: EXPLAIN VALIDATION - AI WOW FACTOR 🧠
+ * Natural language explanations of validation results
+ */
+export async function handleExplainValidation({ customer_id, language = 'en' }: { 
+  customer_id: string; 
+  language?: 'en' | 'es';
+}): Promise<McpToolResponse> {
+  const orgId = requireOrgId();
+  
+  let dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
+    return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
+  }
+
+  let profile = dbRun.profile as KycProfile | null;
+  let validation = dbRun.validation as KycValidationResult | null;
+
+  if (!profile || !validation) {
+    await handleValidateKycProfile({ customer_id });
+    dbRun = await getLatestRunDb(orgId, customer_id);
+    profile = dbRun?.profile as KycProfile | null;
+    validation = dbRun?.validation as KycValidationResult | null;
+  }
+
+  if (!validation) {
+    return errorResponse("VALIDATION_MISSING", "No validation results found");
+  }
+
+  const isSpanish = language === 'es';
+  
+  // Generate human-readable explanations
+  const explanations: Array<{
+    category: string;
+    status: 'pass' | 'warning' | 'fail';
+    explanation: string;
+    recommendation?: string;
+  }> = [];
+
+  // Score explanation
+  const scorePercent = Math.round(validation.score * 100);
+  let scoreStatus: 'pass' | 'warning' | 'fail' = 'pass';
+  let scoreExplanation = '';
+  
+  if (scorePercent >= 90) {
+    scoreStatus = 'pass';
+    scoreExplanation = isSpanish 
+      ? `Excelente puntuación KYC de ${scorePercent}%. El perfil cumple con todos los requisitos de verificación.`
+      : `Excellent KYC score of ${scorePercent}%. The profile meets all verification requirements.`;
+  } else if (scorePercent >= 70) {
+    scoreStatus = 'warning';
+    scoreExplanation = isSpanish
+      ? `Puntuación KYC de ${scorePercent}%. El perfil es aceptable pero tiene algunas observaciones menores.`
+      : `KYC score of ${scorePercent}%. The profile is acceptable but has some minor observations.`;
+  } else {
+    scoreStatus = 'fail';
+    scoreExplanation = isSpanish
+      ? `Puntuación KYC baja de ${scorePercent}%. Se requiere revisión adicional o documentos faltantes.`
+      : `Low KYC score of ${scorePercent}%. Additional review or missing documents required.`;
+  }
+
+  explanations.push({
+    category: isSpanish ? 'Puntuación General' : 'Overall Score',
+    status: scoreStatus,
+    explanation: scoreExplanation,
+  });
+
+  // Flag explanations
+  const flagMessages: Record<string, { en: string; es: string; rec_en: string; rec_es: string }> = {
+    'ADDRESS_MISMATCH': {
+      en: 'The fiscal address from SAT does not match the address found in proof of address documents.',
+      es: 'La dirección fiscal del SAT no coincide con la dirección en los comprobantes de domicilio.',
+      rec_en: 'Verify the customer has updated their SAT registration or provide a more recent proof of address.',
+      rec_es: 'Verificar que el cliente haya actualizado su registro en el SAT o proporcionar un comprobante de domicilio más reciente.',
+    },
+    'REP_ID_MISMATCH': {
+      en: 'The legal representative\'s identity document does not match the name in the Acta Constitutiva.',
+      es: 'El documento de identidad del representante legal no coincide con el nombre en el Acta Constitutiva.',
+      rec_en: 'Request the correct ID document or verify the representative has legal authority.',
+      rec_es: 'Solicitar el documento de identidad correcto o verificar que el representante tenga facultades legales.',
+    },
+    'LOW_DOC_COVERAGE': {
+      en: 'The customer has provided fewer documents than required for a complete KYC profile.',
+      es: 'El cliente ha proporcionado menos documentos de los requeridos para un perfil KYC completo.',
+      rec_en: 'Request the missing documents to complete the verification process.',
+      rec_es: 'Solicitar los documentos faltantes para completar el proceso de verificación.',
+    },
+    'IDENTITY_MISMATCH': {
+      en: 'Identity information is inconsistent across different documents.',
+      es: 'La información de identidad es inconsistente entre diferentes documentos.',
+      rec_en: 'Review all identity documents for consistency and request clarification if needed.',
+      rec_es: 'Revisar todos los documentos de identidad y solicitar aclaración si es necesario.',
+    },
+    'EQUITY_INCONSISTENT': {
+      en: 'Shareholder equity percentages do not add up correctly.',
+      es: 'Los porcentajes de participación accionaria no suman correctamente.',
+      rec_en: 'Review the Acta Constitutiva for accurate shareholder information.',
+      rec_es: 'Revisar el Acta Constitutiva para información precisa de accionistas.',
+    },
+  };
+
+  for (const flag of validation.flags) {
+    const msgData = flagMessages[flag.code];
+    explanations.push({
+      category: flag.code.replace(/_/g, ' '),
+      status: flag.level === 'critical' ? 'fail' : 'warning',
+      explanation: msgData 
+        ? (isSpanish ? msgData.es : msgData.en)
+        : flag.message,
+      recommendation: msgData
+        ? (isSpanish ? msgData.rec_es : msgData.rec_en)
+        : undefined,
+    });
+  }
+
+  // Summary
+  const criticalCount = validation.flags.filter(f => f.level === 'critical').length;
+  const warningCount = validation.flags.filter(f => f.level === 'warning').length;
+  
+  const summary = isSpanish
+    ? `Resumen: ${criticalCount} problema(s) crítico(s), ${warningCount} advertencia(s). ${
+        criticalCount === 0 ? 'El perfil puede proceder a evaluación crediticia.' : 'Se requiere atención antes de proceder.'
+      }`
+    : `Summary: ${criticalCount} critical issue(s), ${warningCount} warning(s). ${
+        criticalCount === 0 ? 'Profile can proceed to credit assessment.' : 'Attention required before proceeding.'
+      }`;
+
+  return okResponse({
+    customer_id,
+    score: validation.score,
+    score_percent: scorePercent,
+    summary,
+    explanations,
+    language,
+  });
+}
+
+/**
+ * Tool 3: SUGGEST MISSING DOCUMENTS - PROACTIVE AI 🤖
+ * AI-powered suggestions for completing KYC profile
+ */
+export async function handleSuggestMissingDocuments({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
+  const orgId = requireOrgId();
+  
+  const dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
+    // No documents at all - suggest everything
+    return okResponse({
+      customer_id,
+      completeness: 0,
+      suggestions: [
+        {
+          doc_type: 'sat_constancia',
+          priority: 'required',
+          reason: 'Tax registration is mandatory for all business KYC profiles',
+          reason_es: 'El registro fiscal es obligatorio para todos los perfiles KYC empresariales',
+        },
+        {
+          doc_type: 'acta',
+          priority: 'required',
+          reason: 'Incorporation deed establishes legal entity and authorized representatives',
+          reason_es: 'El acta constitutiva establece la entidad legal y los representantes autorizados',
+        },
+        {
+          doc_type: 'fm2',
+          priority: 'required',
+          reason: 'Identity document for the legal representative is required',
+          reason_es: 'Se requiere documento de identidad del representante legal',
+        },
+        {
+          doc_type: 'cfe',
+          priority: 'recommended',
+          reason: 'Proof of address validates operational location',
+          reason_es: 'El comprobante de domicilio valida la ubicación operativa',
+        },
+        {
+          doc_type: 'bank_statement',
+          priority: 'recommended',
+          reason: 'Bank statements enable credit assessment and verify financial activity',
+          reason_es: 'Los estados de cuenta bancarios permiten la evaluación crediticia',
+        },
+      ],
+    });
+  }
+
+  const existingDocTypes = new Set(dbRun.docs.map(d => d.docType));
+  const profile = dbRun.profile as KycProfile | null;
+
+  const suggestions: Array<{
+    doc_type: string;
+    priority: 'required' | 'recommended' | 'optional';
+    reason: string;
+    reason_es: string;
+  }> = [];
+
+  // Check required documents
+  if (!existingDocTypes.has('sat_constancia')) {
+    suggestions.push({
+      doc_type: 'sat_constancia',
+      priority: 'required',
+      reason: 'Missing SAT Constancia - Tax registration is mandatory',
+      reason_es: 'Falta Constancia SAT - El registro fiscal es obligatorio',
+    });
+  }
+
+  if (!existingDocTypes.has('acta') && !profile?.companyIdentity) {
+    suggestions.push({
+      doc_type: 'acta',
+      priority: 'required',
+      reason: 'Missing Acta Constitutiva - Legal entity verification required',
+      reason_es: 'Falta Acta Constitutiva - Se requiere verificación de entidad legal',
+    });
+  }
+
+  // Check identity documents
+  const hasIdentityDoc = existingDocTypes.has('fm2') || existingDocTypes.has('ine') || existingDocTypes.has('passport');
+  if (!hasIdentityDoc) {
+    suggestions.push({
+      doc_type: 'fm2',
+      priority: 'required',
+      reason: 'Missing identity document for legal representative (INE, FM2, or Passport)',
+      reason_es: 'Falta documento de identidad del representante legal (INE, FM2 o Pasaporte)',
+    });
+  }
+
+  // Check proof of address
+  const hasProofOfAddress = existingDocTypes.has('cfe') || existingDocTypes.has('telmex');
+  if (!hasProofOfAddress) {
+    suggestions.push({
+      doc_type: 'cfe',
+      priority: 'recommended',
+      reason: 'No proof of address found - Utility bill recommended for address validation',
+      reason_es: 'No se encontró comprobante de domicilio - Se recomienda recibo de servicios',
+    });
+  }
+
+  // Check bank statements for credit assessment
+  const hasBankDocs = existingDocTypes.has('bank_statement') || existingDocTypes.has('bank_identity_page');
+  if (!hasBankDocs) {
+    suggestions.push({
+      doc_type: 'bank_statement',
+      priority: 'recommended',
+      reason: 'No bank statement found - Required for credit assessment and financial verification',
+      reason_es: 'No se encontró estado de cuenta - Requerido para evaluación crediticia',
+    });
+  }
+
+  // Calculate completeness score
+  const requiredDocs = ['sat_constancia', 'acta'];
+  const recommendedDocs = ['cfe', 'bank_statement'];
+  const identityDocs = ['fm2', 'ine', 'passport'];
+
+  let completeness = 0;
+  const weights = { required: 30, identity: 20, recommended: 10 };
+
+  for (const doc of requiredDocs) {
+    if (existingDocTypes.has(doc)) completeness += weights.required;
+  }
+  if (identityDocs.some(d => existingDocTypes.has(d))) completeness += weights.identity;
+  for (const doc of recommendedDocs) {
+    if (existingDocTypes.has(doc)) completeness += weights.recommended;
+  }
+
+  return okResponse({
+    customer_id,
+    completeness: Math.min(100, completeness),
+    existing_documents: Array.from(existingDocTypes),
+    suggestions,
+    next_action: suggestions.length > 0 
+      ? suggestions[0].priority === 'required'
+        ? `Upload ${suggestions[0].doc_type} to continue`
+        : 'Profile is complete for basic KYC. Additional documents recommended for credit assessment.'
+      : 'Profile is complete! Ready for credit assessment.',
+  });
+}
+
+/**
+ * Tool 4: GET RISK ANALYSIS - FRAUD DETECTION 🛡️
+ * Comprehensive risk scoring with fraud indicators
+ */
+export async function handleGetRiskAnalysis({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
+  const orgId = requireOrgId();
+  
+  let dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
+    return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
+  }
+
+  let profile = dbRun.profile as KycProfile | null;
+  let validation = dbRun.validation as KycValidationResult | null;
+
+  if (!profile || !validation) {
+    await handleValidateKycProfile({ customer_id });
+    dbRun = await getLatestRunDb(orgId, customer_id);
+    if (!dbRun) {
+      return errorResponse("DB_ERROR", "Failed to reload run after validation");
+    }
+    profile = dbRun.profile as KycProfile | null;
+    validation = dbRun.validation as KycValidationResult | null;
+  }
+
+  if (!profile || !validation) {
+    return errorResponse("PROFILE_OR_VALIDATION_MISSING", "Cannot perform risk analysis without profile");
+  }
+
+  const riskFactors: Array<{
+    factor: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    score_impact: number;
+    details: string;
+  }> = [];
+
+  let riskScore = 100; // Start at 100, deduct for risk factors
+
+  // 1. Document Coverage Risk
+  const docTypes = new Set(dbRun.docs.map(d => d.docType));
+  const docCoverage = docTypes.size / 5; // Assume 5 main doc types
+  if (docCoverage < 0.4) {
+    riskFactors.push({
+      factor: 'LOW_DOCUMENT_COVERAGE',
+      severity: 'high',
+      score_impact: -25,
+      details: `Only ${docTypes.size} document types provided. Insufficient for comprehensive verification.`,
+    });
+    riskScore -= 25;
+  } else if (docCoverage < 0.6) {
+    riskFactors.push({
+      factor: 'MODERATE_DOCUMENT_COVERAGE',
+      severity: 'medium',
+      score_impact: -10,
+      details: `${docTypes.size} document types provided. Additional documents recommended.`,
+    });
+    riskScore -= 10;
+  }
+
+  // 2. Validation Flags Risk
+  const criticalFlags = validation.flags.filter(f => f.level === 'critical');
+  const warningFlags = validation.flags.filter(f => f.level === 'warning');
+  
+  for (const flag of criticalFlags) {
+    riskFactors.push({
+      factor: flag.code,
+      severity: 'critical',
+      score_impact: -20,
+      details: flag.message,
+    });
+    riskScore -= 20;
+  }
+
+  for (const flag of warningFlags) {
+    riskFactors.push({
+      factor: flag.code,
+      severity: 'medium',
+      score_impact: -5,
+      details: flag.message,
+    });
+    riskScore -= 5;
+  }
+
+  // 3. Tax Status Risk
+  if (profile.companyTaxProfile?.status && profile.companyTaxProfile.status !== 'ACTIVO') {
+    riskFactors.push({
+      factor: 'INACTIVE_TAX_STATUS',
+      severity: 'critical',
+      score_impact: -30,
+      details: `Tax status is "${profile.companyTaxProfile.status}" instead of ACTIVO`,
+    });
+    riskScore -= 30;
+  }
+
+  // 4. Recent Incorporation Risk (new companies are higher risk)
+  if (profile.companyIdentity?.incorporation_date) {
+    const incDate = new Date(profile.companyIdentity.incorporation_date);
+    const ageYears = (Date.now() - incDate.getTime()) / (365 * 24 * 60 * 60 * 1000);
+    if (ageYears < 1) {
+      riskFactors.push({
+        factor: 'RECENTLY_INCORPORATED',
+        severity: 'medium',
+        score_impact: -10,
+        details: `Company incorporated less than 1 year ago (${Math.round(ageYears * 12)} months)`,
+      });
+      riskScore -= 10;
+    }
+  }
+
+  // 5. Missing Bank Account Risk
+  if (!profile.bankAccounts || profile.bankAccounts.length === 0) {
+    riskFactors.push({
+      factor: 'NO_BANK_ACCOUNT_VERIFIED',
+      severity: 'medium',
+      score_impact: -15,
+      details: 'No bank account information provided for financial verification',
+    });
+    riskScore -= 15;
+  }
+
+  // Ensure score is between 0 and 100
+  riskScore = Math.max(0, Math.min(100, riskScore));
+
+  // Determine risk category
+  let riskCategory: 'low' | 'medium' | 'high' | 'extreme';
+  if (riskScore >= 80) riskCategory = 'low';
+  else if (riskScore >= 60) riskCategory = 'medium';
+  else if (riskScore >= 40) riskCategory = 'high';
+  else riskCategory = 'extreme';
+
+  // Generate recommendation
+  let recommendation: string;
+  if (riskCategory === 'low') {
+    recommendation = 'Profile presents minimal risk. Proceed with standard terms.';
+  } else if (riskCategory === 'medium') {
+    recommendation = 'Profile presents moderate risk. Consider additional verification or adjusted terms.';
+  } else if (riskCategory === 'high') {
+    recommendation = 'Profile presents high risk. Manual review required before proceeding.';
+  } else {
+    recommendation = 'Profile presents extreme risk. Do not proceed without thorough investigation.';
+  }
+
+  await logAudit(orgId, "risk_analyzed", {
+    customerId: customer_id,
+    runId: dbRun.id,
+    riskScore,
+    riskCategory,
+    factorCount: riskFactors.length,
+  });
+
+  return okResponse({
+    customer_id,
+    risk_score: riskScore,
+    risk_category: riskCategory,
+    risk_factors: riskFactors,
+    recommendation,
+    analyzed_at: new Date().toISOString(),
+  });
+}
+
+/**
+ * Tool 5: BATCH IMPORT DOCUMENTS - ENTERPRISE SCALE 🚀
+ * Import multiple documents in parallel for efficiency
+ */
+export async function handleBatchImportDocuments({ customer_id, documents }: { 
+  customer_id: string; 
+  documents: Array<{ doc_type: ImportableDocumentType; file_url: string; source_name?: string }>;
+}): Promise<McpToolResponse> {
+  const orgId = requireOrgId();
+  
+  if (!documents || documents.length === 0) {
+    return errorResponse("NO_DOCUMENTS", "At least one document must be provided");
+  }
+
+  if (documents.length > 10) {
+    return errorResponse("TOO_MANY_DOCUMENTS", "Maximum 10 documents per batch");
+  }
+
+  const startTime = Date.now();
+  const results: Array<{
+    doc_type: string;
+    file_url: string;
+    status: 'success' | 'failed';
+    doc_id?: string;
+    error?: string;
+    model_used?: string;
+  }> = [];
+
+  // Process documents in parallel
+  const promises = documents.map(async (doc) => {
+    try {
+      const response = await handleImportKycDocument({
+        customer_id,
+        doc_type: doc.doc_type,
+        file_url: doc.file_url,
+        source_name: doc.source_name,
+      });
+
+      // Parse the response
+      const responseData = JSON.parse(response.content[0].text);
+      
+      if (responseData.ok) {
+        return {
+          doc_type: doc.doc_type,
+          file_url: doc.file_url,
+          status: 'success' as const,
+          doc_id: responseData.data.doc_id,
+          model_used: responseData.data.model_used,
+        };
+      } else {
+        return {
+          doc_type: doc.doc_type,
+          file_url: doc.file_url,
+          status: 'failed' as const,
+          error: responseData.message,
+        };
+      }
+    } catch (error: any) {
+      return {
+        doc_type: doc.doc_type,
+        file_url: doc.file_url,
+        status: 'failed' as const,
+        error: error?.message || 'Unknown error',
+      };
+    }
+  });
+
+  const resolvedResults = await Promise.all(promises);
+  results.push(...resolvedResults);
+
+  const successCount = results.filter(r => r.status === 'success').length;
+  const failedCount = results.filter(r => r.status === 'failed').length;
+  const duration = Date.now() - startTime;
+
+  await logAudit(orgId, "batch_import_completed", {
+    customerId: customer_id,
+    totalDocuments: documents.length,
+    successCount,
+    failedCount,
+    durationMs: duration,
+  });
+
+  return okResponse({
+    customer_id,
+    total: documents.length,
+    success_count: successCount,
+    failed_count: failedCount,
+    duration_ms: duration,
+    results,
+    next_step: successCount > 0 
+      ? 'Run build_kyc_profile to aggregate documents into a unified profile'
+      : 'Review failed imports and retry',
+  });
+}
+
 // --- MCP Server Setup ---
 
 // Create server instance
 const server = new McpServer({
-  name: "mx-kyc-mcp",
+  name: "mexkyc-mcp",
   version: "1.0.0"
 });
 
@@ -400,6 +991,8 @@ const SUPPORTED_DOCS: Record<ImportableDocumentType, string> = {
   "acta": "Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers",
   "sat_constancia": "SAT Constancia de Situación Fiscal - Extracts Tax Profile",
   "fm2": "FM2 / Residente Card - Extracts Immigration Profile",
+  "ine": "INE / IFE Credencial para Votar - Extracts Identity Profile",
+  "passport": "Pasaporte (Mexican or Foreign) - Extracts Identity Profile",
   "telmex": "Telmex Bill - Extracts Proof of Address",
   "cfe": "CFE Electricity Bill - Extracts Proof of Address",
   "bank_statement": "Bank Statement - Extracts Profile & Transactions",
@@ -417,7 +1010,7 @@ server.tool(
   "import_kyc_document",
   {
     customer_id: z.string(),
-    doc_type: z.enum(["acta", "sat_constancia", "fm2", "telmex", "cfe", "bank_statement", "bank_identity_page"]),
+    doc_type: z.enum(["acta", "sat_constancia", "fm2", "ine", "passport", "telmex", "cfe", "bank_statement", "bank_identity_page"]),
     file_url: z.string(),
     source_name: z.string().optional()
   },
@@ -449,6 +1042,59 @@ server.tool(
   handleGetKycReport
 );
 
+// --- NEW MVP TOOLS (Top 5 for $5M Pitch) ---
+
+// Tool 1: ASSESS CREDIT - THE MONEY MAKER 💰
+server.tool(
+  "assess_credit",
+  {
+    customer_id: z.string().describe("Customer identifier to assess credit for")
+  },
+  handleAssessCredit
+);
+
+// Tool 2: EXPLAIN VALIDATION - AI WOW FACTOR 🧠
+server.tool(
+  "explain_validation",
+  {
+    customer_id: z.string().describe("Customer identifier"),
+    language: z.enum(["en", "es"]).optional().default("en").describe("Language for explanations (English or Spanish)")
+  },
+  handleExplainValidation
+);
+
+// Tool 3: SUGGEST MISSING DOCUMENTS - PROACTIVE AI 🤖
+server.tool(
+  "suggest_missing_documents",
+  {
+    customer_id: z.string().describe("Customer identifier to analyze")
+  },
+  handleSuggestMissingDocuments
+);
+
+// Tool 4: GET RISK ANALYSIS - FRAUD DETECTION 🛡️
+server.tool(
+  "get_risk_analysis",
+  {
+    customer_id: z.string().describe("Customer identifier for risk analysis")
+  },
+  handleGetRiskAnalysis
+);
+
+// Tool 5: BATCH IMPORT DOCUMENTS - ENTERPRISE SCALE 🚀
+server.tool(
+  "batch_import_documents",
+  {
+    customer_id: z.string().describe("Customer identifier"),
+    documents: z.array(z.object({
+      doc_type: z.enum(["acta", "sat_constancia", "fm2", "ine", "passport", "telmex", "cfe", "bank_statement", "bank_identity_page"]),
+      file_url: z.string(),
+      source_name: z.string().optional()
+    })).min(1).max(10).describe("Array of documents to import (max 10)")
+  },
+  handleBatchImportDocuments
+);
+
 export async function runServer() {
   if (process.env.MCP_TRANSPORT === "sse") {
     const app = Fastify({
@@ -478,8 +1124,8 @@ export async function runServer() {
       openapi: {
         openapi: '3.1.0',
         info: {
-          title: 'KYC & Credit Assessment API',
-          description: 'API for KYC document checking and credit assessment',
+          title: 'MexKYC API',
+          description: 'MexKYC - AI-powered KYC document extraction and credit assessment API for Mexican business documents',
           version: '1.0.0',
         },
         servers: [
@@ -594,7 +1240,7 @@ export async function runServer() {
             customer_id: { type: 'string', example: 'customer-123' },
             doc_type: {
               type: 'string',
-              enum: ['acta', 'sat_constancia', 'fm2', 'telmex', 'cfe', 'bank_statement', 'bank_identity_page'],
+              enum: ['acta', 'sat_constancia', 'fm2', 'ine', 'passport', 'telmex', 'cfe', 'bank_statement', 'bank_identity_page'],
               example: 'acta',
             },
             file_url: { type: 'string', example: 'https://example.com/document.pdf' },
@@ -737,7 +1383,8 @@ export async function runServer() {
 
     try {
       await app.listen({ port, host: "0.0.0.0" });
-      console.log(`MX KYC MCP Server running on SSE at http://localhost:${port}/sse`);
+      console.log(`MexKYC MCP Server running on SSE at http://localhost:${port}/sse`);
+      console.log(`API Documentation available at http://localhost:${port}/docs`);
     } catch (err) {
       app.log.error(err);
       process.exit(1);
@@ -745,6 +1392,6 @@ export async function runServer() {
   } else {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("MX KYC MCP Server running on stdio");
+    console.error("MexKYC MCP Server running on stdio");
   }
 }

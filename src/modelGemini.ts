@@ -9,7 +9,7 @@ export const GEMINI_MODEL = process.env.GEMINI_MODEL_ID || "gemini-2.5-pro";
 // Specific Model Tiers for Hybrid Strategy
 // RULE: Always use Gemini 2.5+ - never use lesser models
 export const GEMINI_PRO_MODEL = process.env.GEMINI_PRO_MODEL_ID || "gemini-2.5-pro"; // Complex docs (Acta)
-export const GEMINI_FLASH_MODEL = process.env.GEMINI_FLASH_MODEL_ID || "gemini-2.5-flash-preview-05-20"; // Standard docs - MUST be 2.5+
+export const GEMINI_FLASH_MODEL = process.env.GEMINI_FLASH_MODEL_ID || "gemini-2.5-flash"; // Standard docs - MUST be 2.5+
 export const GEMINI_LATEST_MODEL = "gemini-2.5-pro"; // Latest stable 2.5
 
 // Waterfall Tiers: Flash -> Pro 2.5 -> Pro 3.0

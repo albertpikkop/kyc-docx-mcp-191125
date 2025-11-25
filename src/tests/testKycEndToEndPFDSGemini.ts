@@ -7,12 +7,13 @@ import { GEMINI_PRO_MODEL, GEMINI_FLASH_MODEL } from '../modelGemini.js';
 import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
 import { ImmigrationProfileSchema } from '../schemas/mx/immigrationProfile.js';
+import { PassportIdentitySchema } from '../schemas/mx/passportIdentity.js';
 import { ProofOfAddressSchema } from '../schemas/mx/proofOfAddress.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
 import { buildKycProfile } from '../kyc/profileBuilder.js';
 import { validateKycProfile } from '../kyc/validation.js';
 import { saveRun } from '../kyc/storage.js';
-import { KycRun, KycDocument, DocumentType } from '../kyc/types.js';
+import { KycRun, KycDocument, DocumentType, PassportIdentity } from '../kyc/types.js';
 import { normalizeEmptyToNull, sanitizeRfc, sanitizeCurp, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 
 // Instructions (Simplified for brevity, using same as Grupo Pounj mostly)
@@ -29,6 +30,29 @@ Normalize dates YYYY-MM-DD. RFC must be exact. Extract fiscal address and econom
 
 const FM2_INSTRUCTIONS = `You are a strict KYC extractor for Mexican immigration cards (FM2). Extract ImmigrationProfile.
 Normalize dates YYYY-MM-DD.`;
+
+const PASSPORT_INSTRUCTIONS = `You are a strict KYC extractor for Passports. Extract PassportIdentity.
+
+CRITICAL EXTRACTION FIELDS:
+- full_name: Complete name as printed on passport
+- nationality: Nationality as printed (e.g., "INDIAN", "MEXICAN", "AMERICAN")
+- document_type: Always "PASSPORT" or "PASAPORTE"
+- document_number: Passport number (alphanumeric)
+- date_of_birth: YYYY-MM-DD format
+- sex: "M" or "F"
+- place_of_birth: City/State/Country of birth if visible
+- issue_date: YYYY-MM-DD format
+- expiry_date: YYYY-MM-DD format
+- issuing_authority: Authority that issued the passport
+- issuer_country: 3-letter ISO code (e.g., "IND", "MEX", "USA")
+- mrz_line_1: First line of Machine Readable Zone if visible
+- mrz_line_2: Second line of Machine Readable Zone if visible
+
+GLOBAL RULES:
+- Extract ONLY from the front/data page of the passport
+- Never infer or generate data not clearly printed
+- If a field is not present, set to null
+- Normalize all dates to YYYY-MM-DD`;
 
 const CFE_INSTRUCTIONS = `You are a strict KYC extractor for Mexican CFE/Telmex bills. Extract ProofOfAddress.
 Normalize dates YYYY-MM-DD. Convert amounts to numeric.`;
@@ -72,6 +96,7 @@ function resolveFixture(fileName: string): string {
 const docs = [
   { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_PFDS_SAPI.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
   { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
+  { type: "passport" as DocumentType,       fileUrl: resolveFixture("New passport - Sep 18 2018 - 12-33 PM - p1 copy.jpeg"), instructions: PASSPORT_INSTRUCTIONS, schema: PassportIdentitySchema },
   { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2 (1).pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
   { type: "telmex" as DocumentType,         fileUrl: resolveFixture("Recibo-Oct (2).pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
   { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Octubre_2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
@@ -85,6 +110,7 @@ async function main() {
   let companyIdentity;
   let companyTaxProfile;
   let representativeIdentity;
+  let passportIdentity: PassportIdentity | undefined;
   const proofsOfAddress: any[] = [];
   const bankAccounts: any[] = []; 
 
@@ -98,7 +124,12 @@ async function main() {
         const modelToUse = doc.type === 'acta' ? GEMINI_PRO_MODEL : GEMINI_FLASH_MODEL;
         console.log(`   Using model: ${modelToUse}`);
 
-        const mimeType = "application/pdf"; 
+        // Detect mime type based on file extension
+        const fileExt = path.extname(doc.fileUrl).toLowerCase();
+        const mimeType = fileExt === '.jpeg' || fileExt === '.jpg' ? 'image/jpeg' : 
+                         fileExt === '.png' ? 'image/png' : 'application/pdf';
+        console.log(`   Mime type: ${mimeType}`);
+        
         const rawData = await extractWithGemini(doc.fileUrl, mimeType, doc.schema, doc.instructions, modelToUse);
         
         extractedPayload = normalizeEmptyToNull(rawData);
@@ -114,12 +145,33 @@ async function main() {
             if (profile.fiscal_address) profile.fiscal_address.country = "MX";
             extractedPayload = profile;
             companyTaxProfile = extractedPayload;
+        } else if (doc.type === 'passport') {
+            const passport = extractedPayload.passport_identity || extractedPayload;
+            // Map to PassportIdentity type
+            passportIdentity = {
+                full_name: passport.full_name,
+                nationality: passport.nationality,
+                document_type: "PASAPORTE",
+                document_number: passport.document_number,
+                date_of_birth: passport.date_of_birth,
+                sex: passport.sex,
+                place_of_birth: passport.place_of_birth || null,
+                issue_date: passport.issue_date,
+                expiry_date: passport.expiry_date,
+                issuing_authority: passport.issuing_authority || null,
+                issuer_country: passport.issuer_country || null,
+                mrz_line_1: passport.mrz_line_1 || null,
+                mrz_line_2: passport.mrz_line_2 || null,
+                curp: passport.curp || null
+            };
+            extractedPayload = passportIdentity;
         } else if (doc.type === 'fm2') {
             const profile = extractedPayload.immigration_profile || extractedPayload;
             if (profile.issuer_country === "MEXICO" || profile.issuer_country === "MEX") profile.issuer_country = "MX";
-             if (profile.curp) profile.curp = sanitizeCurp(profile.curp);
-             extractedPayload = profile;
-             representativeIdentity = extractedPayload;
+            if (profile.curp) profile.curp = sanitizeCurp(profile.curp);
+            profile.document_type = "FM2"; // Ensure correct document type
+            extractedPayload = profile;
+            representativeIdentity = extractedPayload;
         } else if (doc.type === 'telmex' || doc.type === 'cfe') {
              const proof = extractedPayload.proof_of_address || extractedPayload;
              if (!proof.document_type) proof.document_type = doc.type === 'telmex' ? 'telmex_bill' : 'cfe_receipt';
@@ -160,6 +212,7 @@ async function main() {
     companyIdentity,
     companyTaxProfile,
     representativeIdentity,
+    passportIdentity,
     proofsOfAddress,
     bankAccounts
   });

@@ -31,26 +31,119 @@ const BankAccountProfileZodSchema = z.object({
 });
 
 const EXTRACTION_INSTRUCTIONS = `
-You are a strict KYC extractor for Mexican Bank Statements (Estados de Cuenta).
-Your job is to extract the account profile information into the bank_account_profile object.
+You are a STRICT KYC extractor for Mexican Bank Statements (Estados de Cuenta Bancarios).
+Your job is to extract PROFILE information ONLY - ZERO HALLUCINATIONS, ZERO INFERENCE.
 
-GLOBAL HARDENING RULES:
-- Never infer or generate data not clearly printed.
-- If a field is not present, set to null. Do NOT use "N/A", "Unknown", "--", or empty strings.
-- Normalize all dates to YYYY-MM-DD.
-- Never invent account numbers, CLABEs, or names.
+═══════════════════════════════════════════════════════════════════════════════
+ANTI-HALLUCINATION RULES (MANDATORY):
+═══════════════════════════════════════════════════════════════════════════════
+1. ONLY extract text that is PHYSICALLY PRINTED on the document
+2. If a field is not visible, set to null - NEVER guess or infer
+3. NEVER use placeholder values like "N/A", "--", "Unknown", or empty strings ""
+4. Copy names and addresses EXACTLY as printed
+5. Convert ALL dates to YYYY-MM-DD format
+6. NEVER invent account numbers, CLABEs, or names
+7. Do NOT extract transactions - only header/profile information
 
-EXTRACT:
-- Bank Name: (e.g. BBVA, Banorte, Santander).
-- Account Holder Name: Extract exactly as printed. Do NOT assume it is "PFDS" unless printed.
-- Account Number: Extract account/contract number.
-- CLABE: Extract 18-digit CLABE.
-- Currency: Assume "MXN" for Mexican documents unless the document explicitly uses "USD", "US$", "DÓLARES", or "DLS", in which case set to "USD". Never treat "$" alone as USD; in this context "$" means pesos (MXN).
-- Statement Period: Start and End dates (YYYY-MM-DD).
-- Address: The registered address printed on the statement header. Split strictly into structured fields (street, ext_number, int_number, colonia, municipio, estado, cp). Set country="MX".
+═══════════════════════════════════════════════════════════════════════════════
+BANK STATEMENT STRUCTURE - WHERE TO FIND DATA:
+═══════════════════════════════════════════════════════════════════════════════
+Bank statements typically have this layout:
 
-Do NOT extract individual transactions here. Focus only on the header/profile info.
-Do not hallucinate missing fields.
+HEADER SECTION (Top):
+- Bank logo and name
+- Statement date range
+- Account holder name and address
+- Account number and CLABE
+
+ACCOUNT INFO SECTION:
+- Account type
+- Branch information
+- Currency
+
+BALANCE SUMMARY:
+- Opening balance
+- Closing balance
+
+TRANSACTIONS (Do NOT extract these):
+- Individual deposits/withdrawals
+
+═══════════════════════════════════════════════════════════════════════════════
+FIELD EXTRACTION RULES:
+═══════════════════════════════════════════════════════════════════════════════
+
+1. BANK NAME (bank_name):
+   - Extract the bank name from logo/header
+   - Common banks: BBVA, Banorte, Santander, HSBC, Citibanamex, Scotiabank, Banco Azteca
+   - Use official name (e.g., "BBVA México", "Banorte", "Santander")
+
+2. ACCOUNT HOLDER NAME (account_holder_name) - CRITICAL:
+   - Extract the EXACT name as printed on the statement
+   - May be individual: "ENRIQUE DE CELLO DIAZ"
+   - May be company: "PFDS SAPI DE CV", "GRUPO POUNJ SA DE CV"
+   - NEVER assume or guess the name
+
+3. ACCOUNT NUMBER (account_number):
+   - Extract the account/contract number
+   - Usually 10-12 digits
+   - May be partially masked (e.g., "****1234") - extract as shown
+
+4. CLABE (clabe) - CRITICAL:
+   - 18-digit interbank transfer code
+   - Format: BBBSSSCCCCCCCCCCCD
+   - Extract EXACTLY as printed
+   - If not visible, set to null
+
+5. CURRENCY (currency):
+   - "MXN" for Mexican peso accounts (default)
+   - "USD" only if document explicitly shows US Dollars
+   - "$" symbol alone = MXN (NOT USD)
+
+6. STATEMENT PERIOD:
+   - statement_period_start: First day of statement (YYYY-MM-DD)
+   - statement_period_end: Last day of statement (YYYY-MM-DD)
+   - Look for "Periodo" or date range in header
+
+7. ADDRESS ON STATEMENT (address_on_statement):
+   - The registered address shown in the header
+   - Split into components:
+     * street: Street name (e.g., "AV. INSURGENTES SUR")
+     * ext_number: Exterior number (e.g., "1234")
+     * int_number: Interior if present (e.g., "PISO 5")
+     * colonia: Neighborhood (e.g., "DEL VALLE")
+     * municipio: Municipality (e.g., "BENITO JUAREZ")
+     * estado: State (e.g., "CIUDAD DE MEXICO")
+     * cp: Postal code (e.g., "03100")
+     * country: Always "MX"
+
+═══════════════════════════════════════════════════════════════════════════════
+OUTPUT FORMAT:
+═══════════════════════════════════════════════════════════════════════════════
+Return data in this structure:
+{
+  "bank_account_profile": {
+    "bank_name": "...",
+    "account_holder_name": "...",
+    "account_number": "...",
+    "clabe": "...",
+    "currency": "MXN",
+    "statement_period_start": "YYYY-MM-DD",
+    "statement_period_end": "YYYY-MM-DD",
+    "address_on_statement": { ... }
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+VALIDATION CHECKLIST:
+═══════════════════════════════════════════════════════════════════════════════
+□ bank_name is a valid Mexican bank
+□ account_holder_name is populated with ACTUAL printed name
+□ CLABE (if present) is exactly 18 digits
+□ All dates are YYYY-MM-DD format
+□ No placeholder values anywhere
+□ Did NOT extract transaction data
+
+Return ONLY valid JSON matching the schema. Zero hallucinations.
 `;
 
 export async function extractBankStatementProfile(fileUrl: string): Promise<any> {
