@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { extractWithGemini } from '../utils/geminiExtractor.js';
-import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
+import { GEMINI_FLASH_MODEL } from '../modelGemini.js';
+// import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
 import { IneIdentitySchema } from '../schemas/mx/ineIdentity.js'; // Use new INE schema
 import { ProofOfAddressSchema } from '../schemas/mx/proofOfAddress.js';
@@ -12,8 +13,8 @@ import { buildKycProfile } from '../kyc/profileBuilder.js';
 import { validateKycProfile } from '../kyc/validation.js';
 import { saveRun } from '../kyc/storage.js';
 import { KycRun, KycDocument, DocumentType } from '../kyc/types.js';
-import { DEMO_CONFIG } from "../core/demoConfig.js";
-import { normalizeEmptyToNull, sanitizeRfc, sanitizeCurp, sanitizeClabe, sanitizeCurrency, sanitizeInvoiceNumber } from '../kyc/validators.js';
+// import { DEMO_CONFIG } from "../core/demoConfig.js";
+import { normalizeEmptyToNull, sanitizeRfc, sanitizeCurp, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 import { EXTRACTION_INSTRUCTIONS as INE_INSTRUCTIONS } from '../extractors/ineIdentity.js';
 
 // --- Instructions ---
@@ -31,10 +32,29 @@ GLOBAL HARDENING RULES:
 - Convert amounts to numeric values.`;
 
 const BANK_INSTRUCTIONS = `You are a strict KYC extractor for Mexican Bank Statements. Extract BankAccountProfile.
-GLOBAL HARDENING RULES:
-- Never infer or generate data.
-- Normalize all dates to YYYY-MM-DD.
-- Never invent account numbers.`;
+
+CRITICAL - ADDRESS EXTRACTION:
+The customer's address is typically found:
+1. In the header section near the account holder's name
+2. In a "Datos del Cliente" or "Información del Titular" section
+3. Near the top of the first page, often in smaller print
+Look for labels like "Domicilio:", "Dirección:" and extract the full address.
+
+EXTRACTION RULES:
+- bank_name: The name of the bank (e.g., "Kapital", "BBVA", "Bancoppel")
+- account_holder_name: The LEGAL NAME of the account holder (e.g., "ENRIQUE DE CELLO DIAZ")
+  - CRITICAL: This should be the legal name, NOT an address component
+  - Look for labels like "Cliente:", "Titular:", "Nombre:"
+- account_number: The account number if visible
+- clabe: The 18-digit CLABE interbancaria
+- currency: MXN or USD
+- statement_period_start/end: Dates in YYYY-MM-DD format
+- address_on_statement: Extract the customer's address with all components (street, ext_number, colonia, municipio, estado, cp)
+
+GLOBAL RULES:
+- Never infer or generate data not clearly printed
+- If a field is not present, set to null
+- Normalize all dates to YYYY-MM-DD`;
 
 const customerId = "enrique-cello-gemini";
 const fixtureRoot = "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello";
@@ -71,8 +91,12 @@ async function main() {
     let extractedPayload: any = null;
     
     try {
+        // Use Flash model for all docs in this Persona Física run
+        const modelToUse = GEMINI_FLASH_MODEL;
+        console.log(`   Using model: ${modelToUse}`);
+
         const mimeType = "application/pdf"; 
-        const rawData = await extractWithGemini(doc.fileUrl, mimeType, doc.schema, doc.instructions);
+        const rawData = await extractWithGemini(doc.fileUrl, mimeType, doc.schema, doc.instructions, modelToUse);
         
         extractedPayload = normalizeEmptyToNull(rawData);
 

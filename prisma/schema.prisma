@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Org {
+  id        String   @id @default(uuid())
+  apiKey    String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  runs Run[]
+  auditEvents AuditEvent[]
+
+  @@index([apiKey])
+}
+
+model Run {
+  id          String   @id @default(uuid())
+  orgId       String
+  customerId  String
+  status      String?  // e.g., 'pending', 'processing', 'completed', 'failed'
+  profile     Json?    // KycProfile snapshot
+  validation  Json?    // KycValidationResult
+  decision    String?  // e.g., 'approved', 'rejected', 'pending'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  org     Org    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  docs    Doc[]
+
+  @@index([orgId, customerId])
+  @@index([orgId, createdAt])
+}
+
+model Doc {
+  id              String   @id @default(uuid())
+  runId           String
+  docType         String   // e.g., 'acta', 'sat_constancia', 'fm2', etc.
+  fileUrl         String
+  sourceName      String?
+  extractedPayload Json?   // The raw extraction result
+  createdAt       DateTime @default(now())
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model AuditEvent {
+  id        String   @id @default(uuid())
+  orgId     String
+  eventType String   // e.g., 'document_imported', 'profile_built', 'decision_saved'
+  metadata  Json?    // Additional event data
+  createdAt DateTime @default(now())
+
+  org Org @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([eventType])
+}

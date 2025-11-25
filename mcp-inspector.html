@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Server Inspector - mx-kyc-mcp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .tool-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        .tool-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-required { background: #fee2e2; color: #991b1b; }
+        .badge-optional { background: #dbeafe; color: #1e40af; }
+        .badge-type { background: #f3f4f6; color: #374151; }
+        code {
+            background: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="card p-8 mb-8 text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">MCP Server Inspector</h1>
+            <p class="text-xl text-gray-600">mx-kyc-mcp v1.0.0</p>
+            <div class="mt-4 flex justify-center gap-4 text-sm text-gray-500">
+                <span>📡 Protocol: Model Context Protocol (MCP)</span>
+                <span>•</span>
+                <span>🔌 Transport: stdio / SSE</span>
+            </div>
+        </div>
+
+        <!-- Server Information -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Server Information</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <div class="text-sm text-gray-500">Name</div>
+                    <div class="text-lg font-semibold text-gray-900">mx-kyc-mcp</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Version</div>
+                    <div class="text-lg font-semibold text-gray-900">1.0.0</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Protocol</div>
+                    <div class="text-lg font-semibold text-gray-900">MCP</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500">Transport</div>
+                    <div class="text-lg font-semibold text-gray-900">stdio / SSE</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4 text-white">Available Tools (5)</h2>
+            
+            <div class="card p-6 mb-4 tool-card">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                            1. <code>list_supported_doc_types</code>
+                        </h3>
+                        <p class="text-gray-600">Lists all supported document types and their descriptions</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4 text-sm text-gray-500">No parameters</div>
+                
+                <div class="mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
+                    <span class="text-sm text-gray-600 ml-2">Array of document type objects</span>
+                </div>
+                <div>
+                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
+                    <code class="text-sm ml-2">handleListSupportedDocTypes()</code>
+                </div>
+            </div>
+            
+            <div class="card p-6 mb-4 tool-card">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                            2. <code>import_kyc_document</code>
+                        </h3>
+                        <p class="text-gray-600">Imports a KYC document, extracts structured data, and stores it</p>
+                    </div>
+                </div>
+                
+                
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
+                    <div class="space-y-2">
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">customer_id</code>
+                            <span class="badge badge-type">string</span>
+                            <span class="badge badge-required">Required</span>
+                            <span class="text-sm text-gray-600 ml-auto">Unique customer identifier</span>
+                        </div>
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">doc_type</code>
+                            <span class="badge badge-type">enum</span>
+                            <span class="badge badge-required">Required</span>
+                            <span class="text-sm text-gray-600 ml-auto">Document type (see below)</span>
+                        </div>
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">file_url</code>
+                            <span class="badge badge-type">string</span>
+                            <span class="badge badge-required">Required</span>
+                            <span class="text-sm text-gray-600 ml-auto">URL or path to document file</span>
+                        </div>
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">source_name</code>
+                            <span class="badge badge-type">string</span>
+                            <span class="badge badge-optional">Optional</span>
+                            <span class="text-sm text-gray-600 ml-auto">Human-readable source name</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                
+                <div class="mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
+                    <span class="text-sm text-gray-600 ml-2">Import result with customer_id, run_id, doc_id, status</span>
+                </div>
+                <div>
+                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
+                    <code class="text-sm ml-2">handleImportKycDocument()</code>
+                </div>
+            </div>
+            
+            <div class="card p-6 mb-4 tool-card">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                            3. <code>build_kyc_profile</code>
+                        </h3>
+                        <p class="text-gray-600">Aggregates all imported documents into a unified KYC profile</p>
+                    </div>
+                </div>
+                
+                
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
+                    <div class="space-y-2">
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">customer_id</code>
+                            <span class="badge badge-type">string</span>
+                            <span class="badge badge-required">Required</span>
+                            <span class="text-sm text-gray-600 ml-auto">Customer identifier</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                
+                <div class="mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
+                    <span class="text-sm text-gray-600 ml-2">Complete KycProfile object</span>
+                </div>
+                <div>
+                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
+                    <code class="text-sm ml-2">handleBuildKycProfile()</code>
+                </div>
+            </div>
+            
+            <div class="card p-6 mb-4 tool-card">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                            4. <code>validate_kyc_profile</code>
+                        </h3>
+                        <p class="text-gray-600">Validates a KYC profile and generates validation results</p>
+                    </div>
+                </div>
+                
+                
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
+                    <div class="space-y-2">
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">customer_id</code>
+                            <span class="badge badge-type">string</span>
+                            <span class="badge badge-required">Required</span>
+                            <span class="text-sm text-gray-600 ml-auto">Customer identifier</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                
+                <div class="mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
+                    <span class="text-sm text-gray-600 ml-2">KycValidationResult with score (0-1) and flags</span>
+                </div>
+                <div>
+                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
+                    <code class="text-sm ml-2">handleValidateKycProfile()</code>
+                </div>
+            </div>
+            
+            <div class="card p-6 mb-4 tool-card">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                            5. <code>get_kyc_report</code>
+                        </h3>
+                        <p class="text-gray-600">Generates a comprehensive KYC report</p>
+                    </div>
+                </div>
+                
+                
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
+                    <div class="space-y-2">
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">customer_id</code>
+                            <span class="badge badge-type">string</span>
+                            <span class="badge badge-required">Required</span>
+                            <span class="text-sm text-gray-600 ml-auto">Customer identifier</span>
+                        </div>
+                        
+                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
+                            <code class="font-semibold">include_trace</code>
+                            <span class="badge badge-type">boolean</span>
+                            <span class="badge badge-optional">Optional</span>
+                            <span class="text-sm text-gray-600 ml-auto">Include traceability section (default: false)</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                
+                <div class="mb-2">
+                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
+                    <span class="text-sm text-gray-600 ml-2">Complete KYC report JSON</span>
+                </div>
+                <div>
+                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
+                    <code class="text-sm ml-2">handleGetKycReport()</code>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Document Types -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Supported Document Types</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>acta</code></div>
+                    <div class="text-sm text-gray-600">Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers</div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>sat_constancia</code></div>
+                    <div class="text-sm text-gray-600">SAT Constancia de Situación Fiscal - Extracts Tax Profile</div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>fm2</code></div>
+                    <div class="text-sm text-gray-600">FM2 / Residente Card - Extracts Immigration Profile</div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>telmex</code></div>
+                    <div class="text-sm text-gray-600">Telmex Bill - Extracts Proof of Address</div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>cfe</code></div>
+                    <div class="text-sm text-gray-600">CFE Electricity Bill - Extracts Proof of Address</div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>bank_statement</code></div>
+                    <div class="text-sm text-gray-600">Bank Statement - Extracts Profile & Transactions</div>
+                </div>
+                
+                <div class="p-4 border border-gray-200 rounded-lg">
+                    <div class="font-semibold text-gray-900 mb-1"><code>bank_identity_page</code></div>
+                    <div class="text-sm text-gray-600">Bank Identity Page - Extracts Account Profile from Bank Statement Identity Page</div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Response Format -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Response Format</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-green-700 mb-2">✅ Success</h3>
+                    <pre class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto"><code>{
+  "ok": true,
+  "data": { ... }
+}</code></pre>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-red-700 mb-2">❌ Error</h3>
+                    <pre class="bg-gray-900 text-red-400 p-4 rounded-lg text-sm overflow-x-auto"><code>{
+  "ok": false,
+  "error_code": "ERROR_CODE",
+  "message": "Error message"
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Codes -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Error Codes</h2>
+            <div class="space-y-2">
+                
+                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
+                    <code class="font-semibold text-red-800">EXTRACTION_FAILED</code>
+                    <span class="text-gray-700">Document extraction failed</span>
+                </div>
+                
+                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
+                    <code class="font-semibold text-red-800">NO_RUN_FOR_CUSTOMER</code>
+                    <span class="text-gray-700">No run found for customer</span>
+                </div>
+                
+                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
+                    <code class="font-semibold text-red-800">PROFILE_BUILD_FAILED</code>
+                    <span class="text-gray-700">Failed to build profile</span>
+                </div>
+                
+                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
+                    <code class="font-semibold text-red-800">FAILED_TO_GENERATE_PROFILE_OR_VALIDATION</code>
+                    <span class="text-gray-700">Unable to generate profile/validation</span>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Workflow -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Typical Workflow</h2>
+            <div class="space-y-3">
+                
+                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                        1
+                    </div>
+                    <code class="text-gray-800">import_kyc_document → Extract and store document</code>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                        2
+                    </div>
+                    <code class="text-gray-800">import_kyc_document → (Repeat for each document)</code>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                        3
+                    </div>
+                    <code class="text-gray-800">build_kyc_profile → Aggregate all documents</code>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                        4
+                    </div>
+                    <code class="text-gray-800">validate_kyc_profile → Validate and score</code>
+                </div>
+                
+                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                        5
+                    </div>
+                    <code class="text-gray-800">get_kyc_report → Generate final report</code>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Storage -->
+        <div class="card p-6">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Storage Structure</h2>
+            <div class="space-y-4">
+                <div>
+                    <div class="text-sm font-semibold text-gray-700 mb-1">Location</div>
+                    <code class="text-sm">data/{customer_id}/runs/*.json</code>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-gray-700 mb-1">Reports</div>
+                    <code class="text-sm">data/{customer_id}/reports/*.html</code>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-gray-700 mb-2">Run Structure</div>
+                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-x-auto"><code>{
+  "runId": "uuid",
+  "customerId": "string",
+  "createdAt": "ISO timestamp",
+  "documents": [...],
+  "profile": {...},
+  "validation": {...}
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white text-sm opacity-75">
+            Generated: 11/22/2025, 7:30:04 PM
+        </div>
+    </div>
+</body>
+</html>

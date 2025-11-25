@@ -204,7 +204,7 @@ export interface KycDocument {
 }
 
 export interface KycValidationFlag {
-  code: "ADDRESS_MISMATCH" | "REP_ID_MISMATCH" | "LOW_DOC_COVERAGE" | "EQUITY_INCONSISTENT" | "EQUITY_NEAR_100" | "IDENTITY_MISMATCH" | "OTHER";
+  code: "ADDRESS_MISMATCH" | "REP_ID_MISMATCH" | "LOW_DOC_COVERAGE" | "EQUITY_INCONSISTENT" | "EQUITY_NEAR_100" | "IDENTITY_MISMATCH" | "ENTITY_MISMATCH" | "OTHER";
   level: "info" | "warning" | "critical";
   message: string;
 }

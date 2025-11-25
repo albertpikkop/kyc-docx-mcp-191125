@@ -1,8 +1,7 @@
-import * as path from 'path';
 import { ImmigrationProfileSchema } from '../schemas/mx/immigrationProfile.js';
 import { normalizeEmptyToNull, sanitizeCurp } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican immigration cards (FM2 / Residente Temporal / Residente Permanente).
@@ -34,19 +33,13 @@ Do NOT invent any dates or codes. Only copy values that are clearly visible on t
 `;
 
 export async function extractImmigrationProfile(fileUrl: string): Promise<any> {
-  console.log(`Extracting Immigration Profile using Gemini 2.5`);
+  console.log(`Extracting Immigration Profile using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
   try {
-    // Determine MIME type
-    const ext = path.extname(fileUrl).toLowerCase();
-    const mimeType = ext === '.pdf' ? 'application/pdf' : 
-                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-                     ext === '.png' ? 'image/png' :
-                     ext === '.webp' ? 'image/webp' : 'application/pdf';
-
-    // Use Gemini for extraction
-    const data = await extractWithGemini(fileUrl, mimeType, ImmigrationProfileSchema, EXTRACTION_INSTRUCTIONS);
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('fm2', fileUrl, ImmigrationProfileSchema, EXTRACTION_INSTRUCTIONS);
+    const data = result.data;
     
     // Extract object if nested (Gemini returns flat structure)
     const profile = data.immigration_profile || data;
@@ -68,6 +61,12 @@ export async function extractImmigrationProfile(fileUrl: string): Promise<any> {
     if (normalizedProfile.curp) {
         normalizedProfile.curp = sanitizeCurp(normalizedProfile.curp);
     }
+
+    // Attach metadata
+    (normalizedProfile as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
 
     return normalizedProfile;
 

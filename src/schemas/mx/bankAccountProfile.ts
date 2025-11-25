@@ -16,11 +16,16 @@ export const BankAccountProfileSchema = {
         currency: { type: "string", enum: ["MXN", "USD"], description: "Currency code (MXN or USD)", nullable: true },
         statement_period_start: { type: "string", description: "Start date of the statement period (YYYY-MM-DD)", nullable: true },
         statement_period_end: { type: "string", description: "End date of the statement period (YYYY-MM-DD)", nullable: true },
-        address_on_statement: AddressSchema
+        address_on_statement: { ...AddressSchema, nullable: true }
       },
       required: [
         "bank_name",
         "account_holder_name",
+        "account_number",
+        "clabe",
+        "currency",
+        "statement_period_start",
+        "statement_period_end",
         "address_on_statement"
       ]
     }

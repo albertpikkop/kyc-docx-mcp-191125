@@ -1,9 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
-import { normalizeEmptyToNull, sanitizeRfc } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican Acta Constitutiva (Incorporation Deeds).
@@ -95,7 +92,7 @@ Do not invent information. Return strictly valid JSON matching the schema.
 `;
 
 export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
-  console.log(`Extracting deep legal KYC from Acta Constitutiva using Gemini 2.5`);
+  console.log(`Extracting deep legal KYC from Acta Constitutiva using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
   // --- PAGE RANGE LIMIT FOR DEMO MODE ---
@@ -131,15 +128,9 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
   `;
 
   try {
-    // Determine MIME type
-    const ext = path.extname(fileUrl).toLowerCase();
-    const mimeType = ext === '.pdf' ? 'application/pdf' : 
-                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-                     ext === '.png' ? 'image/png' :
-                     ext === '.webp' ? 'image/webp' : 'application/pdf';
-
-    // Use Gemini for extraction
-    const data = await extractWithGemini(fileUrl, mimeType, CompanyIdentitySchema, INSTRUCTIONS_WITH_LIMITS);
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('acta', fileUrl, CompanyIdentitySchema, INSTRUCTIONS_WITH_LIMITS);
+    const data = result.data;
     
     // Extract company_identity if nested (Gemini returns flat structure)
     const identity = data.company_identity || data;
@@ -230,6 +221,25 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
        });
     }
 
+    // Attach modelUsed and costUsd to the result object if needed, but the current return type is any (Schema).
+    // The calling function (mcp/server.ts) expects just the payload.
+    // However, we might want to attach metadata.
+    // For now, return the payload. The metrics in modelRouter handle the logging/cost tracking.
+    // If we need to pass modelUsed up, we might need to change the return type.
+    // But the instructions say "modelUsed logged".
+    
+    // Add hidden properties for tracking if possible, or just rely on side-effects?
+    // The prompt says "Record modelUsed per doc and add to Run model mix".
+    // This implies we need to pass it back.
+    // Let's attach it as a non-enumerable property or just a property if the schema allows extra props?
+    // Schema usually forbids extra props.
+    // But we are returning `any` here.
+    
+    (normalizedIdentity as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
+
     return normalizedIdentity;
 
   } catch (error) {
@@ -240,3 +250,4 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
     throw error;
   }
 }
+

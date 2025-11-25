@@ -13,7 +13,10 @@ import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
 import { extractBankStatementProfile } from "../extractors/bankStatementProfile.js";
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
 import { buildKycProfile } from "../kyc/profileBuilder.js";
-import { validateKycProfile, resolveUbo, resolveSignatories, checkFreshness } from "../kyc/validation.js";
+import { validateKycProfile, resolveUbo, resolveSignatories } from "../kyc/validation.js";
+
+// Suppress unused import warnings for future use
+void extractBankStatementTransactions;
 import { saveRun, loadLatestRun } from "../kyc/storage.js";
 import { KycRun, KycDocument, DocumentType } from "../kyc/types.js";
 import { DEMO_CONFIG } from "../core/demoConfig.js";
@@ -69,21 +72,32 @@ async function detectFileType(filePath: string): Promise<DocumentType | null> {
     const lower = filename.toLowerCase();
     
     // 1. Fast Path: Filename Keywords
+    // PRIORITY ORDER: Check bank statements FIRST (before tax) since they often contain RFC too
+    // Bank statement detection - check for common patterns (including typos like "Esatdo")
+    if ((lower.includes('estado') || lower.includes('esatdo')) && lower.includes('cuenta')) return 'bank_identity_page';
+    if (lower.includes('cuenta') && (lower.includes('banco') || lower.includes('bank') || lower.includes('statement'))) return 'bank_identity_page';
+    
+    // Then check other document types
     if (lower.includes('acta') || lower.includes('constitutiva')) return 'acta';
     if (lower.includes('constancia') || lower.includes('sat') || lower.includes('situacion') || lower.includes('fiscal')) return 'sat_constancia';
-    if (lower.includes('fm2') || lower.includes('fm3') || lower.includes('residente') || lower.includes('migratorio') || lower.includes('immigration')) return 'fm2';
+    if (lower.includes('fm2') || lower.includes('fm3') || lower.includes('residente') || lower.includes('migratorio') || lower.includes('immigration') || lower.includes('ine') || lower.includes('passport') || lower.includes('pasaporte') || lower.includes('credencial')) return 'fm2';
     if (lower.includes('telmex')) return 'telmex';
-    if (lower.includes('cfe') || lower.includes('electricidad')) return 'cfe';
-    
-    if (lower.includes('estado') && lower.includes('cuenta')) return 'bank_identity_page'; 
+    if (lower.includes('cfe') || lower.includes('electricidad') || lower.includes('recibo')) return 'cfe'; // "Recibo" = utility bill/receipt
+    if (lower.includes('recibo') && lower.includes('telmex')) return 'telmex'; // Explicit Telmex receipt 
     if (lower.includes('bank') && lower.includes('statement')) return 'bank_identity_page';
     
     // Check for Month + Year pattern in filename (common for bank statements)
-    // e.g. "October 2025.pdf", "octubre_2024.pdf"
+    // e.g. "October 2025.pdf", "octubre_2024.pdf", "octubre_2025" (with underscore)
     if (/\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)[\s_-]*20[2-9][0-9]\b/.test(lower)) {
         return 'bank_identity_page';
     }
     
+    // Also check for month name alone if followed by "cuenta" or "de cuenta" (bank statement pattern)
+    if (/\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)\b/.test(lower) && 
+        (lower.includes('cuenta') || lower.includes('statement'))) {
+        return 'bank_identity_page';
+    }
+
     // Check for Month-only pattern with single-letter suffix (e.g., "Octubre_E.pdf", "Enero_A.pdf")
     // This catches bank statements that use month + initial letter instead of full year
     if (/\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)[\s_-]*[a-z]\b/i.test(lower)) {
@@ -97,17 +111,22 @@ async function detectFileType(filePath: string): Promise<DocumentType | null> {
         console.log(`   🔎 Peeking content of ambiguous file: ${filename}...`);
         const text = await peekPdfContent(filePath);
         
-        // Bank Keywords (Spanish)
-        if (text.includes('estado de cuenta') || text.includes('clabe') || text.includes('saldo') || 
+        // Bank Keywords (Spanish) - CHECK FIRST before tax keywords (bank statements often contain RFC)
+        // Strong bank indicators take priority
+        if (text.includes('estado de cuenta') || text.includes('esatdo de cuenta') || // Handle typo
+            text.includes('clabe') || text.includes('saldo') || 
             text.includes('intercam') || text.includes('bbva') || text.includes('santander') || 
             text.includes('banorte') || text.includes('banamex') || text.includes('hsbc') ||
-            text.includes('numero de cuenta') || text.includes('cuenta') && text.includes('banco')) {
+            text.includes('numero de cuenta') || (text.includes('cuenta') && text.includes('banco')) ||
+            text.includes('movimientos') || text.includes('transacciones') || text.includes('deposito') ||
+            text.includes('retiro') || text.includes('transferencia')) {
             return 'bank_identity_page';
         }
         // English Bank Keywords
         if (text.includes('account statement') || text.includes('single account statement') || 
             text.includes('checking account') || text.includes('balance') || 
-            text.includes('period from') || text.includes('account number')) {
+            text.includes('period from') || text.includes('account number') ||
+            text.includes('transactions') || text.includes('deposits') || text.includes('withdrawals')) {
             return 'bank_identity_page';
         }
         
@@ -116,14 +135,27 @@ async function detectFileType(filePath: string): Promise<DocumentType | null> {
             return 'acta';
         }
         
-        // Tax Keywords
-        if (text.includes('constancia de situacion fiscal') || text.includes('rfc')) {
+        // Tax Keywords - Only match if it's explicitly a Constancia (not just any document with RFC)
+        // RFC appears in bank statements too, so we need stronger tax-specific indicators
+        if (text.includes('constancia de situacion fiscal') || 
+            (text.includes('rfc') && text.includes('situacion fiscal')) ||
+            (text.includes('secretaria de hacienda') && text.includes('constancia'))) {
             return 'sat_constancia';
         }
         
-        // PoA Keywords
-        if (text.includes('cfe') && text.includes('total a pagar')) return 'cfe';
-        if (text.includes('telmex') && text.includes('total a pagar')) return 'telmex';
+        // PoA Keywords (Utility Bills) - Check for "Recibo" pattern
+        if ((text.includes('cfe') || text.includes('comision federal de electricidad')) && 
+            (text.includes('total a pagar') || text.includes('recibo') || text.includes('kilowatts'))) return 'cfe';
+        if ((text.includes('telmex') || text.includes('telefonos de mexico')) && 
+            (text.includes('total a pagar') || text.includes('recibo') || text.includes('servicio telefonico'))) return 'telmex';
+
+        // Identity Keywords (INE, Passport, FM2)
+        if (text.includes('instituto nacional electoral') || text.includes('credencial para votar') || 
+            text.includes('pasaporte') || text.includes('passport') || 
+            text.includes('residente permanente') || text.includes('tarjeta de residente') ||
+            text.includes('inm')) { // INM = Instituto Nacional de Migración
+            return 'fm2';
+        }
     }
 
     return null;
@@ -138,7 +170,7 @@ function needsReprocessing(filePath: string, sourceName: string, existingDoc: Ky
     // Check file modification time
     try {
         const fileStats = fs.statSync(filePath);
-        const docExtractedAt = new Date(existingDoc.extractedAt);
+        const docExtractedAt = existingDoc.extractedAt ? new Date(existingDoc.extractedAt) : new Date(0);
         
         // If file was modified after extraction, re-process
         if (fileStats.mtime > docExtractedAt) {

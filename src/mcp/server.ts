@@ -1,9 +1,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
-import express from "express";
-import cors from "cors";
+import Fastify from "fastify";
+import rateLimit from "@fastify/rate-limit";
+import cors from "@fastify/cors";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 import { z } from "zod";
+import { logger, createContextLogger } from "../utils/logger.js";
+import { handleHealthz, handleReadyz, handleMetrics, metrics } from "./health.js";
+import { correlationIdMiddleware } from "./correlationId.js";
 import * as crypto from 'crypto';
 import * as path from 'path';
 
@@ -12,16 +18,36 @@ import {
   DocumentType, 
   ImportableDocumentType,
   KycDocument, 
+  KycProfile,
+  KycValidationResult,
   CompanyIdentity,
   CompanyTaxProfile,
   ImmigrationProfile,
   ProofOfAddress,
   BankAccountProfile
 } from "../kyc/types.js";
-import { saveRun, loadLatestRun } from "../kyc/storage.js";
+// File-based storage kept for backward compatibility (not used in DB flow)
+// import { saveRun, loadLatestRun } from "../kyc/storage.js";
+import { 
+  createRun as createRunDb, 
+  appendDoc as appendDocDb, 
+  getLatestRun as getLatestRunDb,
+  updateRun as updateRunDb,
+  logAudit
+} from "../kyc/prismaHelpers.js";
 import { buildKycProfile } from "../kyc/profileBuilder.js";
 import { validateKycProfile } from "../kyc/validation.js";
 import { buildKycReport } from "../kyc/reportBuilder.js";
+import { apiKeyAuth, rateLimitConfig } from "./middleware.js";
+import { handleKycCheck, handleCreditAssess, handleGetAudit } from "./restApi.js";
+import { AsyncLocalStorage } from "async_hooks";
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    startTime?: number;
+    routerPath?: string;
+  }
+}
 
 // Extractors
 import { extractCompanyIdentity } from "../extractors/actaCompanyIdentity.js";
@@ -33,6 +59,18 @@ import { extractBankStatementProfile } from "../extractors/bankStatementProfile.
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
 import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
 import { DEMO_CONFIG } from "../core/demoConfig.js";
+
+// AsyncLocalStorage for passing orgId through async call stack
+const orgContext = new AsyncLocalStorage<{ orgId: string }>();
+
+// Helper to get orgId from context (throws if not set)
+export function requireOrgId(): string {
+  const context = orgContext.getStore();
+  if (!context?.orgId) {
+    throw new Error("orgId not found in context - request must be authenticated");
+  }
+  return context.orgId;
+}
 
 type McpToolResponse = {
   content: Array<{ type: "text"; text: string }>;
@@ -79,6 +117,8 @@ export async function handleImportKycDocument({ customer_id, doc_type, file_url,
   file_url: string; 
   source_name?: string;
 }): Promise<McpToolResponse> {
+  // Require orgId from context (set by middleware)
+  const orgId = requireOrgId();
   console.error(`Processing ${doc_type} for ${customer_id} from ${file_url}`);
 
   let extractedPayload: any = null;
@@ -136,51 +176,81 @@ export async function handleImportKycDocument({ customer_id, doc_type, file_url,
     return errorResponse("EXTRACTION_FAILED", error?.message || "Unknown extraction error");
   }
 
-  // Load existing run or create new
-  let run = await loadLatestRun(customer_id);
+  // Get or create run using Prisma (requires orgId)
+  let dbRun = await getLatestRunDb(orgId, customer_id);
   
-  if (!run) {
-    run = {
-      runId: crypto.randomUUID(),
-      customerId: customer_id,
-      createdAt: new Date().toISOString(),
-      documents: []
-    };
+  if (!dbRun) {
+    await createRunDb(orgId, customer_id);
+    dbRun = await getLatestRunDb(orgId, customer_id);
+    if (!dbRun) {
+      return errorResponse("DB_ERROR", "Failed to create run");
+    }
   }
 
-  // Create document entry
-  const newDoc: KycDocument = {
-    id: crypto.randomUUID(),
-    customerId: customer_id,
-    type: doc_type as DocumentType,
+  // Append main document
+  const mainDocId = await appendDocDb(dbRun.id, {
+    docType: doc_type,
     fileUrl: file_url,
-    extractedAt: new Date().toISOString(),
+    sourceName: source_name || path.basename(file_url),
     extractedPayload,
-    sourceName: source_name || path.basename(file_url)
-  };
+  });
 
-  // Append and save
-  run.documents.push(newDoc);
-  supplementalDocs.forEach((doc) => run.documents.push(doc));
-  
-  await saveRun(run);
+  // Append supplemental documents
+  const supplementalDocIds: string[] = [];
+  for (const suppDoc of supplementalDocs) {
+    const suppDocId = await appendDocDb(dbRun.id, {
+      docType: suppDoc.type,
+      fileUrl: suppDoc.fileUrl,
+      sourceName: suppDoc.sourceName,
+      extractedPayload: suppDoc.extractedPayload,
+    });
+    supplementalDocIds.push(suppDocId.id);
+  }
+
+  // Log audit event
+  await logAudit(orgId, "document_imported", {
+    customerId: customer_id,
+    docType: doc_type,
+    runId: dbRun.id,
+    docId: mainDocId.id,
+    modelUsed: extractedPayload?._metadata?.modelUsed
+  });
 
   return okResponse({
     customer_id,
-    run_id: run.runId,
-    doc_id: newDoc.id,
+    run_id: dbRun.id,
+    doc_id: mainDocId.id,
     doc_type,
-    supplemental_doc_ids: supplementalDocs.map(doc => doc.id),
-    status: "imported"
+    supplemental_doc_ids: supplementalDocIds,
+    status: "imported",
+    model_used: extractedPayload?._metadata?.modelUsed
   });
 }
 
 export async function handleBuildKycProfile({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
-  const run = await loadLatestRun(customer_id);
+  const orgId = requireOrgId();
   
-  if (!run) {
+  const dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
     return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
   }
+
+  // Convert DB run to in-memory format for profile building
+  const run = {
+    runId: dbRun.id,
+    customerId: dbRun.customerId,
+    createdAt: dbRun.createdAt.toISOString(),
+    documents: dbRun.docs.map(doc => ({
+      id: doc.id,
+      customerId: dbRun.customerId,
+      type: doc.docType as DocumentType,
+      fileUrl: doc.fileUrl,
+      extractedAt: doc.createdAt.toISOString(),
+      extractedPayload: doc.extractedPayload,
+      sourceName: doc.sourceName || undefined,
+    })),
+  };
 
   // Aggregate data from documents
   let companyIdentity: CompanyIdentity | undefined;
@@ -233,58 +303,83 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
     bankAccounts
   });
 
-  run.profile = profile;
-  await saveRun(run);
+  // Save profile to database
+  await updateRunDb(dbRun.id, { profile, status: "completed" });
+
+  // Log audit event
+  await logAudit(orgId, "profile_built", {
+    customerId: customer_id,
+    runId: dbRun.id,
+  });
 
   return okResponse(profile);
 }
 
 export async function handleValidateKycProfile({ customer_id }: { customer_id: string }): Promise<McpToolResponse> {
-  const run = await loadLatestRun(customer_id);
+  const orgId = requireOrgId();
   
-  if (!run) {
-     return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
+  let dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
+    return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
   }
 
-  if (!run.profile) {
-     // Auto-build if missing
-      await handleBuildKycProfile({ customer_id });
-      // Reload to get the profile
-      const reloadedRun = await loadLatestRun(customer_id);
-      if (reloadedRun && reloadedRun.profile) {
-          run.profile = reloadedRun.profile;
-      } else {
-          return errorResponse("PROFILE_BUILD_FAILED", `Failed to build profile for customer ${customer_id}`);
-      }
+  // Get profile from DB run
+  let profile = dbRun.profile as KycProfile | null;
+  
+  if (!profile) {
+    // Auto-build if missing
+    await handleBuildKycProfile({ customer_id });
+    // Reload to get the profile
+    dbRun = await getLatestRunDb(orgId, customer_id);
+    if (!dbRun) {
+      return errorResponse("DB_ERROR", "Failed to reload run");
+    }
+    profile = dbRun.profile as KycProfile | null;
+    if (!profile) {
+      return errorResponse("PROFILE_BUILD_FAILED", `Failed to build profile for customer ${customer_id}`);
+    }
   }
 
-  const validation = validateKycProfile(run.profile!);
-  run.validation = validation;
+  const validation = validateKycProfile(profile);
   
-  await saveRun(run);
+  // Save validation to database
+  await updateRunDb(dbRun.id, { validation, status: "completed" });
+
+  // Log audit event
+  await logAudit(orgId, "profile_validated", {
+    customerId: customer_id,
+    runId: dbRun.id,
+    score: validation.score,
+  });
 
   return okResponse(validation);
 }
 
 export async function handleGetKycReport({ customer_id, include_trace = false }: { customer_id: string; include_trace?: boolean }): Promise<McpToolResponse> {
-  const run = await loadLatestRun(customer_id);
+  const orgId = requireOrgId();
   
-  if (!run) {
-     return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
+  let dbRun = await getLatestRunDb(orgId, customer_id);
+  
+  if (!dbRun) {
+    return errorResponse("NO_RUN_FOR_CUSTOMER", `No run found for customer ${customer_id}`);
   }
 
-  let profile = run.profile;
-  let validation = run.validation;
+  let profile = dbRun.profile as KycProfile | null;
+  let validation = dbRun.validation as KycValidationResult | null;
 
   if (!profile || !validation) {
-      await handleValidateKycProfile({ customer_id }); // This triggers build if needed
-      const reloadedRun = await loadLatestRun(customer_id);
-      profile = reloadedRun?.profile;
-      validation = reloadedRun?.validation;
+    await handleValidateKycProfile({ customer_id }); // This triggers build if needed
+    dbRun = await getLatestRunDb(orgId, customer_id);
+    if (!dbRun) {
+      return errorResponse("DB_ERROR", "Failed to reload run");
+    }
+    profile = dbRun.profile as KycProfile | null;
+    validation = dbRun.validation as KycValidationResult | null;
   }
 
   if (!profile || !validation) {
-      return errorResponse("FAILED_TO_GENERATE_PROFILE_OR_VALIDATION", "Unable to build profile or validation for report");
+    return errorResponse("FAILED_TO_GENERATE_PROFILE_OR_VALIDATION", "Unable to build profile or validation for report");
   }
 
   const report = buildKycReport(profile, validation, { includeTrace: include_trace });
@@ -356,29 +451,297 @@ server.tool(
 
 export async function runServer() {
   if (process.env.MCP_TRANSPORT === "sse") {
-    const app = express();
-    app.use(cors());
-    const port = process.env.PORT || 3000;
+    const app = Fastify({
+      logger: logger,
+    });
+
+    // Register CORS for ChatGPT Actions
+    await app.register(cors, {
+      origin: (origin, callback) => {
+        // Allow requests from ChatGPT Actions
+        if (!origin || 
+            origin === 'https://chat.openai.com' ||
+            origin === 'https://chatgpt.com' ||
+            /^https:\/\/.*\.chatgpt\.com$/.test(origin)) {
+          callback(null, true);
+        } else {
+          callback(null, true); // Allow all origins for development
+        }
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+    });
+
+    // Register Swagger/OpenAPI
+    await app.register(swagger, {
+      openapi: {
+        openapi: '3.1.0',
+        info: {
+          title: 'KYC & Credit Assessment API',
+          description: 'API for KYC document checking and credit assessment',
+          version: '1.0.0',
+        },
+        servers: [
+          {
+            url: process.env.API_BASE_URL || 'http://localhost:3000',
+            description: 'API Server',
+          },
+        ],
+        components: {
+          securitySchemes: {
+            apiKey: {
+              type: 'apiKey',
+              name: 'x-api-key',
+              in: 'header',
+            },
+          },
+        },
+        security: [{ apiKey: [] }],
+      },
+    });
+
+    await app.register(swaggerUi, {
+      routePrefix: '/docs',
+      uiConfig: {
+        docExpansion: 'list',
+        deepLinking: false,
+      },
+    });
+
+    // Register rate limiting plugin
+    await app.register(rateLimit, rateLimitConfig);
+
+    const port = parseInt(process.env.PORT || "3000", 10);
 
     let transport: SSEServerTransport | null = null;
 
-    app.get("/sse", async (_req, res) => {
-      console.log("New SSE connection established");
-      transport = new SSEServerTransport("/message", res);
-      await server.connect(transport);
+    // Add correlation ID middleware (runs before auth)
+    app.addHook("onRequest", correlationIdMiddleware);
+
+    // Add request logging and metrics
+    app.addHook("onRequest", async (request) => {
+      const startTime = Date.now();
+      request.startTime = startTime;
+      
+      // Log request
+      const log = createContextLogger({
+        corrId: request.corrId,
+        orgId: (request as any).org?.id,
+      });
+      log.info({ method: request.method, url: request.url }, 'Incoming request');
     });
 
-    app.post("/message", async (req, res) => {
-      if (!transport) {
-        res.sendStatus(400);
+    app.addHook("onResponse", async (request, reply) => {
+      const duration = ((request.startTime ? Date.now() - request.startTime : 0)) / 1000;
+      const route = (request as any).routerPath || request.url.split('?')[0];
+      
+      // Record metrics
+      metrics.httpRequestDuration.observe(
+        { method: request.method, route, status: reply.statusCode },
+        duration
+      );
+      metrics.httpRequestTotal.inc({
+        method: request.method,
+        route,
+        status: reply.statusCode,
+      });
+      
+      // Log response
+      const log = createContextLogger({
+        corrId: request.corrId,
+        orgId: (request as any).org?.id,
+      });
+      log.info(
+        {
+          method: request.method,
+          url: request.url,
+          statusCode: reply.statusCode,
+          duration,
+        },
+        'Request completed'
+      );
+    });
+
+    // Apply API key authentication to all routes (except health/ready/metrics/docs)
+    app.addHook("preHandler", async (request, reply) => {
+      const path = request.url.split('?')[0];
+      if (
+        path === '/healthz' ||
+        path === '/readyz' ||
+        path === '/metrics' ||
+        path.startsWith('/docs')
+      ) {
+        return; // Skip auth for health/ready/metrics/docs
+      }
+      return apiKeyAuth(request, reply);
+    });
+
+    // Health and metrics endpoints (no auth required)
+    app.get('/healthz', handleHealthz);
+    app.get('/readyz', handleReadyz);
+    app.get('/metrics', handleMetrics);
+
+    // REST API Routes
+    app.post('/kyc/check', {
+      schema: {
+        description: 'Check/import a KYC document',
+        tags: ['KYC'],
+        body: {
+          type: 'object',
+          required: ['customer_id', 'doc_type', 'file_url'],
+          properties: {
+            customer_id: { type: 'string', example: 'customer-123' },
+            doc_type: {
+              type: 'string',
+              enum: ['acta', 'sat_constancia', 'fm2', 'telmex', 'cfe', 'bank_statement', 'bank_identity_page'],
+              example: 'acta',
+            },
+            file_url: { type: 'string', example: 'https://example.com/document.pdf' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              run_id: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440000' },
+              doc_id: { type: 'string', example: '660e8400-e29b-41d4-a716-446655440000' },
+              model_used: { type: 'string', example: 'gpt-5.1' },
+            },
+          },
+        },
+      },
+    }, handleKycCheck);
+
+    app.post('/credit/assess', {
+      schema: {
+        description: 'Assess creditworthiness based on KYC profile',
+        tags: ['Credit'],
+        body: {
+          type: 'object',
+          required: ['customer_id'],
+          properties: {
+            customer_id: { type: 'string', example: 'customer-123' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              decision_id: { type: 'string', example: '770e8400-e29b-41d4-a716-446655440000' },
+              limit: { type: 'number', example: 100000 },
+              terms: { type: 'string', example: 'Standard terms: 30-day payment, 2% interest' },
+              score: { type: 'number', example: 0.85 },
+              flags: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string', example: 'ADDRESS_MISMATCH' },
+                    level: { type: 'string', enum: ['info', 'warning', 'critical'], example: 'warning' },
+                    message: { type: 'string', example: 'Address mismatch detected' },
+                  },
+                },
+              },
+              reasons: {
+                type: 'array',
+                items: { type: 'string' },
+                example: ['High KYC score and no critical flags'],
+              },
+            },
+          },
+        },
+      },
+    }, handleCreditAssess);
+
+    app.get('/audit/:decision_id', {
+      schema: {
+        description: 'Get audit information for a decision',
+        tags: ['Audit'],
+        params: {
+          type: 'object',
+          properties: {
+            decision_id: { type: 'string', example: '770e8400-e29b-41d4-a716-446655440000' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              decision_id: { type: 'string' },
+              run_id: { type: 'string' },
+              customer_id: { type: 'string' },
+              decision: { type: 'string', enum: ['approved', 'rejected', 'pending'] },
+              score: { type: 'number', nullable: true },
+              created_at: { type: 'string', format: 'date-time' },
+              profile: { type: 'object' },
+              validation: { type: 'object' },
+              audit_trail: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    event_type: { type: 'string' },
+                    metadata: { type: 'object' },
+                    created_at: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }, handleGetAudit);
+
+    app.get("/sse", async (request, reply) => {
+      console.log("New SSE connection established");
+      // Store orgId in context for this request
+      const orgId = request.org?.id;
+      if (!orgId) {
+        reply.code(401).send({ error: "Organization not authenticated" });
         return;
       }
-      await transport.handlePostMessage(req, res);
+      
+      // SSEServerTransport works with Node.js raw response object
+      // Fastify's reply.raw is compatible
+      const nodeRes = reply.raw;
+      
+      // Run MCP server connection within org context
+      await orgContext.run({ orgId }, async () => {
+        transport = new SSEServerTransport("/message", nodeRes);
+        await server.connect(transport);
+      });
     });
 
-    app.listen(port, () => {
-      console.log(`MX KYC MCP Server running on SSE at http://localhost:${port}/sse`);
+    app.post("/message", async (request, reply) => {
+      if (!transport) {
+        reply.code(400).send({ error: "No active SSE connection" });
+        return;
+      }
+      
+      // Get orgId from authenticated request
+      const orgId = request.org?.id;
+      if (!orgId) {
+        reply.code(401).send({ error: "Organization not authenticated" });
+        return;
+      }
+      
+      // Run message handling within org context
+      await orgContext.run({ orgId }, async () => {
+        // SSEServerTransport expects Node.js raw request/response
+        const nodeReq = request.raw;
+        const nodeRes = reply.raw;
+        await transport!.handlePostMessage(nodeReq, nodeRes);
+      });
     });
+
+    try {
+      await app.listen({ port, host: "0.0.0.0" });
+      console.log(`MX KYC MCP Server running on SSE at http://localhost:${port}/sse`);
+    } catch (err) {
+      app.log.error(err);
+      process.exit(1);
+    }
   } else {
     const transport = new StdioServerTransport();
     await server.connect(transport);

@@ -1,8 +1,7 @@
-import * as path from 'path';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
 import { normalizeEmptyToNull, sanitizeRfc } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican SAT Constancias (both Persona Moral and Persona Física).
@@ -34,19 +33,13 @@ Only copy what is explicitly printed. No hallucinations.
 `;
 
 export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
-  console.log(`Extracting company tax profile using Gemini 2.5`);
+  console.log(`Extracting company tax profile using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
   try {
-    // Determine MIME type
-    const ext = path.extname(fileUrl).toLowerCase();
-    const mimeType = ext === '.pdf' ? 'application/pdf' : 
-                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-                     ext === '.png' ? 'image/png' :
-                     ext === '.webp' ? 'image/webp' : 'application/pdf';
-
-    // Use Gemini for extraction
-    const data = await extractWithGemini(fileUrl, mimeType, CompanyTaxProfileSchema, EXTRACTION_INSTRUCTIONS);
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('sat_constancia', fileUrl, CompanyTaxProfileSchema, EXTRACTION_INSTRUCTIONS);
+    const data = result.data;
     
     // Extract object if nested (Gemini returns flat structure)
     const profile = data.company_tax_profile || data;
@@ -63,6 +56,12 @@ export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
     if (normalizedProfile.fiscal_address) {
       normalizedProfile.fiscal_address.country = "MX";
     }
+
+    // Attach metadata
+    (normalizedProfile as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
 
     return normalizedProfile;
 

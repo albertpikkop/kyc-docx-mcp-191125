@@ -22,25 +22,22 @@ export const IneIdentitySchema = {
         cp: { type: ["string", "null"] },
         country: { type: ["string", "null"] }
       },
-      // STRICT MODE REQUIREMENT: All defined properties must be in required array
-      required: ["street", "colonia", "municipio", "estado", "cp", "country"],
+      // Address properties are nullable but must be present in the object if address exists
+      // All properties are optional within the address object
+      required: [],
       additionalProperties: false
     },
     issuer_country: { type: "string", enum: ["MX"], description: "Always MX for INE" }
   },
-  // STRICT MODE REQUIREMENT: All defined properties must be in required array
+  // Required fields: Only fields that MUST be present (even if null)
+  // Optional fields (cic, ocr_number, emission_year, vigencia_year, date_of_birth, sex)
+  // are NOT in required array - they can be omitted entirely if not extractable
   required: [
-    "full_name", 
-    "curp", 
-    "clave_elector", 
-    "cic", 
-    "ocr_number", 
-    "emission_year", 
-    "vigencia_year", 
-    "date_of_birth", 
-    "sex", 
-    "address", 
-    "issuer_country"
+    "full_name",      // Always present on INE card
+    "curp",           // Always present on INE card
+    "clave_elector",  // Must be present (can be null if not visible)
+    "address",        // Must be present (can be null if not visible)
+    "issuer_country" // Always "MX"
   ],
   additionalProperties: false
 };

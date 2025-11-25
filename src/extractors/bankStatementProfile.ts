@@ -1,12 +1,8 @@
-import OpenAI from 'openai';
-import * as fs from 'fs';
 import { z } from 'zod';
-import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
-import { normalizeEmptyToNull, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
-import { withRetry } from '../utils/retry.js';
+import { sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { optimizeDocument } from '../utils/documentOptimizer.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 // Zod definition matching BankAccountProfileSchema for runtime validation
 const AddressZodSchema = z.object({
@@ -58,89 +54,42 @@ Do not hallucinate missing fields.
 `;
 
 export async function extractBankStatementProfile(fileUrl: string): Promise<any> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is not set in environment variables');
-  }
-
-  const client = new OpenAI({ apiKey });
-  const model: GPT5Model = validateModel(MODEL);
-
-  console.log(`Extracting Bank Statement Profile using model: ${model}`);
+  console.log(`Extracting Bank Statement Profile using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
-  const isUrl = fileUrl.startsWith('http://') || fileUrl.startsWith('https://') || fileUrl.startsWith('data:');
-  let inputItem: any;
-
-  if (isUrl) {
-    inputItem = {
-      type: 'input_image',
-      image_url: fileUrl
-    };
-  } else {
-    // Optimize document before sending to OpenAI
-    const optimizedResults = await optimizeDocument(fileUrl);
-    const optimized = optimizedResults[0];
-
-    // Check if optimization failed (fallback)
-    if (!optimized.success || optimized.isFallback) {
-        console.warn(`Optimization failed for ${fileUrl}. Uploading raw PDF file to OpenAI.`);
-        
-        // FALLBACK: Upload original PDF file
-        console.log('Uploading raw PDF file...');
-        const fileStream = fs.createReadStream(fileUrl);
-        const uploadedFile = await client.files.create({
-            file: fileStream,
-            purpose: 'assistants',
-        });
-        
-        inputItem = {
-            type: 'input_file',
-            file_id: uploadedFile.id,
-        };
-    } else {
-        // Success: Use optimized image
-        const base64Data = optimized.buffer!.toString('base64');
-        inputItem = {
-            type: 'input_image',
-            image_url: `data:${optimized.mimeType};base64,${base64Data}`
-        };
-    }
-  }
-
   try {
-    const res = await withRetry(() =>
-      client.responses.create({
-        model,
-        instructions: EXTRACTION_INSTRUCTIONS,
-        input: [
-          {
-            role: 'user',
-            content: [inputItem]
-          }
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: "bank_account_profile",
-            strict: false,
-            schema: BankAccountProfileSchema
-          },
-        },
-      } as any)
-    );
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('bank_statement.profile', fileUrl, BankAccountProfileSchema, EXTRACTION_INSTRUCTIONS);
+    const data = result.data;
+    
+    // Strict Post-processing: Normalize empty strings to null
+    const normalizeEmptyToNull = (value: any): any => {
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === "" || trimmed === "/" || trimmed === "/null" || trimmed === "N/A" || trimmed === "--" || trimmed.toLowerCase() === "unknown") {
+          return null;
+        }
+        return trimmed;
+      }
+      return value;
+    };
 
-    const outputItem = res.output?.[0] as any;
-    const content = outputItem?.content?.[0]?.text || (res as any).output_text;
-
-    if (!content) {
-      throw new Error('No content received from model');
-    }
-
-    const data = JSON.parse(content);
+    // Recursive deep normalization
+    const deepNormalize = (obj: any): any => {
+        if (Array.isArray(obj)) {
+            return obj.map(deepNormalize);
+        } else if (obj !== null && typeof obj === 'object') {
+            for (const key in obj) {
+                obj[key] = deepNormalize(obj[key]);
+            }
+            return obj;
+        } else {
+            return normalizeEmptyToNull(obj);
+      }
+    };
     
     // Deep normalization of empty strings to null
-    const normalizedData = normalizeEmptyToNull(data);
+    const normalizedData = deepNormalize(data);
 
     // Runtime Validation against Zod Schema
     const validationResult = BankAccountProfileZodSchema.safeParse(normalizedData);
@@ -165,6 +114,12 @@ export async function extractBankStatementProfile(fileUrl: string): Promise<any>
         profile.currency = sanitizeCurrency(profile.currency);
       }
     }
+
+    // Attach metadata
+    (validatedData as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
 
     return validatedData;
 

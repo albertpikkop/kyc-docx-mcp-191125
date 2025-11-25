@@ -139,36 +139,45 @@ export function buildKycReport(
   hechosBody += "\n";
 
   // 3. Identidad del Representante (FM2/INE)
-  hechosBody += "### 3. Identidad del Representante\n";
-  if (profile.representativeIdentity) {
-      const rep = profile.representativeIdentity;
-      hechosBody += `- **Nombre:** ${rep.full_name}\n`;
-      
-      // FIX: Check strict length for document_number
-      const docNumRaw = rep.document_number || "";
-      if (docNumRaw.length < 8) { 
-          hechosBody += `- **Documento:** Incomplete/Error (${docNumRaw})\n`;
-      } else {
-          const docNum = options.redacted ? maskString(docNumRaw) : docNumRaw;
-          hechosBody += `- **Documento:** ${rep.document_type} (${docNum})\n`;
-      }
+  // For Persona Física, this is redundant with Section 1 ("Identidad Personal").
+  // We only show it if it's a corporate entity (Persona Moral).
+  if (!isPF) {
+      hechosBody += "### 3. Identidad del Representante\n";
+      if (profile.representativeIdentity) {
+          const rep = profile.representativeIdentity;
+          hechosBody += `- **Nombre:** ${rep.full_name}\n`;
+          
+          // FIX: Check strict length for document_number
+          const docNumRaw = rep.document_number || "";
+          if (docNumRaw.length < 8) { 
+              hechosBody += `- **Documento:** Incomplete/Error (${docNumRaw})\n`;
+          } else {
+              const docNum = options.redacted ? maskString(docNumRaw) : docNumRaw;
+              hechosBody += `- **Documento:** ${rep.document_type} (${docNum})\n`;
+          }
 
-      hechosBody += `- **Nacionalidad:** ${rep.nationality}\n`;
-      
-      // FIX: Check strict length for CURP (must be 18)
-      const curpRaw = rep.curp || "";
-      if (curpRaw.length !== 18) {
-           hechosBody += `- **CURP:** Incomplete/Error (${curpRaw})\n`;
-      } else {
-           // Output full CURP if unmasked
-           const curp = options.redacted ? maskString(curpRaw, 4) : curpRaw;
-           hechosBody += `- **CURP:** ${curp}\n`;
-      }
+          hechosBody += `- **Nacionalidad:** ${rep.nationality}\n`;
+          
+          // Date of Birth - consistent with Persona Física section
+          if (rep.date_of_birth) {
+              hechosBody += `- **Fecha de Nacimiento:** ${rep.date_of_birth}\n`;
+          }
+          
+          // FIX: Check strict length for CURP (must be 18)
+          const curpRaw = rep.curp || "";
+          if (curpRaw.length !== 18) {
+               hechosBody += `- **CURP:** Incomplete/Error (${curpRaw})\n`;
+          } else {
+               // Output full CURP if unmasked
+               const curp = options.redacted ? maskString(curpRaw, 4) : curpRaw;
+               hechosBody += `- **CURP:** ${curp}\n`;
+          }
 
-  } else {
-      hechosBody += "- *No se encontró documento de identidad del representante.*\n";
+      } else {
+          hechosBody += "- *No se encontró documento de identidad del representante.*\n";
+      }
+      hechosBody += "\n";
   }
-  hechosBody += "\n";
 
   // 4. Evidencia Operativa (Bank/PoA)
   hechosBody += "### 4. Evidencia Operativa\n";
@@ -311,15 +320,35 @@ export function buildKycReport(
       const identityName = profile.representativeIdentity?.full_name || profile.companyTaxProfile?.razon_social || "N/A";
       conclusionesBody += `**✅ Autoridad Firmante Verificada:**\n`;
       conclusionesBody += `- **${identityName}** - La persona titular es la autoridad firmante y representante legal de sí misma.\n`;
-      conclusionesBody += `- **Documento de Identidad:** ${profile.representativeIdentity?.document_type || "N/A"} (${profile.representativeIdentity?.document_number || "N/A"})\n`;
+      // Redundant doc info removed here too to keep it clean
       conclusionesBody += "\n";
   } else {
       const signers = resolveSignatories(profile);
       
-      // Helper function to fuzzy match names (handles variations like "Ashish Punj" vs "ASHISH PUNJ")
+      // Helper function to fuzzy match names (handles variations like "Ashish Punj" vs "PUNJ ASHISH")
       const namesMatch = (name1: string, name2: string): boolean => {
+          if (!name1 || !name2) return false;
           const normalize = (n: string) => n.toUpperCase().trim().replace(/\s+/g, ' ');
-          return normalize(name1) === normalize(name2);
+          const n1 = normalize(name1);
+          const n2 = normalize(name2);
+          
+          // 1. Exact match
+          if (n1 === n2) return true;
+          
+          // 2. Token set match (Bag of Words)
+          const tokens1 = new Set(n1.split(' ').filter(t => t.length > 1));
+          const tokens2 = new Set(n2.split(' ').filter(t => t.length > 1));
+          
+          // Check if all tokens from the shorter name appear in the longer name
+          // (e.g., "ASHISH PUNJ" matches "ASHISH PUNJ EXTRA")
+          const [smaller, larger] = tokens1.size <= tokens2.size ? [tokens1, tokens2] : [tokens2, tokens1];
+          let matchCount = 0;
+          for (const token of smaller) {
+              if (larger.has(token)) matchCount++;
+          }
+          
+          // Require 100% of the smaller name's significant tokens to match
+          return smaller.size > 0 && matchCount === smaller.size;
       };
       
       // Find verified signing authority (matches representative identity)
@@ -489,12 +518,8 @@ export function buildKycReport(
               lines.push(`| ${u.name} | ${u.shares ?? "-"} | ${u.totalShares ?? "-"} | ${pct} | ${thr} | ${isUboLabel} |`);
           }
           lines.push("");
-      } else if (isPF) {
-          lines.push("### 1. Propietarios Beneficiarios");
-          lines.push("");
-          lines.push("No existen accionistas; el titular es Persona Física.");
-          lines.push("");
-      }
+      } 
+      // Removed redundant "No shareholders" block for PF
       
       // Address evidence trace
       if (trace.addressEvidence && trace.addressEvidence.length > 0) {
@@ -510,6 +535,10 @@ export function buildKycReport(
           const operationalEvidence = trace.addressEvidence.filter(a => a.role !== 'founding');
           
           for (const a of operationalEvidence) {
+              // For PF, merge Fiscal and Operational if they are identical to reduce redundancy
+              // (Usually handled by consolidation in validation, but displaying both is sometimes verbose)
+              // For now, keeping them distinct but clearly labeled.
+              
               // Map internal roles to user-friendly names
               let roleName: string = a.role;
               if (a.role === 'fiscal') roleName = 'Fiscal (SAT)';
@@ -531,27 +560,26 @@ export function buildKycReport(
       
       // Powers trace (PF Mode: Individual is signatory)
       if (isPF) {
-          lines.push("### 3. Facultades / Poderes");
-          lines.push("");
-          const identityName = profile.representativeIdentity?.full_name || profile.companyTaxProfile?.razon_social || "N/A";
-          lines.push(`La persona titular (${identityName}) es la autoridad firmante y representante legal de sí misma.`);
-          lines.push("");
+          // Hide Powers trace for PF as it's trivial and redundant
       } else if (trace.powers && trace.powers.length > 0) {
           lines.push("### 3. Facultades / Poderes – Justificación");
+          lines.push("");
+          lines.push("| Nombre | Rol | Alcance | Evidencia (Frases/Notas) |");
+          lines.push("|--------|-----|---------|---------------------------|");
+          
           for (const p of trace.powers) {
-              lines.push(`- **${p.personName}** (${p.role}) – Alcance: ${p.scope}`);
-              if (p.matchedPhrases?.length) {
-                  lines.push(`  - Frases clave detectadas: ${p.matchedPhrases.join(", ")}`);
-              }
-              if (p.missingPowers?.length && p.scope !== 'full') {
-                  lines.push(`  - ❌ Faltantes para Poder Amplio: ${p.missingPowers.join(", ")}`);
-              }
-              if (p.limitations?.length) {
-                  lines.push(`  - ⚠️ Limitaciones detectadas: ${p.limitations.join(", ")}`);
-              }
-              if (p.sourceReference) {
-                  lines.push(`  - Fuente: ${p.sourceReference}`);
-              }
+              let evidence = "";
+              if (p.matchedPhrases?.length) evidence += `✅ **Frases:** ${p.matchedPhrases.join(", ")}<br>`;
+              if (p.missingPowers?.length && p.scope !== 'full') evidence += `❌ **Faltantes:** ${p.missingPowers.join(", ")}<br>`;
+              if (p.limitations?.length) evidence += `⚠️ **Limitaciones:** ${p.limitations.join(", ")}`;
+              
+              // Clean up breaks
+              if (evidence.endsWith("<br>")) evidence = evidence.slice(0, -4);
+              if (!evidence) evidence = "-";
+
+              const scopeLabel = p.scope === 'full' ? '**FULL**' : (p.scope === 'limited' ? 'Limited' : 'None');
+              
+              lines.push(`| ${p.personName} | ${p.role} | ${scopeLabel} | ${evidence} |`);
           }
           lines.push("");
       }
@@ -559,25 +587,35 @@ export function buildKycReport(
       // Freshness trace
       if (trace.freshness && trace.freshness.length > 0) {
           lines.push("### 4. Vigencia de Documentos – Detalle");
+          lines.push("");
+          lines.push("| Tipo Documento | Fecha Doc. | Antigüedad | Estatus | Documentos Fuente |");
+          lines.push("|----------------|------------|------------|---------|-------------------|");
+          
           for (const f of trace.freshness) {
-              lines.push(`- **Tipo:** ${f.docType}`);
-              lines.push(`  - Última fecha: ${f.latestDate ?? "-"}`);
-              lines.push(`  - Antigüedad (días): ${f.ageInDays ?? "-"}`);
-              lines.push(`  - Dentro del umbral: ${f.withinThreshold ? "Sí" : "No"}`);
+              const statusIcon = f.withinThreshold ? "✅" : "⚠️";
+              const statusText = f.withinThreshold ? "Vigente" : "Antiguo";
+              
+              let sources = "";
               if (f.supportingDocuments?.length) {
-                  lines.push("  - Documentos utilizados:");
-                  for (const s of f.supportingDocuments) {
-                      lines.push(`    - ${s.type}${s.date ? ` (${s.date})` : ""}${s.description ? ` – ${s.description}` : ""}`);
-                  }
+                  sources = f.supportingDocuments.map(s => `${s.type} (${s.date || 'N/A'})`).join(", ");
+              } else {
+                  sources = "-";
               }
+
+              lines.push(`| **${f.docType}** | ${f.latestDate ?? "-"} | ${f.ageInDays ?? "-"} días | ${statusIcon} ${statusText} | ${sources} |`);
           }
+          lines.push("");
           
           // Demo: Show Bank Identity matching logic
           if (profile.bankIdentity) {
                lines.push(`\n**Validación de Identidad Bancaria:**`);
-               lines.push(`- Titular coincide con Razón Social: ${profile.bankIdentity.holder_matches_company ? "Sí" : "No"}`);
-               lines.push(`- Dirección coincide con Operativa: ${profile.bankIdentity.address_matches_operational ? "Sí" : "No"}`);
-               lines.push(`- Documento reciente: ${profile.bankIdentity.within_90_days ? "Sí" : "No"} (${profile.bankIdentity.age_in_days} días)`);
+               lines.push("");
+               lines.push("| Criterio | Resultado | Detalle |");
+               lines.push("|----------|-----------|---------|");
+               lines.push(`| Titular coincide con Razón Social | ${profile.bankIdentity.holder_matches_company ? "✅ Sí" : "❌ No"} | ${profile.bankIdentity.account_holder_name} |`);
+               lines.push(`| Dirección coincide con Operativa | ${profile.bankIdentity.address_matches_operational ? "✅ Sí" : "⚠️ No"} | ${formatAddress(profile.bankIdentity.address_on_file, options.redacted)} |`);
+               lines.push(`| Documento Reciente (<90 días) | ${profile.bankIdentity.within_90_days ? "✅ Sí" : "⚠️ No"} | ${profile.bankIdentity.age_in_days} días |`);
+               lines.push("");
           }
           
           lines.push("");

@@ -24,10 +24,11 @@ export function isPersonaFisica(profile: KycProfile): boolean {
   // Check if no Acta AND RFC pattern suggests persona física
   if (!profile.companyIdentity && profile.companyTaxProfile?.rfc) {
     const rfc = profile.companyTaxProfile.rfc.toUpperCase();
-    // Persona Física RFC pattern: ends with 3 letters/numbers (e.g., "CEDE981004E67")
-    // Persona Moral RFC pattern: ends with "KQ7", "KQ8", etc. (e.g., "PFD210830KQ7")
+    // Persona Física RFC pattern: 4 letters + 6 digits + 3 homoclave (e.g., "CEDE981004E67")
+    // Persona Moral RFC pattern: 3 letters + 6 digits + 3 homoclave (e.g., "PFD210830KQ7")
+    // Both have 12 characters total
     const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/;
-    const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z]{1}\d{1}$/;
+    const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;
     
     if (personaFisicaPattern.test(rfc) && !personaMoralPattern.test(rfc)) {
       return true;
@@ -205,7 +206,7 @@ const POWER_PATTERNS = {
   pleitos: /PLEITOS? Y COBRANZAS?/i,
   administracion: /ACTOS? DE ADMINISTRACI[ÓO]N/i,
   dominio: /ACTOS? DE DOMINIO/i,
-  titulosCredito: /T[ÍI]TULOS? DE CR[ÉE]DITO/i,
+  titulosCredito: /T[ÍI]TULOS? (?:DE|Y)(?:.*?)CR[ÉE]DITO/i,
 };
 
 export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
@@ -230,13 +231,10 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
                                    roleUpper.includes("ESPECIAL APODERADO") ||
                                    roleUpper.includes("APODERADO LIMITADO") ||
                                    roleUpper.includes("LIMITADO APODERADO");
-      // CRITICAL: Only check for "poderes especiales" as a label, NOT "poder especial" which appears in power descriptions
-      // "Poder especial para X" is a specific power grant, not a label that the person is an "apoderado especial"
-      // We need to distinguish between:
-      // - "apoderado especial" (role label) = LIMITED
-      // - "poder especial para actos de dirección" (specific power) = can still be FULL if has all 4 canonical powers
-      const hasEspecialPowersLabel = powersText.includes("PODERES ESPECIALES") || 
-                                     powersText.includes("PODERES LIMITADOS");
+      // CRITICAL: Only check for "poderes especiales" as a label in the ROLE.
+      // Checking in powersText is risky because "otorgar poderes generales y especiales" is a common FULL power attribute.
+      // We trust the 4 canonical powers check to determine fullness.
+      const hasEspecialPowersLabel = false; // Disable text body check for "PODERES ESPECIALES" to avoid false positives on substitution clauses
       // Do NOT check for "PODER ESPECIAL" as it appears in power descriptions like "Poder especial para actos de dirección"
       const isExplicitlyLimited = isExplicitlyEspecial || hasEspecialPowersLabel;
       
@@ -417,6 +415,91 @@ export function checkFreshness(profile: KycProfile, asOf: Date = new Date()): Fr
   return results;
 }
 
+// --- 4.5 Entity Coherence Helper ---
+
+/**
+ * Normalizes strings for flexible matching (razón social).
+ * - Upper case
+ * - Remove accents
+ * - Remove punctuation
+ * - Standardize spacing
+ */
+function normalizeString(str: string): string {
+  if (!str) return "";
+  
+  // Standardize corporate suffixes to a single token: __CORP_SUFFIX__
+  // This handles "S.A. DE C.V." vs "Sociedad Anónima de Capital Variable"
+  const corpSuffixRegex = /\b(SOCIEDAD\s+AN[OÓ]NIMA\s+PROMOTORA\s+DE\s+INVERSI[OÓ]N\s+DE\s+CAPITAL\s+VARIABLE|SOCIEDAD\s+AN[OÓ]NIMA\s+DE\s+CAPITAL\s+VARIABLE|S\s*A\s*P\s*I\s*DE\s*C\s*V|S\s*A\s*DE\s*C\s*V)\b/g;
+
+  return str
+    .toUpperCase()
+    .normalize("NFD").replace(/[\u0300-\u0306f]/g, "") // Strip accents
+    .replace(corpSuffixRegex, " __CORP_SUFFIX__ ")
+    .replace(/[.,;:\-_]/g, " ") // Replace punctuation with space
+    .replace(/\s+/g, " ") // Collapse spaces
+    .trim();
+}
+
+export interface EntityCoherenceResult {
+  isCoherent: boolean;
+  reason?: string;
+}
+
+/**
+ * Checks if Acta Constitutiva and SAT Constancia refer to the same entity.
+ * Returns true if coherent (or if one document is missing, assuming coherent until proven otherwise).
+ */
+export function checkEntityCoherence(profile: KycProfile): EntityCoherenceResult {
+  const acta = profile.companyIdentity;
+  const sat = profile.companyTaxProfile;
+
+  // Can only check consistency if both documents are present
+  if (!acta || !sat) {
+    return { isCoherent: true };
+  }
+
+  // 1. RFC Match (Exact, Case-Insensitive)
+  // If Acta has no RFC, we can't validate it, so skip RFC check.
+  if (acta.rfc && sat.rfc) {
+    if (acta.rfc.toUpperCase().trim() !== sat.rfc.toUpperCase().trim()) {
+      return { 
+        isCoherent: false, 
+        reason: `RFC Mismatch: Acta says '${acta.rfc}', SAT says '${sat.rfc}'.` 
+      };
+    }
+  }
+
+  // 2. Razón Social Match (Normalized)
+  const actaName = normalizeString(acta.razon_social);
+  const satName = normalizeString(sat.razon_social);
+
+  // Handle SA DE CV variations explicitly if needed, but normalized comparison often catches it.
+  // normalizeString removes dots, so "S.A. DE C.V." -> "S A DE C V" vs "SA DE CV" -> "SA DE CV".
+  // Let's enhance normalization to remove spaces between single letters if needed, or just simple substring match?
+  // Prompt requirements: "Remove abbreviations (“S.A. DE C.V.” ≈ “SA DE CV”)"
+  
+  // Let's do a more robust comparison: check if one is contained in the other or very similar.
+  // Or simpler: strip spaces entirely for the comparison.
+  const simpleActa = actaName.replace(/\s/g, "");
+  const simpleSat = satName.replace(/\s/g, "");
+
+  if (simpleActa !== simpleSat) {
+      // Allow for "SA DE CV" difference if the core name matches
+      // E.g. "GRUPO POUNJ SA DE CV" vs "GRUPO POUNJ"
+      // Check if one starts with the other
+      if (simpleActa.startsWith(simpleSat) || simpleSat.startsWith(simpleActa)) {
+          // Acceptable partial match (e.g. missing suffix)
+      } else {
+          return { 
+            isCoherent: false, 
+            reason: `Razón Social Mismatch: Acta says '${acta.razon_social}', SAT says '${sat.razon_social}'.` 
+          };
+      }
+  }
+
+  return { isCoherent: true };
+}
+
 // --- 5. Main Validation Function ---
 
 /**
@@ -429,53 +512,73 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   // A. Detect Persona Física mode
   const isPF = isPersonaFisica(profile);
 
+  // 0. Critical Entity Coherence Check (Persona Moral Only)
+  if (!isPF) {
+      const coherence = checkEntityCoherence(profile);
+      if (!coherence.isCoherent) {
+          flags.push({
+              code: "ENTITY_MISMATCH",
+              level: "critical",
+              message: `Los documentos corresponden a entidades distintas: ${coherence.reason}`
+          });
+          
+          // Force Immediate Rejection
+          return {
+              customerId: profile.customerId,
+              score: 0.0, // Force failure
+              flags,
+              generatedAt: new Date().toISOString()
+          };
+      }
+  }
+
   // A. Resolve Addresses (Ensure strictly populated)
   resolveAddresses(profile);
 
   // B. Corporate checks (SKIP for Persona Física)
   if (!isPF) {
     // Compute & Log UBO/Signers (For debugging/info mostly, but could trigger rules)
-    const ubos = resolveUbo(profile);
-    if (ubos.length === 0) {
-        flags.push({
-            code: "OTHER",
-            level: "warning",
-            message: "No UBOs (>25%) detected from shareholder structure."
-        });
-        score -= 0.1;
-    }
+  const ubos = resolveUbo(profile);
+  if (ubos.length === 0) {
+      flags.push({
+          code: "OTHER",
+          level: "warning",
+          message: "No UBOs (>25%) detected from shareholder structure."
+      });
+      score -= 0.1;
+  }
 
-    // Equity Consistency Check
-    const equityCheck = checkEquityConsistency(profile);
-    if (equityCheck) {
-        // Use a small tolerance (e.g. 1.0) instead of exact sum check
-        if (equityCheck.deviationFrom100 > 2) {
-            flags.push({ 
-                code: "EQUITY_INCONSISTENT", 
-                level: "critical", 
-                message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%, which is inconsistent with 100%. Possible extraction error.` 
-            });
-            // Heavy penalty as this indicates bad extraction
-            score -= 0.2; 
-        } else if (equityCheck.deviationFrom100 > 1.0) { // Relaxed from 0.5 to 1.0 to handle rounding noise
-            flags.push({ 
-                code: "EQUITY_NEAR_100", 
-                level: "warning", 
-                message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%; likely rounding issue.` 
-            });
-            score -= 0.05;
-        }
-    }
+  // Equity Consistency Check
+  const equityCheck = checkEquityConsistency(profile);
+  if (equityCheck) {
+      // Use a small tolerance (e.g. 1.0) instead of exact sum check
+      if (equityCheck.deviationFrom100 > 2) {
+          flags.push({ 
+              code: "EQUITY_INCONSISTENT", 
+              level: "critical", 
+              message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%, which is inconsistent with 100%. Possible extraction error.` 
+          });
+          // Heavy penalty as this indicates bad extraction
+          score -= 0.2; 
+      } else if (equityCheck.deviationFrom100 > 1.0) { // Relaxed from 0.5 to 1.0 to handle rounding noise
+          flags.push({ 
+              code: "EQUITY_NEAR_100", 
+              level: "warning", 
+              message: `Share percentages sum to ${equityCheck.sumOfPercentages.toFixed(2)}%; likely rounding issue.` 
+          });
+          score -= 0.05;
+      }
+  }
 
-    const signatories = resolveSignatories(profile);
-    const fullSigners = signatories.filter(s => s.scope === "full");
-    if (fullSigners.length === 0) {
-         flags.push({
-            code: "OTHER",
-            level: "warning",
-            message: "No Full Power signatories detected."
-        });
-        score -= 0.1;
+  const signatories = resolveSignatories(profile);
+  const fullSigners = signatories.filter(s => s.scope === "full");
+  if (fullSigners.length === 0) {
+       flags.push({
+          code: "OTHER",
+          level: "warning",
+          message: "No Full Power signatories detected."
+      });
+      score -= 0.1;
     }
   }
 
@@ -536,11 +639,19 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       // Check if names are similar (allowing for word order differences)
       const satWords = new Set(satNormalized.split(' ').filter(w => w.length > 2));
       const identityWords = new Set(identityNormalized.split(' ').filter(w => w.length > 2));
-      const commonWords = [...satWords].filter(w => identityWords.has(w));
-      const matchRatio = commonWords.length / Math.max(satWords.size, identityWords.size);
       
-      // Only flag if match ratio is low (less than 50% common words)
-      if (matchRatio < 0.5) {
+      // Calculate intersection
+      let commonCount = 0;
+      for (const word of identityWords) {
+          if (satWords.has(word)) commonCount++;
+      }
+      
+      // STRICTER: Require high overlap, but allow order diffs
+      // For PF, usually identity name is part of SAT name (which might be full legal name)
+      const matchRatio = commonCount / identityWords.size;
+      
+      // Only flag if match ratio is low (less than 75% of identity tokens found in SAT)
+      if (matchRatio < 0.75) {
         flags.push({
           code: "IDENTITY_MISMATCH",
           level: "warning",

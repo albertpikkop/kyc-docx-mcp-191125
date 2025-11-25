@@ -1,4 +1,3 @@
-import * as path from 'path';
 import { ProofOfAddressSchema } from '../schemas/mx/proofOfAddress.js';
 import {
   normalizeEmptyToNull,
@@ -7,7 +6,8 @@ import {
   sanitizeCurrency,
 } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
+import * as path from 'path';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican CFE electricity bills (comprobantes de domicilio).
@@ -33,19 +33,13 @@ Do not infer who the ultimate client is and do not merge with other documents. O
 `;
 
 export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
-  console.log(`Extracting CFE Proof of Address using Gemini 2.5`);
+  console.log(`Extracting CFE Proof of Address using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
   try {
-    // Determine MIME type
-    const ext = path.extname(fileUrl).toLowerCase();
-    const mimeType = ext === '.pdf' ? 'application/pdf' : 
-                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-                     ext === '.png' ? 'image/png' :
-                     ext === '.webp' ? 'image/webp' : 'application/pdf';
-
-    // Use Gemini for extraction
-    const data = await extractWithGemini(fileUrl, mimeType, ProofOfAddressSchema, EXTRACTION_INSTRUCTIONS);
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('cfe', fileUrl, ProofOfAddressSchema, EXTRACTION_INSTRUCTIONS);
+    const data = result.data;
 
     const proofOfAddress = data.proof_of_address || data;
     const normalizedProof = normalizeEmptyToNull(proofOfAddress);
@@ -79,6 +73,12 @@ export async function extractCfeProofOfAddress(fileUrl: string): Promise<any> {
     if (normalizedProof.currency) {
       normalizedProof.currency = sanitizeCurrency(normalizedProof.currency);
     }
+
+    // Attach metadata
+    (normalizedProof as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
 
     return normalizedProof;
 

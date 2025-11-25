@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { GEMINI_PRO_MODEL, GEMINI_FLASH_MODEL } from '../modelGemini.js';
 import { CompanyIdentitySchema } from '../schemas/mx/companyIdentity.js';
 import { CompanyTaxProfileSchema } from '../schemas/mx/companyTaxProfile.js';
 import { ImmigrationProfileSchema } from '../schemas/mx/immigrationProfile.js';
@@ -12,8 +13,8 @@ import { buildKycProfile } from '../kyc/profileBuilder.js';
 import { validateKycProfile } from '../kyc/validation.js';
 import { saveRun } from '../kyc/storage.js';
 import { KycRun, KycDocument, DocumentType } from '../kyc/types.js';
-import { DEMO_CONFIG } from "../core/demoConfig.js";
-import { normalizeEmptyToNull, sanitizeRfc, sanitizeCurp, sanitizeClabe, sanitizeCurrency, sanitizeInvoiceNumber } from '../kyc/validators.js';
+// import { DEMO_CONFIG } from "../core/demoConfig.js";
+import { normalizeEmptyToNull, sanitizeRfc, sanitizeCurp, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 
 // --- Instructions (Copies from extractors with enhancements) ---
 // UPGRADED: Using the full, detailed prompt for Acta
@@ -126,10 +127,29 @@ GLOBAL HARDENING RULES:
 - Convert amounts to numeric values.`;
 
 const BANK_INSTRUCTIONS = `You are a strict KYC extractor for Mexican Bank Statements. Extract BankAccountProfile.
-GLOBAL HARDENING RULES:
-- Never infer or generate data.
-- Normalize all dates to YYYY-MM-DD.
-- Never invent account numbers.`;
+
+CRITICAL - ADDRESS EXTRACTION:
+The customer's address is typically found:
+1. In the header section near the account holder's name
+2. In a "Datos del Cliente" or "Información del Titular" section
+3. Near the top of the first page, often in smaller print
+Look for labels like "Domicilio:", "Dirección:" and extract the full address.
+
+EXTRACTION RULES:
+- bank_name: The name of the bank (e.g., "Kapital", "BBVA", "Santander")
+- account_holder_name: The LEGAL NAME of the account holder (e.g., "PFDS", "Juan Perez")
+  - CRITICAL: This should be the legal name, NOT an address component
+  - Look for labels like "Cliente:", "Titular:", "Nombre:", "Razón Social:"
+- account_number: The account number if visible
+- clabe: The 18-digit CLABE interbancaria
+- currency: MXN or USD
+- statement_period_start/end: Dates in YYYY-MM-DD format
+- address_on_statement: Extract the customer's address with all components (street, ext_number, colonia, municipio, estado, cp)
+
+GLOBAL RULES:
+- Never infer or generate data not clearly printed
+- If a field is not present, set to null
+- Normalize all dates to YYYY-MM-DD`;
 
 const customerId = "grupo-pounj-gemini";
 const fixtureRoot = "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj";
@@ -145,7 +165,7 @@ function resolveFixture(fileName: string): string {
 // Grupo Pounj Document Set for Gemini
 const docs = [
   { type: "acta" as DocumentType,           fileUrl: resolveFixture("1. Acta Grupo Pounj.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
-  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("2. Constancia_GPO.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
+  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS copy.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
   { type: "fm2" as DocumentType,            fileUrl: resolveFixture("3. FM2 .pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
   { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_OCTUBRE.pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
   { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("October 2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
@@ -167,9 +187,14 @@ async function main() {
     let extractedPayload: any = null;
     
     try {
+        // Hybrid Model Selection
+        // Use Pro for complex legal docs (Acta), Flash for standard docs
+        const modelToUse = doc.type === 'acta' ? GEMINI_PRO_MODEL : GEMINI_FLASH_MODEL;
+        console.log(`   Using model: ${modelToUse}`);
+
         // Assume PDF for now, can detect mime type if needed
         const mimeType = "application/pdf"; 
-        const rawData = await extractWithGemini(doc.fileUrl, mimeType, doc.schema, doc.instructions);
+        const rawData = await extractWithGemini(doc.fileUrl, mimeType, doc.schema, doc.instructions, modelToUse);
         
         // Normalization & Sanitization logic (replicated from extractors)
         extractedPayload = normalizeEmptyToNull(rawData);

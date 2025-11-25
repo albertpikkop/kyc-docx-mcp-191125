@@ -1,0 +1,597 @@
+openapi: 3.1.0
+info:
+  title: KYC & Credit Assessment API
+  description: API for KYC document checking and credit assessment
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.example.com
+    description: Production server
+
+security:
+  - apiKey: []
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: x-api-key
+      in: header
+      description: API key for authentication
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: INVALID_REQUEST
+        message:
+          type: string
+          example: Invalid request parameters
+
+    KycCheckRequest:
+      type: object
+      required:
+        - customer_id
+        - doc_type
+        - file_url
+      properties:
+        customer_id:
+          type: string
+          description: Unique customer identifier
+          example: customer-123
+        doc_type:
+          type: string
+          enum:
+            - acta
+            - sat_constancia
+            - fm2
+            - telmex
+            - cfe
+            - bank_statement
+            - bank_identity_page
+          description: Type of document to check
+          example: acta
+        file_url:
+          type: string
+          format: uri
+          description: URL or path to the document file
+          example: https://example.com/document.pdf
+
+    KycCheckResponse:
+      type: object
+      properties:
+        run_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the KYC run
+          example: 550e8400-e29b-41d4-a716-446655440000
+        doc_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the imported document
+          example: 660e8400-e29b-41d4-a716-446655440000
+        model_used:
+          type: string
+          description: AI model used for extraction
+          example: gpt-5.1
+
+    CreditAssessRequest:
+      type: object
+      required:
+        - customer_id
+      properties:
+        customer_id:
+          type: string
+          description: Unique customer identifier
+          example: customer-123
+
+    ValidationFlag:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+            - ENTITY_MISMATCH
+            - ADDRESS_MISMATCH
+            - REP_ID_MISMATCH
+            - LOW_DOC_COVERAGE
+            - EQUITY_INCONSISTENT
+            - EQUITY_NEAR_100
+            - IDENTITY_MISMATCH
+            - OTHER
+          example: ADDRESS_MISMATCH
+        level:
+          type: string
+          enum:
+            - info
+            - warning
+            - critical
+          example: warning
+        message:
+          type: string
+          example: Address mismatch detected between documents
+
+    CreditAssessResponse:
+      type: object
+      properties:
+        decision_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the credit decision
+          example: 770e8400-e29b-41d4-a716-446655440000
+        limit:
+          type: number
+          description: Approved credit limit in currency units
+          example: 150000
+        terms:
+          type: string
+          description: Credit terms and conditions
+          example: Standard terms: 30-day payment, 2% monthly interest, 150k MXN limit
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: KYC validation score (0-1)
+          example: 0.85
+        confidence:
+          type: number
+          minimum: 0.6
+          maximum: 0.9
+          description: Confidence score based on document coverage (0.6-0.9)
+          example: 0.87
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationFlag'
+          description: Validation flags and warnings
+        reasons:
+          type: array
+          items:
+            type: string
+          description: Human-readable reasons for the decision
+          example:
+            - Approved based on 85% KYC score
+            - Monthly inflow: $1,000,000.00
+            - Calculated limit: $150,000.00
+        reason_codes:
+          type: array
+          items:
+            type: string
+          description: Machine-readable reason codes (≥3 codes)
+          example:
+            - BASE_INFLOW_CALCULATED
+            - NO_CRITICAL_FLAGS
+            - BALANCE_CAP_NOT_LIMITING
+            - HIGH_DOC_COVERAGE
+            - TAX_STATUS_ACTIVE
+            - BANK_ACCOUNT_VERIFIED
+        calculation:
+          type: object
+          description: Detailed calculation breakdown
+          properties:
+            avgMonthlyInflow:
+              type: number
+              description: Average monthly credit inflow
+              example: 1000000
+            baseLimit:
+              type: number
+              description: Base limit (avgMonthlyInflow * 0.15)
+              example: 150000
+            flagReduction:
+              type: number
+              description: Flag reduction factor (0-0.5)
+              example: 0
+            flagReductionPercent:
+              type: number
+              description: Flag reduction percentage (0-50%)
+              example: 0
+            afterFlagReduction:
+              type: number
+              description: Limit after flag reduction
+              example: 150000
+            minBalance:
+              type: number
+              description: Minimum balance from transactions
+              example: 50000
+            balanceCap:
+              type: number
+              description: Balance cap (minBalance * 1.5)
+              example: 75000
+            finalLimit:
+              type: number
+              description: Final approved limit
+              example: 75000
+            documentCoverage:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Document coverage score (0-1)
+              example: 0.9
+
+    AuditTrailEvent:
+      type: object
+      properties:
+        event_type:
+          type: string
+          description: Type of audit event
+          example: document_imported
+        metadata:
+          type: object
+          description: Additional event metadata
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+          description: When the event occurred
+          example: 2025-01-15T10:30:00Z
+
+    AuditResponse:
+      type: object
+      properties:
+        decision_id:
+          type: string
+          format: uuid
+          description: Decision identifier
+          example: 770e8400-e29b-41d4-a716-446655440000
+        run_id:
+          type: string
+          format: uuid
+          description: KYC run identifier
+          example: 550e8400-e29b-41d4-a716-446655440000
+        customer_id:
+          type: string
+          description: Customer identifier
+          example: customer-123
+        decision:
+          type: string
+          enum:
+            - approved
+            - rejected
+            - pending
+          description: Credit decision
+          example: approved
+        score:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 1
+          description: KYC validation score
+          example: 0.85
+        created_at:
+          type: string
+          format: date-time
+          description: When the decision was made
+          example: 2025-01-15T10:30:00Z
+        profile:
+          type: object
+          description: KYC profile data
+          additionalProperties: true
+        validation:
+          type: object
+          description: Validation results
+          additionalProperties: true
+        audit_trail:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditTrailEvent'
+          description: Complete audit trail for this decision
+
+paths:
+  /kyc/check:
+    post:
+      summary: Check/import a KYC document
+      description: |
+        Imports a KYC document, extracts structured data using AI, and stores it in a customer run.
+        Returns the run ID, document ID, and model used for extraction.
+      operationId: kycCheck
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KycCheckRequest'
+            examples:
+              acta:
+                summary: Acta Constitutiva
+                value:
+                  customer_id: empresa-mexicana-sa
+                  doc_type: acta
+                  file_url: https://example.com/acta.pdf
+              acta_spanish:
+                summary: Acta Constitutiva (Ejemplo Mexicano)
+                value:
+                  customer_id: empresa-mexicana-sa
+                  doc_type: acta
+                  file_url: https://example.com/acta-empresa-mexicana.pdf
+                description: |
+                  Ejemplo con datos mexicanos:
+                  - RFC: ABC123456789
+                  - Razón Social: Empresa Mexicana S.A. de C.V.
+                  - CURP del representante: ABCDEFGHIJ12345678
+              sat_constancia:
+                summary: SAT Constancia
+                value:
+                  customer_id: empresa-mexicana-sa
+                  doc_type: sat_constancia
+                  file_url: https://example.com/sat.pdf
+              sat_constancia_spanish:
+                summary: SAT Constancia (Ejemplo Mexicano)
+                value:
+                  customer_id: empresa-mexicana-sa
+                  doc_type: sat_constancia
+                  file_url: https://example.com/constancia-sat.pdf
+                description: |
+                  Ejemplo con RFC mexicano:
+                  - RFC: ABC123456789
+                  - Razón Social: Empresa Mexicana S.A. de C.V.
+                  - Régimen Fiscal: Régimen General
+              fm2_spanish:
+                summary: FM2 (Ejemplo Mexicano)
+                value:
+                  customer_id: empresa-mexicana-sa
+                  doc_type: fm2
+                  file_url: https://example.com/fm2-representante.pdf
+                description: |
+                  Ejemplo con CURP mexicano:
+                  - CURP: ABCDEFGHIJ12345678
+                  - Nombre: Juan Pérez García
+                  - Nacionalidad: Mexicana
+      responses:
+        '200':
+          description: Document successfully imported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KycCheckResponse'
+              examples:
+                default:
+                  summary: Standard Response
+                  value:
+                    run_id: 550e8400-e29b-41d4-a716-446655440000
+                    doc_id: 660e8400-e29b-41d4-a716-446655440000
+                    model_used: gpt-5.1
+                spanish:
+                  summary: Respuesta con Datos Mexicanos
+                  value:
+                    run_id: 550e8400-e29b-41d4-a716-446655440000
+                    doc_id: 660e8400-e29b-41d4-a716-446655440000
+                    model_used: gemini-2.5-flash
+                  description: |
+                    Ejemplo de respuesta para documento mexicano:
+                    - RFC extraído: ABC123456789
+                    - Razón Social: Empresa Mexicana S.A. de C.V.
+                    - Modelo usado: Gemini (recomendado para documentos mexicanos)
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: INVALID_REQUEST
+                message: Invalid doc_type. Must be one of: acta, sat_constancia, fm2, telmex, cfe, bank_statement, bank_identity_page
+        '401':
+          description: Unauthorized - Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: UNAUTHORIZED
+                message: Missing x-api-key header
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Rate limit exceeded
+                message: Maximum 60 requests per minute per organization
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /credit/assess:
+    post:
+      summary: Assess creditworthiness
+      description: |
+        Assesses creditworthiness based on the customer's KYC profile.
+        Automatically builds and validates the profile if needed.
+        Returns a credit decision with limit, terms, score, flags, and reasons.
+      operationId: creditAssess
+      tags:
+        - Credit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditAssessRequest'
+            examples:
+              default:
+                summary: Standard Request
+                value:
+                  customer_id: customer-123
+              spanish:
+                summary: Ejemplo Mexicano
+                value:
+                  customer_id: empresa-mexicana-sa
+                description: |
+                  Ejemplo con datos mexicanos:
+                  - RFC: ABC123456789
+                  - Razón Social: Empresa Mexicana S.A. de C.V.
+                  - CURP del representante: ABCDEFGHIJ12345678
+      responses:
+        '200':
+          description: Credit assessment completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditAssessResponse'
+              examples:
+                approved:
+                  summary: Approved Assessment
+                  value:
+                    decision_id: 770e8400-e29b-41d4-a716-446655440000
+                    limit: 150000
+                    terms: Standard terms: 30-day payment, 2% monthly interest, 150k MXN limit
+                    score: 0.85
+                    confidence: 0.87
+                    flags: []
+                    reasons:
+                      - Approved based on 85% KYC score
+                      - Monthly inflow: $1,000,000.00
+                      - Calculated limit: $150,000.00
+                    reason_codes:
+                      - BASE_INFLOW_CALCULATED
+                      - NO_CRITICAL_FLAGS
+                      - HIGH_DOC_COVERAGE
+                      - TAX_STATUS_ACTIVE
+                      - BANK_ACCOUNT_VERIFIED
+                spanish:
+                  summary: Ejemplo Mexicano - Aprobado
+                  value:
+                    decision_id: 770e8400-e29b-41d4-a716-446655440000
+                    limit: 200000
+                    terms: Términos estándar: pago a 30 días, interés mensual 2%, límite 200k MXN
+                    score: 0.92
+                    confidence: 0.88
+                    flags: []
+                    reasons:
+                      - Aprobado basado en 92% de puntuación KYC
+                      - RFC: ABC123456789 verificado
+                      - Razón Social: Empresa Mexicana S.A. de C.V.
+                      - Flujo mensual promedio: $1,500,000.00 MXN
+                      - Límite calculado: $200,000.00 MXN
+                    reason_codes:
+                      - BASE_INFLOW_CALCULATED
+                      - NO_CRITICAL_FLAGS
+                      - HIGH_DOC_COVERAGE
+                      - TAX_STATUS_ACTIVE
+                      - BANK_ACCOUNT_VERIFIED
+        '402':
+          description: Payment Required - Free tier limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: PAYMENT_REQUIRED
+                  message:
+                    type: string
+                    example: You have reached the free tier limit of 10 credit assessments. Please upgrade your plan to continue.
+                  used:
+                    type: number
+                    example: 10
+                  limit:
+                    type: number
+                    example: 10
+                  upgrade_url:
+                    type: string
+                    example: https://example.com/upgrade
+              examples:
+                default:
+                  summary: Free Tier Limit Exceeded
+                  value:
+                    error: PAYMENT_REQUIRED
+                    message: You have reached the free tier limit of 10 credit assessments. Please upgrade your plan to continue.
+                    used: 10
+                    limit: 10
+                    upgrade_url: https://example.com/upgrade
+                spanish:
+                  summary: Límite de Plan Gratuito Excedido
+                  value:
+                    error: PAYMENT_REQUIRED
+                    message: Ha alcanzado el límite de 10 evaluaciones de crédito del plan gratuito. Por favor, actualice su plan para continuar.
+                    used: 10
+                    limit: 10
+                    upgrade_url: https://example.com/upgrade
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: NO_RUN_FOR_CUSTOMER
+                message: No KYC run found for customer customer-123
+        '401':
+          description: Unauthorized - Missing or invalid API key
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Internal server error
+
+  /audit/{decision_id}:
+    get:
+      summary: Get audit information for a decision
+      description: |
+        Retrieves complete audit information for a credit decision,
+        including the KYC profile, validation results, and audit trail.
+      operationId: getAudit
+      tags:
+        - Audit
+      parameters:
+        - name: decision_id
+          in: path
+          required: true
+          description: Decision identifier (same as run_id)
+          schema:
+            type: string
+            format: uuid
+          example: 770e8400-e29b-41d4-a716-446655440000
+      responses:
+        '200':
+          description: Audit information retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditResponse'
+              example:
+                decision_id: 770e8400-e29b-41d4-a716-446655440000
+                run_id: 550e8400-e29b-41d4-a716-446655440000
+                customer_id: customer-123
+                decision: approved
+                score: 0.85
+                created_at: 2025-01-15T10:30:00Z
+                profile:
+                  customerId: customer-123
+                  companyIdentity:
+                    razon_social: Example Corp
+                validation:
+                  score: 0.85
+                  flags: []
+                audit_trail:
+                  - event_type: document_imported
+                    created_at: 2025-01-15T10:00:00Z
+                  - event_type: profile_built
+                    created_at: 2025-01-15T10:15:00Z
+                  - event_type: credit_assessment
+                    created_at: 2025-01-15T10:30:00Z
+        '404':
+          description: Decision not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: NOT_FOUND
+                message: Decision 770e8400-e29b-41d4-a716-446655440000 not found
+        '401':
+          description: Unauthorized - Missing or invalid API key
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Internal server error
+

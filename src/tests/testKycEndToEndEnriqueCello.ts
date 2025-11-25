@@ -11,7 +11,7 @@ import { KycRun, KycDocument, DocumentType } from "../kyc/types.js";
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { DEMO_CONFIG } from "../core/demoConfig.js";
+// import { DEMO_CONFIG } from "../core/demoConfig.js";
 import { sanitizeCurp } from "../kyc/validators.js";
 
 const customerId = "enrique-cello";

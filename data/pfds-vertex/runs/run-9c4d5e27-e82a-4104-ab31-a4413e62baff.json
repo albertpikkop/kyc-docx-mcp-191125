@@ -1,0 +1,45 @@
+{
+  "runId": "9c4d5e27-e82a-4104-ab31-a4413e62baff",
+  "customerId": "pfds-vertex",
+  "createdAt": "2025-11-24T22:45:28.695Z",
+  "documents": [],
+  "profile": {
+    "customerId": "pfds-vertex",
+    "addressEvidence": [],
+    "bankAccounts": [],
+    "historical_addresses": [],
+    "lastUpdatedAt": "2025-11-24T22:45:28.692Z"
+  },
+  "validation": {
+    "customerId": "pfds-vertex",
+    "score": 0,
+    "flags": [
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "No UBOs (>25%) detected from shareholder structure."
+      },
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "No Full Power signatories detected."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Company Identity (Acta Constitutiva)."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Tax Profile (SAT Constancia)."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "No Proof of Address or Bank Statements provided."
+      }
+    ],
+    "generatedAt": "2025-11-24T22:45:28.694Z"
+  }
+}

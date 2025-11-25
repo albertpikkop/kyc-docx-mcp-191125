@@ -1,8 +1,7 @@
-import * as path from 'path';
-import { IneIdentitySchema, IneIdentityZodSchema } from '../schemas/mx/ineIdentity.js';
-import { normalizeEmptyToNull, sanitizeCurp } from '../kyc/validators.js';
+import { IneIdentitySchema } from '../schemas/mx/ineIdentity.js';
+import { normalizeEmptyToNull } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 const EXTRACTION_INSTRUCTIONS = `
 You are a strict KYC extractor for Mexican INE / IFE Voting Cards (Credencial para Votar).
@@ -118,19 +117,13 @@ Do not skip the back side - examine it thoroughly for CIC and OCR data.
 `;
 
 export async function extractIneIdentity(fileUrl: string): Promise<any> {
-  console.log(`Extracting INE Identity using Gemini 2.5`);
+  console.log(`Extracting INE Identity using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
   try {
-    // Determine MIME type
-    const ext = path.extname(fileUrl).toLowerCase();
-    const mimeType = ext === '.pdf' ? 'application/pdf' : 
-                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-                     ext === '.png' ? 'image/png' :
-                     ext === '.webp' ? 'image/webp' : 'application/pdf';
-
-    // Use Gemini for extraction
-    const data = await extractWithGemini(fileUrl, mimeType, IneIdentitySchema, EXTRACTION_INSTRUCTIONS);
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('ine', fileUrl, IneIdentitySchema, EXTRACTION_INSTRUCTIONS);
+    const data = result.data;
     
     // Extract object if nested (Gemini returns flat structure)
     const profile = data.ine_identity || data;
@@ -146,6 +139,12 @@ export async function extractIneIdentity(fileUrl: string): Promise<any> {
         // Actually, let's do basic cleanup
         normalizedProfile.curp = cleanCurp.trim().toUpperCase();
     }
+
+    // Attach metadata
+    (normalizedProfile as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
 
     return normalizedProfile;
 

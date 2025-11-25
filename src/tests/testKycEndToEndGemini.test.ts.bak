@@ -1,0 +1,92 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { handleImportKycDocument } from '../mcp/server.js';
+import { AsyncLocalStorage } from 'async_hooks';
+
+// Mock org context
+const orgContext = new AsyncLocalStorage<{ orgId: string }>();
+
+// @ts-ignore
+jest.mock('../mcp/server.js', () => {
+  const original = jest.requireActual('../mcp/server.js');
+  return {
+    ...original,
+    requireOrgId: () => 'test-org-id'
+  };
+});
+
+const TEST_FILES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../fixtures/test-samples');
+
+// Helper to find a file for a doc type
+function findTestFile(docType: string): string | null {
+  if (!fs.existsSync(TEST_FILES_DIR)) return null;
+  const files = fs.readdirSync(TEST_FILES_DIR);
+  // Simple matching strategy
+  const match = files.find(f => f.toLowerCase().includes(docType.split('_')[0]) || f.toLowerCase().includes(docType));
+  return match ? path.join(TEST_FILES_DIR, match) : null;
+}
+
+async function runTest() {
+  console.log('Starting Gemini End-to-End Test...');
+
+  const docTypes = [
+    'acta', 
+    'sat_constancia', 
+    'ine', 
+    'fm2', 
+    'telmex', 
+    'cfe', 
+    'bank_identity_page', 
+    'bank_statement'
+  ];
+
+  let passed = 0;
+  let failed = 0;
+
+  for (const docType of docTypes) {
+    const filePath = findTestFile(docType);
+    if (!filePath) {
+      console.warn(`⚠️  Skipping ${docType}: No test file found in ${TEST_FILES_DIR}`);
+      continue;
+    }
+
+    console.log(`Testing ${docType} with ${path.basename(filePath)}...`);
+
+    try {
+      const result = await handleImportKycDocument({
+        customer_id: 'test-customer-gemini',
+        doc_type: docType as any,
+        file_url: filePath
+      });
+
+      const response = JSON.parse(result.content[0].text);
+      
+      if (!response.ok) {
+        throw new Error(`Extraction failed: ${response.message}`);
+      }
+
+      console.log(`✅ ${docType} success!`);
+      console.log(`   Model Used: ${response.data.model_used}`);
+      
+      if (response.data.model_used !== 'gemini-2.5-flash') {
+        console.warn(`   ⚠️  Expected gemini-2.5-flash but got ${response.data.model_used}`);
+        // This might be okay if fallback was triggered, but we expect Gemini primary
+      }
+
+      passed++;
+    } catch (error: any) {
+      console.error(`❌ ${docType} failed:`, error.message);
+      failed++;
+    }
+  }
+
+  console.log(`\nTest Summary: ${passed} passed, ${failed} failed.`);
+}
+
+// Execute if running directly
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  // We need to mock the DB and other deps probably, or rely on integration env
+  // For this script to run standalone, we assume the environment is set up (DB url etc)
+  runTest().catch(console.error);
+}

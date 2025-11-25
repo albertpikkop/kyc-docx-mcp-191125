@@ -1,0 +1,5 @@
+{
+  "default": { "primary": "gemini", "fallback": "gpt" },
+  "bank_statement.profile": { "primary": "gemini", "fallback": "gpt" },
+  "bank_statement.transactions": { "primary": "gemini", "fallback": "gpt" }
+}

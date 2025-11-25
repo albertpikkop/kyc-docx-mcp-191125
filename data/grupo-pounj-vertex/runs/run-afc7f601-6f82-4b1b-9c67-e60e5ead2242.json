@@ -1,0 +1,45 @@
+{
+  "runId": "afc7f601-6f82-4b1b-9c67-e60e5ead2242",
+  "customerId": "grupo-pounj-vertex",
+  "createdAt": "2025-11-24T22:40:11.358Z",
+  "documents": [],
+  "profile": {
+    "customerId": "grupo-pounj-vertex",
+    "addressEvidence": [],
+    "bankAccounts": [],
+    "historical_addresses": [],
+    "lastUpdatedAt": "2025-11-24T22:40:11.357Z"
+  },
+  "validation": {
+    "customerId": "grupo-pounj-vertex",
+    "score": 0,
+    "flags": [
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "No UBOs (>25%) detected from shareholder structure."
+      },
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "No Full Power signatories detected."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Company Identity (Acta Constitutiva)."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Tax Profile (SAT Constancia)."
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "No Proof of Address or Bank Statements provided."
+      }
+    ],
+    "generatedAt": "2025-11-24T22:40:11.358Z"
+  }
+}

@@ -1,9 +1,8 @@
-import * as path from 'path';
 import { z } from 'zod';
 import { BankAccountProfileSchema } from '../schemas/mx/bankAccountProfile.js';
 import { normalizeEmptyToNull, sanitizeClabe, sanitizeCurrency } from '../kyc/validators.js';
 import { logExtractorError } from '../utils/logging.js';
-import { extractWithGemini } from '../utils/geminiExtractor.js';
+import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 // Zod definition matching BankAccountProfileSchema for runtime validation
 const AddressZodSchema = z.object({
@@ -55,19 +54,13 @@ Do not hallucinate missing fields.
 `;
 
 export async function extractBankIdentityPage(fileUrl: string): Promise<any> {
-  console.log(`Extracting Bank Identity Page using Gemini 2.5`);
+  console.log(`Extracting Bank Identity Page using Router (Gemini default)`);
   console.log(`Processing file: ${fileUrl}`);
 
   try {
-    // Determine MIME type
-    const ext = path.extname(fileUrl).toLowerCase();
-    const mimeType = ext === '.pdf' ? 'application/pdf' : 
-                     ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-                     ext === '.png' ? 'image/png' :
-                     ext === '.webp' ? 'image/webp' : 'application/pdf';
-
-    // Use Gemini for extraction
-    const data = await extractWithGemini(fileUrl, mimeType, BankAccountProfileSchema, EXTRACTION_INSTRUCTIONS);
+    // Route extraction through ModelRouter
+    const result: ExtractionResult = await routeExtraction('bank_identity_page', fileUrl, BankAccountProfileSchema, EXTRACTION_INSTRUCTIONS);
+    const data = result.data;
     
     // Deep normalization of empty strings to null
     const normalizedData = normalizeEmptyToNull(data);
@@ -95,6 +88,12 @@ export async function extractBankIdentityPage(fileUrl: string): Promise<any> {
         profile.currency = sanitizeCurrency(profile.currency);
       }
     }
+
+    // Attach metadata
+    (validatedData as any)._metadata = {
+        modelUsed: result.modelUsed,
+        costUsd: result.costUsd
+    };
 
     return validatedData;
 

@@ -74,7 +74,7 @@ function getExcelFilePath(customerId: string, runId: string): string {
  * Saves a KYC run to disk and generates visual report.
  * Creates the customer directory structure if it doesn't exist.
  * Overwrites the file if it already exists for the same runId.
- * Returns the file:// URL to the generated HTML report.
+ * Returns the signed URL (S3) or file:// URL (local) to the generated HTML report.
  */
 export async function saveRun(run: KycRun): Promise<string> {
   if (!run.customerId || !run.runId) {
@@ -145,58 +145,101 @@ export async function saveRun(run: KycRun): Promise<string> {
 }
 
 /**
- * Bilingual translations for Mexican market
+ * Spanish-only translations for Mexican market
+ * Clean, professional Mexican legal terminology
  */
-const translations = {
-  en: {
-    nav: {
-      title: "KYCIntel",
-      print: "Print",
-      exportExcel: "Export Excel"
-    },
-    header: {
-      rfc: "RFC",
-      generated: "Generated",
-      approved: "APPROVED",
-      rejected: "REJECTED",
-      reviewNeeded: "REVIEW NEEDED"
-    },
-    sidebar: {
-      riskScore: "Risk Score",
-      trustScore: "Trust Score",
-      complianceFlags: "Compliance Flags",
-      sourceDocuments: "Source Documents",
-      noFlags: "No risk flags detected.",
-      processed: "Processed"
-    },
-    print: {
-      title: "KYC Report"
-    }
+const t = {
+  nav: {
+    title: "KYCIntel",
+    print: "Imprimir",
+    exportExcel: "Exportar a Excel"
   },
-  es: {
-    nav: {
-      title: "KYCIntel",
-      print: "Imprimir",
-      exportExcel: "Exportar Excel"
-    },
-    header: {
-      rfc: "RFC",
-      generated: "Generado",
-      approved: "APROBADO",
-      rejected: "RECHAZADO",
-      reviewNeeded: "REVISIÓN REQUERIDA"
-    },
-    sidebar: {
-      riskScore: "Puntuación de Riesgo",
-      trustScore: "Puntuación de Confianza",
-      complianceFlags: "Banderas de Cumplimiento",
-      sourceDocuments: "Documentos Fuente",
-      noFlags: "No se detectaron banderas de riesgo.",
-      processed: "Procesado"
-    },
-    print: {
-      title: "Reporte KYC"
-    }
+  header: {
+    rfc: "RFC",
+    generated: "Generado",
+    approved: "APROBADO",
+    rejected: "RECHAZADO",
+    reviewNeeded: "EN REVISIÓN",
+    approvedWithObs: "APROBADO CON OBSERVACIONES"
+  },
+  sections: {
+    executiveSummary: "Resumen Ejecutivo",
+    extractedFacts: "I. Hechos Extraídos",
+    kycConclusions: "II. Conclusiones de KYC",
+    riskFlags: "III. Banderas y Riesgos",
+    traceability: "IV. Trazabilidad y Justificación"
+  },
+  sidebar: {
+    riskScore: "Puntuación de Riesgo",
+    trustScore: "Nivel de Confianza",
+    complianceFlags: "Banderas de Cumplimiento",
+    sourceDocuments: "Documentos Fuente",
+    noFlags: "Sin banderas de riesgo detectadas.",
+    processed: "Procesado"
+  },
+  cards: {
+    whoCanSign: "¿Quién Puede Firmar?",
+    otherAuthorized: "Otros Autorizados en Acta",
+    quickStatus: "Estado Rápido",
+    taxRegime: "Régimen Fiscal",
+    documents: "Documentos",
+    flags: "Banderas",
+    address: "Domicilio"
+  },
+  signing: {
+    canSign: "PUEDE FIRMAR",
+    limitedSign: "FIRMA LIMITADA",
+    noAuthority: "SIN FACULTADES",
+    notVerified: "NO VERIFICADO EN ACTA",
+    missingId: "FALTA IDENTIFICACIÓN",
+    cannotVerify: "NO SE PUEDE VERIFICAR"
+  },
+  powers: {
+    full: "Poderes Amplios",
+    fullDetail: "Poderes Amplios (Administración, Dominio, Pleitos, Títulos)",
+    limited: "Poderes Limitados",
+    none: "Sin Poderes"
+  },
+  personaFisica: {
+    title: "Persona Física",
+    canSignNote: "El titular firma en nombre propio. No requiere Acta Constitutiva ni poderes notariales.",
+    role: "Titular / Propietario",
+    legalNote: "Como Persona Física, no existe Acta Constitutiva. La capacidad jurídica se acredita con identificación oficial vigente.",
+    clientType: "Alta de Cliente - Persona Física con Actividad Empresarial"
+  },
+  personaMoral: {
+    title: "Persona Moral",
+    otherSignersNote: "Personas con facultades según el Acta (no verificadas con ID)",
+    noOtherSigners: "No hay otros firmantes registrados"
+  },
+  alerts: {
+    criticalTitle: "ALERTA CRÍTICA - Documentación Inconsistente",
+    criticalAction: "No proceder con el alta hasta resolver esta inconsistencia. Verificar que todos los documentos correspondan a la misma entidad legal.",
+    warningTitle: "Observaciones Pendientes",
+    notInActa: "Identidad verificada pero no aparece en el Acta Constitutiva. Verificar poderes notariales.",
+    noAuthority: "Esta persona no tiene poderes para firmar contratos",
+    limitedPowers: "Poderes Limitados - verificar alcance para este contrato",
+    requiredId: "INE, Pasaporte, o FM2 para verificar identidad"
+  },
+  status: {
+    active: "ACTIVO",
+    inactive: "INACTIVO",
+    unknown: "Desconocido",
+    notSpecified: "No especificado"
+  },
+  labels: {
+    role: "Cargo",
+    quality: "Calidad",
+    rfc: "RFC",
+    regime: "Régimen",
+    satStatus: "Estatus SAT",
+    powers: "Facultades",
+    required: "Requerido",
+    alert: "Alerta",
+    legalNote: "Nota Legal"
+  },
+  print: {
+    title: "Reporte KYC"
   }
 };
 
@@ -211,16 +254,13 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   // Determine Status Color
   const score = run.validation!.score;
   let statusColor = "bg-green-100 text-green-800";
-  let statusTextEn = "APPROVED";
-  let statusTextEs = "APROBADO";
+  let statusText = t.header.approved;
   if (score < 0.7) {
     statusColor = "bg-red-100 text-red-800";
-    statusTextEn = "REJECTED";
-    statusTextEs = "RECHAZADO";
+    statusText = t.header.rejected;
   } else if (score < 0.9) {
     statusColor = "bg-yellow-100 text-yellow-800";
-    statusTextEn = "REVIEW NEEDED";
-    statusTextEs = "REVISIÓN REQUERIDA";
+    statusText = t.header.reviewNeeded;
   }
 
   // Safe Accessors
@@ -234,23 +274,28 @@ async function generateVisualReport(run: KycRun): Promise<string> {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
         <div>
-          <div class="text-green-800 font-medium" style="font-size: 15px; line-height: 1.6;">${translations.en.sidebar.noFlags}</div>
-          <div class="text-green-700 mt-1.5" style="font-size: 14px; line-height: 1.6;">${translations.es.sidebar.noFlags}</div>
+          <div class="text-green-800 font-medium" style="font-size: 15px; line-height: 1.6;">${t.sidebar.noFlags}</div>
         </div>
       </div>`
     : run.validation!.flags.map(f => {
         const isCritical = f.level === 'critical';
         const isWarning = f.level === 'warning';
+        const badgeClass = isCritical ? 'risk-critical' : (isWarning ? 'risk-warning' : 'risk-info');
         const bgClass = isCritical ? 'bg-red-50' : (isWarning ? 'bg-yellow-50' : 'bg-blue-50');
         const borderClass = isCritical ? 'border-red-200' : (isWarning ? 'border-yellow-200' : 'border-blue-200');
-        const textClass = isCritical ? 'text-red-800' : (isWarning ? 'text-yellow-800' : 'text-blue-800');
+        
         const icon = isCritical ? '🔴' : (isWarning ? '⚠️' : 'ℹ️');
+        
         return `
-          <div class="p-4 mb-3 ${bgClass} border ${borderClass} rounded-lg flex items-start shadow-sm hover:shadow transition-shadow">
+          <div class="p-4 mb-3 ${bgClass} border ${borderClass} rounded-lg flex items-start shadow-sm hover:shadow transition-shadow relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full ${isCritical ? 'bg-red-500' : (isWarning ? 'bg-yellow-500' : 'bg-blue-500')}"></div>
             <span class="text-xl mr-3 mt-0.5">${icon}</span>
             <div class="flex-1">
-              <div class="font-semibold ${textClass} mb-1.5" style="font-size: 14px; line-height: 1.5;">${f.code}</div>
-              <div class="${textClass.replace('800', '700')}" style="font-size: 14px; line-height: 1.6;">${f.message}</div>
+              <div class="flex items-center mb-1.5">
+                 <span class="risk-badge ${badgeClass} mr-2">${f.level.toUpperCase()}</span>
+                 <span class="font-mono text-xs text-gray-500">${f.code}</span>
+              </div>
+              <div class="text-gray-800 font-medium" style="font-size: 14px; line-height: 1.6;">${f.message}</div>
             </div>
           </div>
         `;
@@ -293,8 +338,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                 </div>
             </div>
             <div class="flex flex-col items-end ml-3 flex-shrink-0 gap-1">
-              <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">✓ ${translations.en.sidebar.processed}</span>
-              <span class="text-xs text-gray-500 whitespace-nowrap">${translations.es.sidebar.processed}</span>
+              <span class="text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-medium whitespace-nowrap">✓ ${t.sidebar.processed}</span>
             </div>
         </div>
       `;
@@ -349,15 +393,15 @@ async function generateVisualReport(run: KycRun): Promise<string> {
       
       // Headers
       if (line.startsWith('### ')) {
-        processed.push(`<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-4 pb-2 border-b border-gray-200 break-words" style="font-size: 18px; line-height: 1.4;">${line.substring(4)}</h3>`);
+        processed.push(`<h3 class="text-lg font-semibold text-gray-900 mt-8 mb-5 pb-2 border-b border-gray-300 break-words" style="font-size: 18px; line-height: 1.4; padding-bottom: 8px;">${line.substring(4)}</h3>`);
         continue;
       }
       if (line.startsWith('## ')) {
-        processed.push(`<h2 class="text-xl font-bold text-gray-900 mt-8 mb-5 break-words" style="font-size: 20px; line-height: 1.3;">${line.substring(3)}</h2>`);
+        processed.push(`<h2 class="text-xl font-bold text-gray-900 mt-10 mb-6 break-words" style="font-size: 20px; line-height: 1.3;">${line.substring(3)}</h2>`);
         continue;
       }
       if (line.startsWith('# ')) {
-        processed.push(`<h1 class="text-2xl font-bold text-gray-900 mt-8 mb-5 break-words" style="font-size: 24px; line-height: 1.3;">${line.substring(2)}</h1>`);
+        processed.push(`<h1 class="text-2xl font-bold text-gray-900 mt-10 mb-6 break-words" style="font-size: 24px; line-height: 1.3;">${line.substring(2)}</h1>`);
         continue;
       }
       
@@ -367,11 +411,11 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         // Handle bold labels
         const boldMatch = content.match(/^\*\*(.*?):\*\*\s*(.*)$/);
         if (boldMatch) {
-          processed.push(`<li class="mb-2.5 break-words" style="font-size: 15px; line-height: 1.7;"><span class="font-semibold text-gray-800">${boldMatch[1]}:</span> <span class="text-gray-700">${boldMatch[2]}</span></li>`);
+          processed.push(`<li class="mb-3 break-words pl-1" style="font-size: 15px; line-height: 1.8;"><span class="font-semibold text-gray-900">${boldMatch[1]}:</span> <span class="text-gray-700">${boldMatch[2]}</span></li>`);
         } else {
           // Handle bold only
           const boldOnly = content.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>');
-          processed.push(`<li class="mb-2.5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">${boldOnly}</li>`);
+          processed.push(`<li class="mb-3 text-gray-700 break-words pl-1" style="font-size: 15px; line-height: 1.8;">${boldOnly}</li>`);
         }
         continue;
       }
@@ -390,7 +434,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
       text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-sm font-mono break-all">$1</code>');
       
       if (text.trim()) {
-        processed.push(`<p class="mb-4 text-gray-700 break-words" style="font-size: 15px; line-height: 1.7;">${text}</p>`);
+        processed.push(`<p class="mb-5 text-gray-700 break-words" style="font-size: 15px; line-height: 1.8;">${text}</p>`);
       }
     }
     
@@ -416,7 +460,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
     let html = processed.join('\n');
     html = html.replace(/(<li[^>]*>.*?<\/li>(?:\s*<li[^>]*>.*?<\/li>)*)/gs, (match) => {
       if (!match.includes('<ul')) {
-        return `<ul class="list-disc list-inside space-y-1 my-3 ml-4">${match}</ul>`;
+        return `<ul class="list-disc list-inside space-y-2 my-5 ml-5 pl-2" style="line-height: 1.8;">${match}</ul>`;
       }
       return match;
     });
@@ -424,40 +468,320 @@ async function generateVisualReport(run: KycRun): Promise<string> {
     return html;
   }
 
-  // Section title translations
-  const sectionTitles: Record<string, { en: string; es: string }> = {
-    "I. HECHOS EXTRAÍDOS": { en: "I. EXTRACTED FACTS", es: "I. HECHOS EXTRAÍDOS" },
-    "II. CONCLUSIONES DE KYC": { en: "II. KYC CONCLUSIONS", es: "II. CONCLUSIONES DE KYC" },
-    "III. BANDERAS DE RIESGO": { en: "III. RISK FLAGS", es: "III. BANDERAS DE RIESGO" },
-    "IV. TRAZA DE JUSTIFICACIÓN": { en: "IV. TRACEABILITY / JUSTIFICATION", es: "IV. TRAZA DE JUSTIFICACIÓN" }
+  // Section title translations (Spanish-only)
+  const sectionTitles: Record<string, string> = {
+    "I. HECHOS EXTRAÍDOS": t.sections.extractedFacts,
+    "II. CONCLUSIONES DE KYC": t.sections.kycConclusions,
+    "III. FLAGS Y RIESGOS": t.sections.riskFlags,
+    "IV. TRAZA Y JUSTIFICACIÓN": t.sections.traceability
   };
 
-  // Trace / Summary Sections (Bilingual)
+  // Report Sections (Spanish-only)
   const sectionsHtml = report.sections.map(s => {
       const body = markdownToHtml(s.body);
-      const titleTranslations = sectionTitles[s.title] || { en: s.title, es: s.title };
+      const sectionTitle = sectionTitles[s.title] || s.title;
       
       return `
-        <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-8 mb-6 hover:shadow-lg transition-all section-card">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-3 pb-3 border-b-2 border-blue-200 break-words" style="font-size: 22px; line-height: 1.4;">
-              ${titleTranslations.en}
+        <div class="fluent-card rounded-xl shadow-md border border-gray-200 p-10 mb-8 hover:shadow-lg transition-all section-card" style="margin-bottom: 2rem;">
+            <h2 class="text-2xl font-semibold text-gray-900 mb-6 pb-4 border-b-2 border-blue-300 break-words" style="font-size: 22px; line-height: 1.4; padding-bottom: 12px;">
+              ${sectionTitle}
             </h2>
-            <div class="text-base text-gray-600 mb-6 pb-2 border-b border-gray-200 break-words" style="font-size: 16px; line-height: 1.5;">
-              ${titleTranslations.es}
-            </div>
-            <div class="text-gray-700 prose prose-sm max-w-none" style="font-size: 15px; line-height: 1.7;">
+            <div class="text-gray-700 prose prose-sm max-w-none" style="font-size: 15px; line-height: 1.8;">
                 ${body}
             </div>
         </div>
       `;
   }).join("");
 
+  // Build Executive Summary Data
+  const repIdentityName = run.profile!.representativeIdentity?.full_name || null;
+  const repDocType = run.profile!.representativeIdentity?.document_type || null;
+  const repDocNumber = run.profile!.representativeIdentity?.document_number || null;
+  
+  // Find matching signatory in Acta
+  const legalReps = run.profile!.companyIdentity?.legal_representatives || [];
+  const namesMatchFn = (name1: string, name2: string): boolean => {
+      if (!name1 || !name2) return false;
+      const normalize = (n: string) => n.toUpperCase().trim().replace(/\s+/g, ' ');
+      const n1 = normalize(name1);
+      const n2 = normalize(name2);
+      if (n1 === n2) return true;
+      const tokens1 = new Set(n1.split(' ').filter(t => t.length > 1));
+      const tokens2 = new Set(n2.split(' ').filter(t => t.length > 1));
+      const [smaller, larger] = tokens1.size <= tokens2.size ? [tokens1, tokens2] : [tokens2, tokens1];
+      let matchCount = 0;
+      for (const token of smaller) {
+          if (larger.has(token)) matchCount++;
+      }
+      return smaller.size > 0 && matchCount === smaller.size;
+  };
+  
+  const matchedRep = repIdentityName ? legalReps.find(r => namesMatchFn(r.name || '', repIdentityName)) : null;
+  const otherReps = repIdentityName ? legalReps.filter(r => !namesMatchFn(r.name || '', repIdentityName)) : legalReps;
+  
+  // Determine power scope for matched rep
+  const getPowerScope = (rep: any): { scope: string; label: string; color: string } => {
+      if (!rep || !rep.poder_scope) return { scope: 'none', label: 'Sin Poderes', color: 'gray' };
+      const scope = Array.isArray(rep.poder_scope) ? rep.poder_scope.join(' ').toUpperCase() : String(rep.poder_scope).toUpperCase();
+      const hasPleitos = /PLEITOS?/.test(scope);
+      const hasAdmin = /ADMINISTRACI[ÓO]N/.test(scope);
+      const hasDominio = /DOMINIO/.test(scope);
+      const hasTitulos = /T[ÍI]TULOS?/.test(scope);
+      if (hasPleitos && hasAdmin && hasDominio && hasTitulos) {
+          return { scope: 'full', label: 'Poderes Amplios', color: 'green' };
+      } else if (hasPleitos || hasAdmin || hasDominio || hasTitulos) {
+          return { scope: 'limited', label: 'Poderes Limitados', color: 'yellow' };
+      }
+      return { scope: 'none', label: 'Sin Poderes', color: 'gray' };
+  };
+  
+  const matchedPowerInfo = matchedRep ? getPowerScope(matchedRep) : null;
+  
+  // ========== PERSONA FÍSICA DETECTION ==========
+  // A Persona Física has NO Acta Constitutiva - they ARE the business
+  // Their INE/FM2 IS their authority to sign - no corporate powers needed
+  const hasActaConstitutiva = !!run.profile!.companyIdentity;
+  const isPersonaFisica = !hasActaConstitutiva;
+  
+  // Determine if the verified person CAN SIGN
+  // For Persona Física: If identity is verified, they CAN sign (they are the business)
+  // For Persona Moral: Need to match against Acta and have powers
+  const canSign = isPersonaFisica 
+      ? !!repIdentityName  // PF: Identity verified = can sign
+      : (matchedRep && matchedPowerInfo?.scope === 'full');  // PM: Need full powers
+  const canSignLimited = !isPersonaFisica && matchedRep && matchedPowerInfo?.scope === 'limited';
+  
+  // ========== CRITICAL ALERT DETECTION ==========
+  // If there are critical flags, show alert banner FIRST in the story
+  const criticalFlags = run.validation!.flags.filter(f => f.level === 'critical');
+  const warningFlags = run.validation!.flags.filter(f => f.level === 'warning');
+  const hasCriticalIssues = criticalFlags.length > 0;
+  
+  // Build alert banner HTML (shown at top if critical issues exist)
+  const alertBannerHtml = hasCriticalIssues ? `
+    <div class="exec-alert-banner exec-alert-critical">
+        <div class="exec-alert-icon">🚨</div>
+        <div class="exec-alert-content">
+            <div class="exec-alert-title">ALERTA CRÍTICA - Documentación Inconsistente</div>
+            <div class="exec-alert-message">${criticalFlags[0].message}</div>
+            <div class="exec-alert-action">
+                <strong>Acción Requerida:</strong> No proceder con el alta hasta resolver esta inconsistencia. 
+                Verificar que todos los documentos correspondan a la misma entidad legal.
+            </div>
+        </div>
+    </div>
+  ` : warningFlags.length > 0 ? `
+    <div class="exec-alert-banner exec-alert-warning">
+        <div class="exec-alert-icon">⚠️</div>
+        <div class="exec-alert-content">
+            <div class="exec-alert-title">Observaciones Pendientes</div>
+            <div class="exec-alert-message">${warningFlags.map(f => f.message).join(' | ')}</div>
+        </div>
+    </div>
+  ` : '';
+  
+  // Executive Summary HTML - Redesigned for clarity on WHO CAN SIGN
+  // DIFFERENT LOGIC FOR PERSONA FÍSICA vs PERSONA MORAL
+  const executiveSummaryHtml = alertBannerHtml + (isPersonaFisica ? `
+    <!-- ========== PERSONA FÍSICA LAYOUT ========== -->
+    <div class="exec-summary-grid">
+        <!-- PRIMARY: Signing Authority Card - PERSONA FÍSICA -->
+        <div class="exec-card exec-card-success">
+            <div class="exec-card-header">
+                <span class="exec-icon">✍️</span>
+                <span class="exec-title">¿Quién Puede Firmar?</span>
+            </div>
+            <div class="exec-card-body">
+                ${repIdentityName ? `
+                    <div class="exec-signing-authority">
+                        <div class="exec-main-value">${repIdentityName}</div>
+                        <div class="exec-sub-value">${repDocType || 'Documento'} ${repDocNumber ? `(${repDocNumber})` : ''}</div>
+                        
+                        <div class="exec-can-sign-badge exec-can-sign-yes">
+                            <span class="exec-can-sign-icon">✅</span>
+                            <span class="exec-can-sign-text">PUEDE FIRMAR</span>
+                        </div>
+                        <div class="exec-power-detail">
+                            <strong>Persona Física:</strong> El titular firma en nombre propio. No requiere Acta Constitutiva ni poderes notariales.
+                        </div>
+                        
+                        <div class="exec-role-compact">
+                            <span class="exec-role-label">Calidad:</span>
+                            <span class="exec-role-value">Titular / Propietario</span>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="exec-main-value text-gray-400">Sin documento de identidad</div>
+                    <div class="exec-can-sign-badge exec-can-sign-no">
+                        <span class="exec-can-sign-icon">❌</span>
+                        <span class="exec-can-sign-text">FALTA IDENTIFICACIÓN</span>
+                    </div>
+                    <div class="exec-power-detail">
+                        <strong>Requerido:</strong> INE, Pasaporte, o FM2 para verificar identidad
+                    </div>
+                `}
+            </div>
+        </div>
+        
+        <!-- SECONDARY: Persona Física Info Card -->
+        <div class="exec-card">
+            <div class="exec-card-header">
+                <span class="exec-icon">📋</span>
+                <span class="exec-title">Régimen Fiscal</span>
+            </div>
+            <div class="exec-card-body">
+                <div class="exec-info-note">ℹ️ Alta de Cliente - Persona Física con Actividad Empresarial</div>
+                <div class="exec-pf-info">
+                    <div class="exec-pf-item">
+                        <span class="exec-pf-label">RFC:</span>
+                        <span class="exec-pf-value">${rfc}</span>
+                    </div>
+                    <div class="exec-pf-item">
+                        <span class="exec-pf-label">Régimen:</span>
+                        <span class="exec-pf-value">${run.profile!.companyTaxProfile?.tax_regime || 'No especificado'}</span>
+                    </div>
+                    <div class="exec-pf-item">
+                        <span class="exec-pf-label">Estatus SAT:</span>
+                        <span class="exec-pf-value exec-pf-status-${run.profile!.companyTaxProfile?.status === 'ACTIVO' ? 'active' : 'inactive'}">${run.profile!.companyTaxProfile?.status || 'Desconocido'}</span>
+                    </div>
+                </div>
+                <div class="exec-pf-note">
+                    <strong>Nota Legal:</strong> Como Persona Física, no existe Acta Constitutiva. La capacidad jurídica se acredita con identificación oficial vigente.
+                </div>
+            </div>
+        </div>
+    ` : `
+    <!-- ========== PERSONA MORAL LAYOUT ========== -->
+    <div class="exec-summary-grid">
+        <!-- PRIMARY: Signing Authority Card - PERSONA MORAL -->
+        <div class="exec-card ${canSign ? 'exec-card-success' : (canSignLimited ? 'exec-card-warning' : 'exec-card-danger')}">
+            <div class="exec-card-header">
+                <span class="exec-icon">✍️</span>
+                <span class="exec-title">¿Quién Puede Firmar?</span>
+            </div>
+            <div class="exec-card-body">
+                ${matchedRep && repIdentityName ? `
+                    <div class="exec-signing-authority">
+                        <div class="exec-main-value">${repIdentityName}</div>
+                        <div class="exec-sub-value">${repDocType || 'Documento'} ${repDocNumber ? `(${repDocNumber})` : ''}</div>
+                        
+                        ${canSign ? `
+                            <div class="exec-can-sign-badge exec-can-sign-yes">
+                                <span class="exec-can-sign-icon">✅</span>
+                                <span class="exec-can-sign-text">PUEDE FIRMAR</span>
+                            </div>
+                            <div class="exec-power-detail">
+                                <strong>Facultades:</strong> Poderes Amplios (Administración, Dominio, Pleitos, Títulos)
+                            </div>
+                        ` : canSignLimited ? `
+                            <div class="exec-can-sign-badge exec-can-sign-limited">
+                                <span class="exec-can-sign-icon">⚠️</span>
+                                <span class="exec-can-sign-text">FIRMA LIMITADA</span>
+                            </div>
+                            <div class="exec-power-detail">
+                                <strong>Facultades:</strong> Poderes Limitados - verificar alcance para este contrato
+                            </div>
+                        ` : `
+                            <div class="exec-can-sign-badge exec-can-sign-no">
+                                <span class="exec-can-sign-icon">❌</span>
+                                <span class="exec-can-sign-text">SIN FACULTADES</span>
+                            </div>
+                            <div class="exec-power-detail">
+                                <strong>Alerta:</strong> Esta persona no tiene poderes para firmar contratos
+                            </div>
+                        `}
+                        
+                        <div class="exec-role-compact">
+                            <span class="exec-role-label">Cargo:</span>
+                            <span class="exec-role-value">${matchedRep.role || 'Apoderado'}</span>
+                        </div>
+                    </div>
+                ` : repIdentityName ? `
+                    <div class="exec-signing-authority">
+                        <div class="exec-main-value">${repIdentityName}</div>
+                        <div class="exec-sub-value">${repDocType || 'Documento'} ${repDocNumber ? `(${repDocNumber})` : ''}</div>
+                        <div class="exec-can-sign-badge exec-can-sign-no">
+                            <span class="exec-can-sign-icon">⚠️</span>
+                            <span class="exec-can-sign-text">NO VERIFICADO EN ACTA</span>
+                        </div>
+                        <div class="exec-power-detail">
+                            <strong>Alerta:</strong> Identidad verificada pero no aparece en el Acta Constitutiva. Verificar poderes notariales.
+                        </div>
+                    </div>
+                ` : `
+                    <div class="exec-main-value text-gray-400">Sin documento de identidad</div>
+                    <div class="exec-can-sign-badge exec-can-sign-no">
+                        <span class="exec-can-sign-icon">❌</span>
+                        <span class="exec-can-sign-text">NO SE PUEDE VERIFICAR</span>
+                    </div>
+                `}
+            </div>
+        </div>
+        
+        <!-- SECONDARY: Other Authorized Signatories (Informational) - PERSONA MORAL ONLY -->
+        <div class="exec-card">
+            <div class="exec-card-header">
+                <span class="exec-icon">👥</span>
+                <span class="exec-title">Otros Autorizados en Acta</span>
+            </div>
+            <div class="exec-card-body">
+                <div class="exec-info-note">ℹ️ Personas con facultades según el Acta (no verificadas con ID)</div>
+                ${otherReps.length > 0 ? `
+                    <div class="exec-signatory-list">
+                        ${otherReps.slice(0, 4).map(r => {
+                            const power = getPowerScope(r);
+                            return `
+                                <div class="exec-signatory-item">
+                                    <span class="exec-signatory-name">${r.name || 'N/A'}</span>
+                                    <span class="exec-signatory-role">${r.role || 'Rol desconocido'}</span>
+                                    <span class="exec-power-mini exec-power-${power.color}">${power.label}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                        ${otherReps.length > 4 ? `<div class="exec-more">+${otherReps.length - 4} más...</div>` : ''}
+                    </div>
+                ` : `
+                    <div class="exec-empty">No hay otros firmantes registrados</div>
+                `}
+            </div>
+        </div>
+        
+        <!-- Quick Status Card -->
+        <div class="exec-card">
+            <div class="exec-card-header">
+                <span class="exec-icon">📋</span>
+                <span class="exec-title">Estado Rápido</span>
+            </div>
+            <div class="exec-card-body">
+                <div class="exec-status-grid">
+                    <div class="exec-status-item">
+                        <span class="exec-status-label">Documentos</span>
+                        <span class="exec-status-value exec-status-ok">${run.documents.length} ✓</span>
+                    </div>
+                    <div class="exec-status-item">
+                        <span class="exec-status-label">Banderas</span>
+                        <span class="exec-status-value ${run.validation!.flags.length === 0 ? 'exec-status-ok' : 'exec-status-warn'}">${run.validation!.flags.length} ${run.validation!.flags.length === 0 ? '✓' : '⚠️'}</span>
+                    </div>
+                    <div class="exec-status-item">
+                        <span class="exec-status-label">RFC</span>
+                        <span class="exec-status-value exec-status-ok">${rfc !== 'N/A' ? '✓' : '❌'}</span>
+                    </div>
+                    <div class="exec-status-item">
+                        <span class="exec-status-label">Domicilio</span>
+                        <span class="exec-status-value exec-status-ok">${run.profile!.currentOperationalAddress ? '✓' : '❌'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  `);
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${translations.en.print.title} / ${translations.es.print.title} - ${companyName}</title>
+    <title>${t.print.title} - ${companyName}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -469,35 +793,70 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             font-size: 15px;
-            line-height: 1.6;
+            line-height: 1.7;
             letter-spacing: 0.01em;
+            color: #374151;
         }
         h1, h2, h3, h4, h5, h6 {
             font-weight: 600;
             letter-spacing: -0.02em;
-            line-height: 1.3;
+            line-height: 1.4;
+            margin-top: 1.5em;
+            margin-bottom: 0.75em;
         }
         p, li, td, th {
             font-size: 15px;
-            line-height: 1.7;
+            line-height: 1.8;
             letter-spacing: 0.01em;
         }
-        table { border-collapse: separate; border-spacing: 0; }
+        ul, ol {
+            margin-top: 1em;
+            margin-bottom: 1.5em;
+        }
+        li {
+            margin-bottom: 0.5em;
+        }
+        
+        /* IMPROVED TABLE STYLES - No text cutoff */
+        table { 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            width: 100%;
+            table-layout: auto;
+        }
         table thead th { 
-            background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
+            background: linear-gradient(to bottom, #1e3a5f, #2d4a6f);
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.03em;
-            color: #1f2937;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: #ffffff;
             line-height: 1.5;
+            padding: 14px 16px;
+            text-align: left;
+            white-space: nowrap;
+            border-bottom: 2px solid #0d2137;
         }
-        table tbody tr:hover { background-color: #f3f4f6; }
-        table td, table th {
+        table tbody tr:nth-child(even) { background-color: #f8fafc; }
+        table tbody tr:hover { background-color: #e0f2fe; }
+        table td {
             font-size: 14px;
             line-height: 1.6;
-            padding: 12px 16px;
+            padding: 14px 16px;
+            vertical-align: top;
+            border-bottom: 1px solid #e5e7eb;
         }
+        /* Allow text wrapping in table cells */
+        table td, table th {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: none;
+            min-width: 80px;
+        }
+        /* Specific column widths for better layout */
+        table td:first-child { min-width: 150px; }
+        table td:last-child { min-width: 200px; }
+        
         code { 
             font-family: 'Consolas', 'Monaco', 'Menlo', 'Courier New', monospace;
             font-size: 13px;
@@ -511,22 +870,40 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         /* Prevent text overflow and ensure proper wrapping */
         * { word-wrap: break-word; overflow-wrap: break-word; }
         h1, h2, h3, h4, h5, h6 { word-break: break-word; }
-        p, li, td, th { word-break: break-word; hyphens: auto; }
+        p, li { word-break: break-word; hyphens: auto; }
         
         /* Ensure proper spacing */
         .section-card h2 { line-height: 1.3; }
         .section-card h3 { line-height: 1.4; }
         
-        /* Better table cell wrapping */
-        table td, table th { 
-            word-break: break-word;
-            overflow-wrap: break-word;
-            max-width: 300px;
+        /* Metadata Footer/Sidebar Style */
+        .metadata-section {
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            margin-top: 2rem;
+            border-radius: 0 0 0.5rem 0.5rem;
         }
-        
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .risk-critical { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .risk-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .risk-info { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+
         /* Windows Fluent Design */
         .fluent-card {
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
@@ -539,6 +916,359 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
             box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3);
         }
+        
+        /* ========== EXECUTIVE SUMMARY STYLES ========== */
+        .exec-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .exec-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
+        .exec-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+        .exec-card-success {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        }
+        .exec-card-warning {
+            border-left: 4px solid #f59e0b;
+            background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+        }
+        .exec-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .exec-icon {
+            font-size: 1.5rem;
+        }
+        .exec-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1e293b;
+            letter-spacing: -0.01em;
+        }
+        .exec-card-body {
+            min-height: 120px;
+        }
+        .exec-main-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+        }
+        .exec-sub-value {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+        .exec-match-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .exec-match-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        .exec-match-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        /* NEW: Signing Authority Styles */
+        .exec-card-danger {
+            border-left: 4px solid #ef4444;
+        }
+        .exec-signing-authority {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .exec-can-sign-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        .exec-can-sign-yes {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border: 2px solid #22c55e;
+        }
+        .exec-can-sign-limited {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+        }
+        .exec-can-sign-no {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 2px solid #ef4444;
+        }
+        .exec-can-sign-icon {
+            font-size: 1.5rem;
+        }
+        .exec-can-sign-text {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        .exec-can-sign-yes .exec-can-sign-text { color: #166534; }
+        .exec-can-sign-limited .exec-can-sign-text { color: #92400e; }
+        .exec-can-sign-no .exec-can-sign-text { color: #991b1b; }
+        .exec-power-detail {
+            font-size: 0.85rem;
+            color: #475569;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        .exec-role-compact {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .exec-role-compact .exec-role-label {
+            font-weight: 500;
+        }
+        .exec-role-compact .exec-role-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .exec-info-note {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        /* Critical Alert Banner - Shows at TOP of Executive Summary */
+        .exec-alert-banner {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            animation: alertPulse 2s ease-in-out infinite;
+        }
+        @keyframes alertPulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 4px 25px rgba(239, 68, 68, 0.4); }
+        }
+        .exec-alert-critical {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #ef4444;
+            border-left: 6px solid #dc2626;
+        }
+        .exec-alert-warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            border-left: 6px solid #d97706;
+            animation: none;
+        }
+        .exec-alert-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+        .exec-alert-content {
+            flex: 1;
+        }
+        .exec-alert-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #991b1b;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .exec-alert-warning .exec-alert-title {
+            color: #92400e;
+        }
+        .exec-alert-message {
+            font-size: 0.95rem;
+            color: #7f1d1d;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+        .exec-alert-warning .exec-alert-message {
+            color: #78350f;
+        }
+        .exec-alert-action {
+            font-size: 0.85rem;
+            color: #991b1b;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+        .exec-alert-warning .exec-alert-action {
+            color: #92400e;
+            border-color: #fde68a;
+        }
+        
+        /* Persona Física specific styles */
+        .exec-pf-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .exec-pf-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .exec-pf-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .exec-pf-value {
+            font-size: 0.85rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .exec-pf-status-active {
+            color: #166534;
+            background: #dcfce7;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+        .exec-pf-status-inactive {
+            color: #991b1b;
+            background: #fee2e2;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+        }
+        .exec-pf-note {
+            font-size: 0.8rem;
+            color: #475569;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+            margin-top: 0.5rem;
+        }
+        .exec-role-box {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+        }
+        .exec-role-title {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .exec-role-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .exec-power-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .exec-power-green { background: #dcfce7; color: #166534; }
+        .exec-power-yellow { background: #fef3c7; color: #92400e; }
+        .exec-power-gray { background: #f1f5f9; color: #64748b; }
+        .exec-signatory-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .exec-signatory-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .exec-signatory-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e293b;
+            flex: 1;
+            min-width: 100px;
+        }
+        .exec-signatory-role {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .exec-power-mini {
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .exec-more {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-style: italic;
+        }
+        .exec-empty {
+            color: #94a3b8;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        .exec-status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .exec-status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .exec-status-label {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        .exec-status-value {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .exec-status-ok { color: #16a34a; }
+        .exec-status-warn { color: #d97706; }
+        .exec-status-error { color: #dc2626; }
         
         /* Print Styles - Optimized for professional printing */
         @media print {
@@ -707,7 +1437,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             // Show user-friendly message with file location
             const button = event.target;
             const originalText = button.innerHTML;
-            button.innerHTML = '✅ ${translations.en.nav.exportExcel}';
+            button.innerHTML = '✅ ${t.nav.exportExcel}';
             
             // Create a message with the file path
             const message = 'Excel file generated successfully!\\n\\n' +
@@ -743,10 +1473,10 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                 <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600">${new Date(run.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     <button onclick="printReport()" class="fluent-button text-white px-4 py-2 rounded-lg text-sm font-medium transition-all no-print whitespace-nowrap">
-                        🖨️ ${translations.en.nav.print} / ${translations.es.nav.print}
+                        🖨️ ${t.nav.print}
                     </button>
                     <button onclick="exportToExcel()" class="fluent-button text-white px-4 py-2 rounded-lg text-sm font-medium transition-all no-print whitespace-nowrap">
-                        📊 ${translations.en.nav.exportExcel} / ${translations.es.nav.exportExcel}
+                        📊 ${t.nav.exportExcel}
                     </button>
                 </div>
             </div>
@@ -754,6 +1484,14 @@ async function generateVisualReport(run: KycRun): Promise<string> {
     </nav>
 
     <div id="report-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Executive Summary - Quick Glance for Analysts -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span class="text-2xl">📊</span> ${t.sections.executiveSummary}
+            </h2>
+            ${executiveSummaryHtml}
+        </div>
         
         <!-- Header -->
         <div class="fluent-card rounded-xl shadow-md p-8 mb-8">
@@ -768,8 +1506,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
                             <div class="min-w-0">
-                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">${translations.en.header.rfc}:</span> <span class="text-gray-700">${rfc}</span></div>
-                              <div class="text-gray-500 mt-1 break-words" style="font-size: 13px; line-height: 1.5;">${translations.es.header.rfc}: ${rfc}</div>
+                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">${t.header.rfc}:</span> <span class="text-gray-700">${rfc}</span></div>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -777,8 +1514,7 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                             <div class="min-w-0">
-                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">${translations.en.header.generated}:</span> <span class="text-gray-700">${new Date(run.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>
-                              <div class="text-gray-500 mt-1 break-words" style="font-size: 13px; line-height: 1.5;">${translations.es.header.generated}: ${new Date(run.createdAt).toLocaleDateString('es-MX', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                              <div class="break-words" style="font-size: 15px; line-height: 1.6;"><span class="font-medium text-gray-900">${t.header.generated}:</span> <span class="text-gray-700">${new Date(run.createdAt).toLocaleString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</span></div>
                             </div>
                         </div>
                     </div>
@@ -786,9 +1522,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                 <div class="mt-4 flex md:mt-0 md:ml-4">
                     <div class="flex flex-col items-end">
                       <span class="${statusColor} px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide uppercase shadow-sm border whitespace-nowrap">
-                          ${statusTextEn}
+                          ${statusText}
                       </span>
-                      <span class="text-xs text-gray-600 mt-1.5 whitespace-nowrap">${statusTextEs}</span>
                     </div>
                 </div>
             </div>
@@ -805,9 +1540,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                         <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span class="break-words">${translations.en.sidebar.riskScore}</span>
+                        <span class="break-words">${t.sidebar.riskScore}</span>
                     </h3>
-                    <div class="text-sm text-gray-500 mb-5 ml-7 break-words" style="font-size: 13px; line-height: 1.5;">${translations.es.sidebar.riskScore}</div>
                     <div class="flex flex-col items-center justify-center">
                         <div class="relative w-36 h-36 mb-3">
                             <svg class="w-full h-full transform -rotate-90 score-ring" viewBox="0 0 36 36">
@@ -816,10 +1550,9 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                             </svg>
                             <div class="absolute inset-0 flex items-center justify-center flex-col">
                                 <span class="text-4xl font-semibold text-gray-900" style="font-size: 42px; line-height: 1.2;">${(score * 100).toFixed(0)}</span>
-                                <span class="text-xs text-gray-600 uppercase tracking-wider mt-1.5" style="font-size: 11px; line-height: 1.4;">${translations.en.sidebar.trustScore}</span>
+                                <span class="text-xs text-gray-600 uppercase tracking-wider mt-1.5" style="font-size: 11px; line-height: 1.4;">${t.sidebar.trustScore}</span>
                             </div>
                         </div>
-                        <div class="text-sm text-gray-500 text-center mt-2" style="font-size: 13px; line-height: 1.5;">${translations.es.sidebar.trustScore}</div>
                     </div>
                 </div>
 
@@ -829,9 +1562,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                         <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
-                        <span class="break-words">${translations.en.sidebar.complianceFlags}</span>
+                        <span class="break-words">${t.sidebar.complianceFlags}</span>
                     </h3>
-                    <div class="text-sm text-gray-500 mb-4 ml-7 break-words" style="font-size: 13px; line-height: 1.5;">${translations.es.sidebar.complianceFlags}</div>
                     <div class="space-y-3">
                         ${flagsHtml}
                     </div>
@@ -843,9 +1575,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                         <svg class="w-5 h-5 mr-2 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <span class="break-words">${translations.en.sidebar.sourceDocuments}</span>
+                        <span class="break-words">${t.sidebar.sourceDocuments}</span>
                     </h3>
-                    <div class="text-sm text-gray-500 mb-4 ml-7 break-words" style="font-size: 13px; line-height: 1.5;">${translations.es.sidebar.sourceDocuments}</div>
                     <div class="space-y-2">
                         ${docs}
                     </div>
@@ -856,6 +1587,17 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             <!-- Right Column: Detailed Report -->
             <div class="lg:col-span-2 space-y-6">
                 ${sectionsHtml}
+                
+                <!-- Metadata Footer -->
+                <div class="metadata-section rounded-lg">
+                    <div class="font-semibold mb-2 text-gray-700">Report Metadata</div>
+                    <div class="grid grid-cols-2 gap-4 text-xs font-mono">
+                        <div>Run ID: ${run.runId}</div>
+                        <div>Generated: ${new Date().toISOString()}</div>
+                        <div>Customer ID: ${run.customerId}</div>
+                        <div>System Version: 1.0.0</div>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -863,6 +1605,21 @@ async function generateVisualReport(run: KycRun): Promise<string> {
 </body>
 </html>`;
 
+  // Upload to S3/R2 if configured, otherwise fall back to file system
+  const { uploadReport, isS3Configured } = await import('./s3Storage.js');
+  
+  if (isS3Configured()) {
+    try {
+      // Upload to S3 and return signed URL
+      const signedUrl = await uploadReport(html, run.customerId, run.runId);
+      return signedUrl;
+    } catch (error) {
+      console.error('Failed to upload report to S3, falling back to file system:', error);
+      // Fall through to file system fallback
+    }
+  }
+  
+  // Fallback to file system if S3 not configured or upload failed
   const reportPath = getReportFilePath(run.customerId, run.runId);
   await fs.writeFile(reportPath, html, 'utf-8');
   
@@ -945,16 +1702,37 @@ export async function loadLatestRun(customerId: string): Promise<KycRun | null> 
 }
 
 /**
- * Gets the file:// URL for a report HTML file.
+ * Gets the signed URL for a report HTML file (S3) or file:// URL (local).
  * Returns empty string if report doesn't exist.
  */
-export function getReportUrl(customerId: string, runId: string): string {
+export async function getReportUrl(customerId: string, runId: string): Promise<string> {
+  const { getReportSignedUrl, isS3Configured } = await import('./s3Storage.js');
+  
+  if (isS3Configured()) {
+    try {
+      const signedUrl = await getReportSignedUrl(customerId, runId);
+      if (signedUrl) {
+        return signedUrl;
+      }
+      // If not found in S3, fall back to file system
+    } catch (error) {
+      console.error('Failed to get signed URL from S3, falling back to file system:', error);
+      // Fall through to file system fallback
+    }
+  }
+  
+  // Fallback to file system
   const reportPath = getReportFilePath(customerId, runId);
-  return `file://${reportPath}`;
+  try {
+    await fs.access(reportPath);
+    return `file://${reportPath}`;
+  } catch {
+    return '';
+  }
 }
 
 /**
- * Gets the file:// URL for the latest report.
+ * Gets the signed URL for the latest report (S3) or file:// URL (local).
  * Returns empty string if no runs exist.
  */
 export async function getLatestReportUrl(customerId: string): Promise<string> {
@@ -962,7 +1740,7 @@ export async function getLatestReportUrl(customerId: string): Promise<string> {
   if (!run) {
     return '';
   }
-  return getReportUrl(customerId, run.runId);
+  return await getReportUrl(customerId, run.runId);
 }
 
 /**
@@ -984,7 +1762,7 @@ async function generateExcelReport(run: KycRun): Promise<string> {
     ['RFC', rfc],
     ['Report Date / Fecha del Reporte', new Date(run.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })],
     ['Score / Puntuación', `${(validation.score * 100).toFixed(0)}%`],
-    ['Status / Estatus', validation.score >= 0.9 ? 'APPROVED / APROBADO' : (validation.score >= 0.7 ? 'REVIEW NEEDED / REVISIÓN REQUERIDA' : 'REJECTED / RECHAZADO')],
+    ['Estatus', validation.score >= 0.9 ? t.header.approved : (validation.score >= 0.7 ? t.header.reviewNeeded : t.header.rejected)],
     ['Flags Count / Conteo de Banderas', validation.flags.length],
     [],
   ];
