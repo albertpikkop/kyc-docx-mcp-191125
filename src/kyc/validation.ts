@@ -32,30 +32,48 @@ export type EntityType =
   | 'UNKNOWN';
 
 /**
- * Classifies the entity type based on SAT Constancia data
+ * Classifies the entity type based on Acta and SAT Constancia data
+ * 
+ * PRIORITY ORDER:
+ * 1. Acta RFC (if present) - most authoritative for Persona Moral
+ * 2. SAT RFC pattern
+ * 3. Tax regime analysis
+ * 4. Presence of Acta
  */
 export function classifyEntityType(profile: KycProfile): EntityType {
   const taxProfile = profile.companyTaxProfile;
   const hasActa = !!profile.companyIdentity;
+  const actaRfc = profile.companyIdentity?.rfc?.toUpperCase().trim();
   
-  // 1. Check RFC pattern first
+  const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;  // 3 letters = corporate
+  const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/; // 4 letters = individual
+  
+  // 1. PRIORITY: Check Acta RFC first (most authoritative for Persona Moral)
+  if (actaRfc && personaMoralPattern.test(actaRfc)) {
+    return 'PERSONA_MORAL';
+  }
+  
+  // 2. Check SAT RFC pattern
   if (taxProfile?.rfc) {
-    const rfc = taxProfile.rfc.toUpperCase().trim();
-    const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;  // 3 letters = corporate
-    const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/; // 4 letters = individual
+    const satRfc = taxProfile.rfc.toUpperCase().trim();
     
-    // If RFC indicates Persona Moral
-    if (personaMoralPattern.test(rfc) && hasActa) {
+    // If SAT RFC indicates Persona Moral
+    if (personaMoralPattern.test(satRfc) && hasActa) {
       return 'PERSONA_MORAL';
     }
     
-    // If RFC indicates Persona Física, check tax regime
-    if (personaFisicaPattern.test(rfc)) {
+    // If SAT RFC indicates Persona Física, check tax regime
+    if (personaFisicaPattern.test(satRfc)) {
+      // But if we have an Acta with company RFC, it's still Persona Moral
+      // (the SAT might be a personal SAT of a shareholder)
+      if (hasActa && actaRfc && personaMoralPattern.test(actaRfc)) {
+        return 'PERSONA_MORAL';
+      }
       return classifyPersonaFisicaSubtype(taxProfile);
     }
   }
   
-  // 2. Fallback to tax regime analysis
+  // 3. Fallback to tax regime analysis
   if (taxProfile?.tax_regime) {
     const regime = taxProfile.tax_regime.toUpperCase();
     
@@ -77,7 +95,7 @@ export function classifyEntityType(profile: KycProfile): EntityType {
     }
   }
   
-  // 3. If has Acta, it's corporate
+  // 4. If has Acta, it's corporate
   if (hasActa) {
     return 'PERSONA_MORAL';
   }
@@ -326,19 +344,24 @@ export function resolveUbo(profile: KycProfile): UboInfo[] {
     const shares = s.shares || 0;
     const hasVotingRights = determineVotingRights(s);
     
-    // Calculate ownership percentage (total shares)
-    if (totalAllShares > 0 && s.shares !== null && s.shares !== undefined) {
+    // PRIORITY: Use explicit percentage from extraction if available
+    // This is critical for Sociedad Civil and other structures where 
+    // percentages are stated directly (e.g., 80%/20%) rather than calculated from share counts
+    if (s.percentage !== null && s.percentage !== undefined) {
+      pct = s.percentage;
+      votingPct = hasVotingRights ? s.percentage : 0;
+    } else if (totalAllShares > 0 && s.shares !== null && s.shares !== undefined) {
+      // Fallback: Calculate from share counts
       pct = (shares / totalAllShares) * 100;
+      // Calculate VOTING percentage (only voting shares count for control)
+      if (hasVotingRights && totalVotingShares > 0) {
+        votingPct = (shares / totalVotingShares) * 100;
+      } else if (!hasVotingRights) {
+        votingPct = 0;
+      }
     } else {
-      pct = s.percentage ?? null;
-    }
-    
-    // Calculate VOTING percentage (only voting shares count for control)
-    if (hasVotingRights && totalVotingShares > 0) {
-      votingPct = (shares / totalVotingShares) * 100;
-    } else if (!hasVotingRights) {
-      // Non-voting shares = 0% voting control
-      votingPct = 0;
+      pct = null;
+      votingPct = null;
     }
     
     // UBO determination: >25% of VOTING SHARES = control
@@ -2101,6 +2124,40 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       });
       score -= 0.1;
   }
+  
+  // E.1 UBO Identity Verification Check
+  // For compliance, we should verify the identity of UBOs (>25% owners)
+  if (ubos.length > 0 && profile.representativeIdentity) {
+    const repName = profile.representativeIdentity.full_name?.toUpperCase().trim() || '';
+    const repNameTokens = new Set(repName.split(/\s+/).filter(t => t.length > 1));
+    
+    // Check if the verified identity matches any UBO
+    const verifiedUbo = ubos.find(ubo => {
+      const uboName = ubo.name.toUpperCase().trim();
+      const uboTokens = new Set(uboName.split(/\s+/).filter(t => t.length > 1));
+      // Token match: all tokens from shorter name appear in longer name
+      const [smaller, larger] = repNameTokens.size <= uboTokens.size 
+        ? [repNameTokens, uboTokens] 
+        : [uboTokens, repNameTokens];
+      let matchCount = 0;
+      for (const token of smaller) {
+        if (larger.has(token)) matchCount++;
+      }
+      return smaller.size > 0 && matchCount === smaller.size;
+    });
+    
+    if (!verifiedUbo) {
+      // Identity verified but it's not a UBO
+      const uboNames = ubos.map(u => u.name).join(', ');
+      flags.push({
+        code: "UBO_IDENTITY_NOT_VERIFIED",
+        level: "warning",
+        message: `La identidad verificada (${profile.representativeIdentity.full_name}) no corresponde a ningún UBO (>25%). UBOs detectados: ${uboNames}. Se recomienda verificar la identidad del UBO principal.`,
+        action_required: `Solicitar INE o Pasaporte de: ${ubos[0]?.name || 'UBO principal'}`
+      });
+      score -= 0.1;
+    }
+  }
 
   // Equity Consistency Check
   const equityCheck = checkEquityConsistency(profile);
@@ -2166,9 +2223,37 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Company Identity (Acta Constitutiva)." });
     score -= 0.3;
   }
+  
+  // D.1 SAT Constancia validation
+  const actaRfc = profile.companyIdentity?.rfc?.toUpperCase().trim();
+  const satRfc = profile.companyTaxProfile?.rfc?.toUpperCase().trim();
+  const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;
+  const isActaPersonaMoral = actaRfc && personaMoralPattern.test(actaRfc);
+  
   if (!profile.companyTaxProfile) {
-    flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Tax Profile (SAT Constancia)." });
+    if (isActaPersonaMoral) {
+      flags.push({ 
+        code: "MISSING_COMPANY_SAT", 
+        level: "critical", 
+        message: `Falta Constancia de Situación Fiscal de la empresa (RFC: ${actaRfc}). Se requiere SAT de la Persona Moral, no de socios individuales.`,
+        action_required: `Solicitar Constancia de Situación Fiscal del SAT con RFC: ${actaRfc}`
+      });
+    } else {
+      flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Tax Profile (SAT Constancia)." });
+    }
     score -= 0.3;
+  } else if (isActaPersonaMoral && satRfc && satRfc !== actaRfc) {
+    // SAT RFC doesn't match Acta RFC - wrong SAT provided
+    const satIsPersonal = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/.test(satRfc);
+    if (satIsPersonal) {
+      flags.push({ 
+        code: "WRONG_SAT_TYPE", 
+        level: "critical", 
+        message: `SAT Constancia proporcionada es de Persona Física (${satRfc}: ${profile.companyTaxProfile.razon_social}), pero se requiere SAT de la Persona Moral (RFC: ${actaRfc}).`,
+        action_required: `Solicitar Constancia de Situación Fiscal de la empresa con RFC: ${actaRfc}`
+      });
+      score -= 0.25;
+    }
   }
   
   // D.1 Check for missing Folio Mercantil (Persona Moral only)
@@ -2271,6 +2356,9 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   const checklist: string[] = [];
   
   // 1. Entity Classification
+  const companyRfc = profile.companyIdentity?.rfc?.toUpperCase().trim();
+  const isCompanyPersonaMoral = companyRfc && /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/.test(companyRfc);
+  
   if (isPF) {
     checklist.push(`✓ Tipo de Entidad: Persona Física`);
   } else {
@@ -2278,6 +2366,7 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     // Acta Constitutiva
     if (profile.companyIdentity) {
       checklist.push(`✓ Acta Constitutiva: Verificada`);
+      checklist.push(`✓ RFC Empresa: ${companyRfc || 'No especificado'}`);
       if (profile.companyIdentity.registry?.folio || profile.companyIdentity.registry?.fme) {
         checklist.push(`✓ Registro Público: Folio ${profile.companyIdentity.registry.folio || profile.companyIdentity.registry.fme}`);
       }
@@ -2287,11 +2376,28 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   }
   
   // 2. Constancia SAT
-  if (profile.companyTaxProfile?.rfc) {
-    checklist.push(`✓ Constancia SAT: RFC ${profile.companyTaxProfile.rfc}`);
-    checklist.push(`✓ Régimen Fiscal: ${profile.companyTaxProfile.tax_regime || 'No especificado'}`);
+  if (isCompanyPersonaMoral) {
+    // For Persona Moral, check if SAT matches company RFC
+    if (profile.companyTaxProfile?.rfc) {
+      const satRfc = profile.companyTaxProfile.rfc.toUpperCase().trim();
+      if (satRfc === companyRfc) {
+        checklist.push(`✓ Constancia SAT Empresa: RFC ${satRfc}`);
+        checklist.push(`✓ Régimen Fiscal: ${profile.companyTaxProfile.tax_regime || 'No especificado'}`);
+      } else {
+        checklist.push(`✗ Constancia SAT Empresa: Pendiente (RFC requerido: ${companyRfc})`);
+        checklist.push(`⚠️ SAT proporcionada: ${satRfc} (${profile.companyTaxProfile.razon_social}) - es SAT personal, no de empresa`);
+      }
+    } else {
+      checklist.push(`✗ Constancia SAT Empresa: No proporcionada (RFC requerido: ${companyRfc})`);
+    }
   } else {
-    checklist.push(`✗ Constancia SAT: No proporcionada`);
+    // For Persona Física
+    if (profile.companyTaxProfile?.rfc) {
+      checklist.push(`✓ Constancia SAT: RFC ${profile.companyTaxProfile.rfc}`);
+      checklist.push(`✓ Régimen Fiscal: ${profile.companyTaxProfile.tax_regime || 'No especificado'}`);
+    } else {
+      checklist.push(`✗ Constancia SAT: No proporcionada`);
+    }
   }
   
   // 3. Identity Documents

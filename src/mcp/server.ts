@@ -63,10 +63,69 @@ import { extractBankStatementProfile } from "../extractors/bankStatementProfile.
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
 import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
 import { DEMO_CONFIG } from "../core/demoConfig.js";
+import { canonicalizeName } from "../core/canonicalizer.js";
 // Citation engine imported dynamically in handleGetLegalCitations
 
 // AsyncLocalStorage for passing orgId through async call stack
 const orgContext = new AsyncLocalStorage<{ orgId: string }>();
+
+/**
+ * Cross-verify UBO data from multiple acta sources (e.g., Acta Constitutiva + Lista de Asistentes)
+ * Returns confidence scores for each shareholder based on how many sources agree
+ */
+function crossVerifyUboData(
+  actaSources: { sourceName: string; shareholders: any[] }[],
+  primaryShareholders: any[]
+): { name: string; percentage: number | null; confidence: number; sources: string[]; discrepancies: string[] }[] {
+  const results: { name: string; percentage: number | null; confidence: number; sources: string[]; discrepancies: string[] }[] = [];
+  
+  for (const sh of primaryShareholders) {
+    const canonicalResult = canonicalizeName(sh.name);
+    const canonicalName = canonicalResult.canonical;
+    const matchingSources: string[] = [];
+    const percentages: { source: string; pct: number | null }[] = [];
+    const discrepancies: string[] = [];
+    
+    for (const source of actaSources) {
+      // Find matching shareholder in this source
+      const match = source.shareholders.find(s => {
+        const sourceCanonical = canonicalizeName(s.name).canonical;
+        return sourceCanonical === canonicalName;
+      });
+      
+      if (match) {
+        matchingSources.push(source.sourceName);
+        percentages.push({ source: source.sourceName, pct: match.percentage ?? null });
+      }
+    }
+    
+    // Check for percentage discrepancies
+    const uniquePercentages = [...new Set(percentages.filter(p => p.pct !== null).map(p => p.pct))];
+    if (uniquePercentages.length > 1) {
+      discrepancies.push(`Percentage varies across sources: ${percentages.map(p => `${p.source}: ${p.pct}%`).join(', ')}`);
+    }
+    
+    // Calculate confidence: 100% if all sources agree, lower if discrepancies
+    let confidence = 0;
+    if (matchingSources.length === actaSources.length && discrepancies.length === 0) {
+      confidence = 100; // All sources agree
+    } else if (matchingSources.length === actaSources.length) {
+      confidence = 80; // All sources have the name but percentages differ
+    } else if (matchingSources.length >= 1) {
+      confidence = Math.round((matchingSources.length / actaSources.length) * 70); // Partial match
+    }
+    
+    results.push({
+      name: sh.name,
+      percentage: sh.percentage ?? null,
+      confidence,
+      sources: matchingSources,
+      discrepancies
+    });
+  }
+  
+  return results;
+}
 
 // Helper to get orgId from context (throws if not set)
 export function requireOrgId(): string {
@@ -401,18 +460,50 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
   let passportIdentity: any | undefined;
   const proofsOfAddress: ProofOfAddress[] = [];
   const bankAccounts: BankAccountProfile[] = [];
+  
+  // Track multiple acta sources for UBO cross-verification
+  const actaSources: { sourceName: string; shareholders: any[] }[] = [];
+  
+  // Track all SAT Constancias (personal and company)
+  const allSatConstancias: { rfc: string; razon_social: string; payload: any; isCompany: boolean }[] = [];
 
   for (const doc of run.documents) {
     if (!doc.extractedPayload) continue;
 
     const payload = doc.extractedPayload as any;
+    
+    // Debug: Log document processing
+    console.log(`[Profile Build] Processing doc: type=${doc.type}, sourceName=${doc.sourceName}, has_shareholders=${!!payload.shareholders}`);
 
     switch (doc.type) {
       case "acta":
-        companyIdentity = payload;
+        // Collect shareholder data from all acta-type documents for cross-verification
+        if (payload.shareholders && payload.shareholders.length > 0) {
+          actaSources.push({
+            sourceName: doc.sourceName || 'Acta',
+            shareholders: payload.shareholders
+          });
+          console.log(`[Profile Build] Added acta source: ${doc.sourceName}, shareholders: ${payload.shareholders.length}`);
+        }
+        
+        // Use the most complete acta as the primary (one with most data)
+        if (!companyIdentity || 
+            (payload.razon_social && payload.legal_representatives?.length > 0)) {
+          companyIdentity = payload;
+        }
         break;
       case "sat_constancia":
-        companyTaxProfile = payload;
+        // Collect all SAT Constancias for later processing
+        if (payload.rfc) {
+          // RFC pattern: 3 letters = Persona Moral, 4 letters = Persona Física
+          const isCompanyRfc = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/i.test(payload.rfc);
+          allSatConstancias.push({
+            rfc: payload.rfc,
+            razon_social: payload.razon_social || '',
+            payload,
+            isCompany: isCompanyRfc
+          });
+        }
         break;
       case "fm2":
       case "ine":
@@ -454,6 +545,40 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
     }
   }
 
+  // === SAT SELECTION LOGIC ===
+  // For Persona Moral: Use SAT that matches the Acta's RFC
+  // For Persona Física: Use any personal SAT
+  const actaRfc = companyIdentity?.rfc?.toUpperCase().trim();
+  const isActaPersonaMoral = actaRfc && /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/i.test(actaRfc);
+  
+  if (isActaPersonaMoral && actaRfc) {
+    // Look for company SAT that matches Acta RFC
+    const matchingCompanySat = allSatConstancias.find(sat => 
+      sat.rfc.toUpperCase().trim() === actaRfc
+    );
+    
+    if (matchingCompanySat) {
+      companyTaxProfile = matchingCompanySat.payload;
+      console.log(`[SAT Selection] Using company SAT: ${matchingCompanySat.rfc} (matches Acta RFC)`);
+    } else {
+      // No matching company SAT found - this is a flag
+      console.log(`[SAT Selection] WARNING: No SAT found matching company RFC ${actaRfc}`);
+      console.log(`[SAT Selection] Available SATs: ${allSatConstancias.map(s => `${s.rfc} (${s.isCompany ? 'company' : 'personal'})`).join(', ')}`);
+      // Don't use personal SAT as company tax profile - leave it undefined
+      companyTaxProfile = undefined;
+    }
+  } else {
+    // Persona Física or no Acta - use any available SAT
+    const anySat = allSatConstancias[0];
+    if (anySat) {
+      companyTaxProfile = anySat.payload;
+      console.log(`[SAT Selection] Using personal SAT: ${anySat.rfc}`);
+    }
+  }
+  
+  // Store personal SATs for shareholder/representative verification
+  const personalSatConstancias = allSatConstancias.filter(sat => !sat.isCompany);
+
   const profile = buildKycProfile({
     customerId: customer_id,
     companyIdentity,
@@ -463,6 +588,24 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
     proofsOfAddress,
     bankAccounts
   });
+  
+  // Attach personal SATs for cross-referencing with shareholders/representatives
+  if (personalSatConstancias.length > 0) {
+    (profile as any)._personalSatConstancias = personalSatConstancias.map(sat => ({
+      rfc: sat.rfc,
+      razon_social: sat.razon_social,
+      isCompany: sat.isCompany
+    }));
+  }
+
+  // Cross-verify UBO data from multiple acta sources for confidence scoring
+  if (actaSources.length > 1 && profile.companyIdentity?.shareholders) {
+    const uboVerification = crossVerifyUboData(actaSources, profile.companyIdentity.shareholders);
+    // Attach verification metadata to profile for report generation
+    (profile as any)._uboVerification = uboVerification;
+    console.log(`[UBO Cross-Verification] ${actaSources.length} sources analyzed:`, 
+      uboVerification.map((v: any) => `${v.name}: ${v.confidence}% confidence`).join(', '));
+  }
 
   // Save profile to database or file
   if (dbRun) {
