@@ -5,6 +5,7 @@ import { KycRun } from './types.js';
 import * as XLSX from 'xlsx';
 import { logRunCost, calculateRunCost } from './costTracker.js';
 import { classifyEntityType, getClientOnboardingLabel, EntityType } from './validation.js';
+import { generateCitationsHtml } from './citationEngine.js';
 
 // Root directory for data, relative to this file
 // src/kyc/storage.ts -> ../../data/
@@ -146,108 +147,125 @@ export async function saveRun(run: KycRun): Promise<string> {
 }
 
 /**
- * Spanish-only translations for Mexican market
- * Clean, professional Mexican legal terminology
+ * Bilingual translations for US investors and Mexican market
+ * Format: "English / Spanish" for key terms to ensure clarity
+ * Clean, professional terminology accessible to international investors
  */
 const t = {
+  brand: {
+    name: "KYC Intel",
+    tagline: "MCP-Powered Trust Verification for US & Mexico Businesses",
+    subtitle: "Smart KYC for US & Mexico Businesses"
+  },
   nav: {
-    title: "KYCIntel",
-    print: "Imprimir",
-    exportExcel: "Exportar a Excel"
+    title: "KYC Intel",
+    print: "Print / Imprimir",
+    exportExcel: "Export to Excel / Exportar"
   },
   header: {
-    rfc: "RFC",
-    generated: "Generado",
-    approved: "APROBADO",
-    rejected: "RECHAZADO",
-    reviewNeeded: "EN REVISIÓN",
-    approvedWithObs: "APROBADO CON OBSERVACIONES"
+    rfc: "Tax ID (RFC)",
+    generated: "Generated / Generado",
+    approved: "APPROVED / APROBADO",
+    rejected: "UNDER REVIEW / EN REVISIÓN",
+    reviewNeeded: "UNDER REVIEW / EN REVISIÓN",
+    approvedWithObs: "APPROVED WITH NOTES / APROBADO CON OBSERVACIONES"
   },
   sections: {
-    executiveSummary: "Resumen Ejecutivo",
-    extractedFacts: "I. Hechos Extraídos",
-    kycConclusions: "II. Conclusiones de KYC",
-    riskFlags: "III. Banderas y Riesgos",
-    traceability: "IV. Trazabilidad y Justificación"
+    executiveSummary: "Executive Summary / Resumen Ejecutivo",
+    extractedFacts: "I. Extracted Facts / Hechos Extraídos",
+    kycConclusions: "II. KYC Conclusions / Conclusiones",
+    riskFlags: "III. Flags & Risks / Banderas y Riesgos",
+    traceability: "IV. Traceability / Trazabilidad"
   },
   sidebar: {
-    riskScore: "Puntuación de Riesgo",
-    trustScore: "Nivel de Confianza",
-    complianceFlags: "Banderas de Cumplimiento",
-    sourceDocuments: "Documentos Fuente",
-    noFlags: "Sin banderas de riesgo detectadas.",
-    processed: "Procesado"
+    riskScore: "Risk Score / Puntuación de Riesgo",
+    trustScore: "Trust Level / Nivel de Confianza",
+    complianceFlags: "Compliance Flags / Banderas",
+    sourceDocuments: "Source Documents / Documentos Fuente",
+    noFlags: "No risk flags detected. / Sin banderas de riesgo.",
+    processed: "Processed / Procesado"
   },
   cards: {
-    whoCanSign: "¿Quién Puede Firmar?",
-    otherAuthorized: "Otros Autorizados en Acta",
-    quickStatus: "Estado Rápido",
-    taxRegime: "Régimen Fiscal",
-    documents: "Documentos",
-    flags: "Banderas",
-    address: "Domicilio"
+    whoCanSign: "Who Can Sign? / ¿Quién Puede Firmar?",
+    otherAuthorized: "Other Authorized Signers / Otros Autorizados",
+    quickStatus: "Quick Status / Estado Rápido",
+    taxRegime: "Tax Regime / Régimen Fiscal",
+    documents: "Documents / Documentos",
+    flags: "Flags / Banderas",
+    address: "Address / Domicilio"
   },
   signing: {
-    canSign: "PUEDE FIRMAR",
-    limitedSign: "FIRMA LIMITADA",
-    noAuthority: "SIN FACULTADES",
-    notVerified: "NO VERIFICADO EN ACTA",
-    missingId: "FALTA IDENTIFICACIÓN",
-    cannotVerify: "NO SE PUEDE VERIFICAR"
+    canSign: "CAN SIGN / PUEDE FIRMAR",
+    limitedSign: "LIMITED SIGNING / FIRMA LIMITADA",
+    noAuthority: "NO AUTHORITY / SIN FACULTADES",
+    notVerified: "NOT VERIFIED / NO VERIFICADO",
+    missingId: "ID REQUIRED / FALTA ID",
+    cannotVerify: "CANNOT VERIFY / NO VERIFICABLE"
   },
   powers: {
-    full: "Poderes Amplios",
-    fullDetail: "Poderes Amplios (Administración, Dominio, Pleitos, Títulos)",
-    limited: "Poderes Limitados",
-    none: "Sin Poderes"
+    full: "Full Powers / Poderes Amplios",
+    fullDetail: "Full Powers (Admin, Assets, Litigation, Securities) / Poderes Amplios",
+    limited: "Limited Powers / Poderes Limitados",
+    none: "No Powers / Sin Poderes"
   },
   personaFisica: {
-    title: "Persona Física",
-    canSignNote: "El titular firma en nombre propio. No requiere Acta Constitutiva ni poderes notariales.",
-    role: "Titular / Propietario",
-    legalNote: "Como Persona Física, no existe Acta Constitutiva. La capacidad jurídica se acredita con identificación oficial vigente.",
-    clientType: "Alta de Cliente - Persona Física con Actividad Empresarial"
+    title: "Individual / Persona Física",
+    canSignNote: "Individual signs in their own name. No corporate charter required. / El titular firma en nombre propio.",
+    role: "Owner / Titular",
+    legalNote: "As an Individual, no corporate charter exists. Legal capacity is verified via official ID. / Capacidad jurídica por identificación oficial.",
+    clientType: "Client Onboarding - Individual with Business Activity / Persona Física con Actividad Empresarial"
   },
   personaMoral: {
-    title: "Persona Moral",
-    otherSignersNote: "Personas con facultades según el Acta (no verificadas con ID)",
-    noOtherSigners: "No hay otros firmantes registrados"
+    title: "Corporation / Persona Moral",
+    otherSignersNote: "Persons with powers per Charter (not ID verified) / Personas con facultades según Acta",
+    noOtherSigners: "No other registered signers / Sin otros firmantes"
   },
   alerts: {
-    criticalTitle: "ALERTA CRÍTICA - Documentación Inconsistente",
-    criticalAction: "No proceder con el alta hasta resolver esta inconsistencia. Verificar que todos los documentos correspondan a la misma entidad legal.",
-    warningTitle: "Observaciones Pendientes",
-    notInActa: "Identidad verificada pero no aparece en el Acta Constitutiva. Verificar poderes notariales.",
-    noAuthority: "Esta persona no tiene poderes para firmar contratos",
-    limitedPowers: "Poderes Limitados - verificar alcance para este contrato",
-    requiredId: "INE, Pasaporte, o FM2 para verificar identidad"
+    criticalTitle: "CRITICAL ALERT - Inconsistent Documentation / ALERTA CRÍTICA",
+    criticalAction: "Do not proceed until resolved. Verify all documents belong to the same legal entity. / No proceder hasta resolver.",
+    warningTitle: "Pending Observations / Observaciones Pendientes",
+    notInActa: "Identity verified but not in Corporate Charter. Check notarial powers. / Verificar poderes notariales.",
+    noAuthority: "This person has no authority to sign contracts / Sin poderes para firmar",
+    limitedPowers: "Limited Powers - verify scope for this contract / Verificar alcance",
+    requiredId: "INE, Passport, or FM2 required for identity verification / Requerido para verificación"
   },
   status: {
-    active: "ACTIVO",
-    inactive: "INACTIVO",
-    unknown: "Desconocido",
-    notSpecified: "No especificado"
+    active: "ACTIVE / ACTIVO",
+    inactive: "INACTIVE / INACTIVO",
+    unknown: "Unknown / Desconocido",
+    notSpecified: "Not Specified / No especificado"
   },
   labels: {
-    role: "Cargo",
-    quality: "Calidad",
-    rfc: "RFC",
-    regime: "Régimen",
-    satStatus: "Estatus SAT",
-    powers: "Facultades",
-    required: "Requerido",
-    alert: "Alerta",
-    legalNote: "Nota Legal"
+    role: "Role / Cargo",
+    quality: "Quality / Calidad",
+    rfc: "Tax ID (RFC)",
+    regime: "Regime / Régimen",
+    satStatus: "SAT Status / Estatus SAT",
+    powers: "Powers / Facultades",
+    required: "Required / Requerido",
+    alert: "Alert / Alerta",
+    legalNote: "Legal Note / Nota Legal"
   },
   print: {
-    title: "Reporte KYC"
+    title: "KYC Intel Report / Reporte KYC Intel"
+  },
+  // New: Transparency metrics for investors
+  transparency: {
+    processingTime: "Processing Time / Tiempo de Procesamiento",
+    reportGenerated: "Report Generated / Reporte Generado",
+    estimatedCost: "AI Processing Cost / Costo de Procesamiento",
+    documentsProcessed: "Documents Processed / Documentos Procesados",
+    aiModel: "AI Model Used / Modelo de IA",
+    runId: "Run ID / ID de Ejecución",
+    customerId: "Customer ID / ID de Cliente",
+    systemVersion: "System Version / Versión del Sistema"
   }
 };
 
 /**
  * Generates a visual HTML report for a KYC run
  */
-async function generateVisualReport(run: KycRun): Promise<string> {
+export async function generateVisualReport(run: KycRun): Promise<string> {
   // Dynamic import to avoid circular dependency
   const { buildKycReport } = await import('./reportBuilder.js');
   const report = buildKycReport(run.profile!, run.validation!, { includeTrace: true });
@@ -257,7 +275,8 @@ async function generateVisualReport(run: KycRun): Promise<string> {
 
   // Safe Accessors
   const companyName = run.profile!.companyIdentity?.razon_social || run.profile!.companyTaxProfile?.razon_social || "Unknown Company";
-  const rfc = run.profile!.companyTaxProfile?.rfc || "N/A";
+  // RFC can come from SAT Constancia (preferred) OR from Acta Constitutiva
+  const rfc = run.profile!.companyTaxProfile?.rfc || run.profile!.companyIdentity?.rfc || "N/A";
   
   // Flags HTML (Bilingual)
   const flagsHtml = run.validation!.flags.length === 0 
@@ -269,29 +288,56 @@ async function generateVisualReport(run: KycRun): Promise<string> {
           <div class="text-green-800 font-medium" style="font-size: 15px; line-height: 1.6;">${t.sidebar.noFlags}</div>
         </div>
       </div>`
-    : run.validation!.flags.map(f => {
-        const isCritical = f.level === 'critical';
-        const isWarning = f.level === 'warning';
-        const badgeClass = isCritical ? 'risk-critical' : (isWarning ? 'risk-warning' : 'risk-info');
-        const bgClass = isCritical ? 'bg-red-50' : (isWarning ? 'bg-yellow-50' : 'bg-blue-50');
-        const borderClass = isCritical ? 'border-red-200' : (isWarning ? 'border-yellow-200' : 'border-blue-200');
+    : (() => {
+        // Separate regular flags from checklist (checklist message starts with 📋 VALIDATION_CHECKLIST)
+        const regularFlags = run.validation!.flags.filter(f => !f.message.includes('📋 VALIDATION_CHECKLIST'));
+        const checklistFlag = run.validation!.flags.find(f => f.message.includes('📋 VALIDATION_CHECKLIST'));
         
-        const icon = isCritical ? '🔴' : (isWarning ? '⚠️' : 'ℹ️');
-        
-        return `
-          <div class="p-4 mb-3 ${bgClass} border ${borderClass} rounded-lg flex items-start shadow-sm hover:shadow transition-shadow relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-1 h-full ${isCritical ? 'bg-red-500' : (isWarning ? 'bg-yellow-500' : 'bg-blue-500')}"></div>
-            <span class="text-xl mr-3 mt-0.5">${icon}</span>
-            <div class="flex-1">
-              <div class="flex items-center mb-1.5">
-                 <span class="risk-badge ${badgeClass} mr-2">${f.level.toUpperCase()}</span>
-                 <span class="font-mono text-xs text-gray-500">${f.code}</span>
+        // Build regular flags HTML
+        const regularFlagsHtml = regularFlags.map(f => {
+          const isCritical = f.level === 'critical';
+          const isWarning = f.level === 'warning';
+          const badgeClass = isCritical ? 'risk-critical' : (isWarning ? 'risk-warning' : 'risk-info');
+          const bgClass = isCritical ? 'bg-red-50' : (isWarning ? 'bg-yellow-50' : 'bg-blue-50');
+          const borderClass = isCritical ? 'border-red-200' : (isWarning ? 'border-yellow-200' : 'border-blue-200');
+          
+          const icon = isCritical ? '🔴' : (isWarning ? '⚠️' : 'ℹ️');
+          
+          return `
+            <div class="p-4 mb-3 ${bgClass} border ${borderClass} rounded-lg flex items-start shadow-sm hover:shadow transition-shadow relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-1 h-full ${isCritical ? 'bg-red-500' : (isWarning ? 'bg-yellow-500' : 'bg-blue-500')}"></div>
+              <span class="text-xl mr-3 mt-0.5">${icon}</span>
+              <div class="flex-1">
+                <div class="flex items-center mb-1.5">
+                   <span class="risk-badge ${badgeClass} mr-2">${f.level.toUpperCase()}</span>
+                   <span class="font-mono text-xs text-gray-500">${f.code}</span>
+                </div>
+                <div class="text-gray-800 font-medium" style="font-size: 14px; line-height: 1.6;">${f.message}</div>
               </div>
-              <div class="text-gray-800 font-medium" style="font-size: 14px; line-height: 1.6;">${f.message}</div>
+            </div>
+          `;
+        }).join("");
+        
+        // Build checklist HTML (if exists)
+        const checklistHtml = checklistFlag ? `
+          <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex items-center mb-3">
+              <span class="text-lg mr-2">📋</span>
+              <span class="font-semibold text-gray-700">Lista de Verificación / Validation Checklist</span>
+            </div>
+            <div class="text-sm font-mono space-y-1" style="line-height: 1.8;">
+              ${checklistFlag.message.split('\n').map((line: string) => {
+                const isPass = line.startsWith('✓');
+                const isFail = line.startsWith('✗');
+                const colorClass = isPass ? 'text-green-700' : (isFail ? 'text-red-600' : 'text-gray-600');
+                return `<div class="${colorClass}">${line}</div>`;
+              }).join('')}
             </div>
           </div>
-        `;
-      }).join("");
+        ` : '';
+        
+        return regularFlagsHtml + checklistHtml;
+      })();
 
   // Documents Grid
   const docNames: Record<string, { en: string; es: string }> = {
@@ -492,7 +538,17 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   // Build Executive Summary Data
   // FM2/INE (Immigration document)
   const repIdentityName = run.profile!.representativeIdentity?.full_name || run.profile!.passportIdentity?.full_name || null;
-  const repDocType = run.profile!.representativeIdentity?.document_type || null;
+  const repDocTypeRaw = run.profile!.representativeIdentity?.document_type || null;
+  // Shorten document type labels for display
+  const docTypeDisplayMap: Record<string, string> = {
+    'RESIDENTE PERMANENTE': 'RESIDENTE PERMANENTE',
+    'RESIDENTE TEMPORAL': 'RESIDENTE TEMPORAL',
+    'FM2': 'FM2',
+    'FM3': 'FM3',
+    'INE': 'INE',
+    'PASSPORT': 'Pasaporte'
+  };
+  const repDocType = repDocTypeRaw ? (docTypeDisplayMap[repDocTypeRaw.toUpperCase()] || repDocTypeRaw) : null;
   const repDocNumber = run.profile!.representativeIdentity?.document_number || null;
   const repCurp = run.profile!.representativeIdentity?.curp || null;
   
@@ -570,34 +626,52 @@ async function generateVisualReport(run: KycRun): Promise<string> {
       : (matchedRep && matchedPowerInfo?.scope === 'full');  // PM: Need full powers
   const canSignLimited = !isPersonaFisica && matchedRep && matchedPowerInfo?.scope === 'limited';
   
-  // ========== CRITICAL ALERT DETECTION ==========
-  // If there are critical flags, show alert banner FIRST in the story
+  // ========== ALERT DETECTION ==========
+  // Show ALL alerts - critical AND warnings - so nothing is missed
   const criticalFlags = run.validation!.flags.filter(f => f.level === 'critical');
-  const warningFlags = run.validation!.flags.filter(f => f.level === 'warning');
+  const warningFlags = run.validation!.flags.filter(f => f.level === 'warning' && !f.message.includes('VALIDATION_CHECKLIST'));
   const hasCriticalIssues = criticalFlags.length > 0;
+  const hasWarnings = warningFlags.length > 0;
   
-  // Build alert banner HTML (shown at top if critical issues exist)
-  const alertBannerHtml = hasCriticalIssues ? `
+  // Build alert banners HTML - show BOTH critical AND warnings (not just one or the other)
+  let alertBannerHtml = '';
+  
+  // Critical alerts (red) - shown first
+  if (hasCriticalIssues) {
+    alertBannerHtml += `
     <div class="exec-alert-banner exec-alert-critical">
         <div class="exec-alert-icon">🚨</div>
         <div class="exec-alert-content">
-            <div class="exec-alert-title">ALERTA CRÍTICA - Documentación Inconsistente</div>
-            <div class="exec-alert-message">${criticalFlags[0].message}</div>
+            <div class="exec-alert-title">ALERTA CRÍTICA - ${criticalFlags.length} problema(s)</div>
+            ${criticalFlags.map(f => `
+              <div class="exec-alert-message" style="margin-bottom: 8px;">
+                <strong>${f.code.replace(/_/g, ' ')}:</strong> ${f.message}
+              </div>
+            `).join('')}
             <div class="exec-alert-action">
-                <strong>Acción Requerida:</strong> No proceder con el alta hasta resolver esta inconsistencia. 
-                Verificar que todos los documentos correspondan a la misma entidad legal.
+                <strong>Acción Requerida:</strong> No proceder con el alta hasta resolver estos problemas críticos.
             </div>
         </div>
     </div>
-  ` : warningFlags.length > 0 ? `
-    <div class="exec-alert-banner exec-alert-warning">
+    `;
+  }
+  
+  // Warning alerts (yellow) - shown AFTER critical, not instead of
+  if (hasWarnings) {
+    alertBannerHtml += `
+    <div class="exec-alert-banner exec-alert-warning" style="margin-top: ${hasCriticalIssues ? '12px' : '0'};">
         <div class="exec-alert-icon">⚠️</div>
         <div class="exec-alert-content">
-            <div class="exec-alert-title">Observaciones Pendientes</div>
-            <div class="exec-alert-message">${warningFlags.map(f => f.message).join(' | ')}</div>
+            <div class="exec-alert-title">OBSERVACIONES PENDIENTES - ${warningFlags.length} advertencia(s)</div>
+            ${warningFlags.map(f => `
+              <div class="exec-alert-message" style="margin-bottom: 4px;">
+                • <strong>${f.code.replace(/_/g, ' ')}:</strong> ${f.message}
+              </div>
+            `).join('')}
         </div>
     </div>
-  ` : '';
+    `;
+  }
   
   // ========== ENTITY HEADER - Shows at VERY TOP ==========
   // This immediately tells the user WHAT entity they're looking at
@@ -605,13 +679,13 @@ async function generateVisualReport(run: KycRun): Promise<string> {
   const entityTypeLabels: Record<EntityType, string> = {
     'PERSONA_MORAL': 'Persona Moral',
     'PERSONA_FISICA_EMPRESARIAL': 'Persona Física (Empresarial)',
-    'PERSONA_FISICA_SIN_OBLIGACIONES': 'Persona Física (Sin Actividad)',
+    'PERSONA_FISICA_SIN_OBLIGACIONES': 'Persona Física (Sin Actividad Comercial)',
     'UNKNOWN': 'Tipo Desconocido'
   };
   const entityType = entityTypeLabels[entityTypeClassification] || 'Persona';
   const entityName = companyName;
-  const entityStatus = run.validation!.score >= 0.9 ? 'APROBADO' : (run.validation!.score >= 0.7 ? 'EN REVISIÓN' : 'RECHAZADO');
-  const entityStatusClass = run.validation!.score >= 0.9 ? 'approved' : (run.validation!.score >= 0.7 ? 'review' : 'rejected');
+  const entityStatus = run.validation!.score >= 0.9 ? 'APROBADO' : (run.validation!.score >= 0.7 ? 'EN REVISIÓN' : 'REQUIERE REVISIÓN');
+  const entityStatusClass = run.validation!.score >= 0.9 ? 'approved' : (run.validation!.score >= 0.7 ? 'review' : 'review');
   
   const entityHeaderHtml = `
     <div class="entity-header">
@@ -714,8 +788,17 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                         <span class="exec-pf-value">${rfc}</span>
                     </div>
                     <div class="exec-pf-item">
-                        <span class="exec-pf-label">Régimen:</span>
-                        <span class="exec-pf-value">${run.profile!.companyTaxProfile?.tax_regime || 'No especificado'}</span>
+                        <span class="exec-pf-label">Régimen Fiscal:</span>
+                        <span class="exec-pf-value">${(() => {
+                          const taxProfile = run.profile!.companyTaxProfile;
+                          if (!taxProfile) return 'No especificado';
+                          // Check tax_obligations first - if "Sin obligaciones", that's the actual status
+                          const hasNoObligations = taxProfile.tax_obligations?.some(
+                            (o: any) => o.description?.toLowerCase().includes('sin obligaciones')
+                          );
+                          if (hasNoObligations) return 'Sin obligaciones fiscales';
+                          return taxProfile.tax_regime || 'No especificado';
+                        })()}</span>
                     </div>
                     <div class="exec-pf-item">
                         <span class="exec-pf-label">Estatus SAT:</span>
@@ -861,9 +944,9 @@ async function generateVisualReport(run: KycRun): Promise<string> {
                         <span class="exec-check-icon">${run.documents.length >= 3 ? '✓' : '⚠️'}</span>
                         <span class="exec-check-text">Documentos: ${run.documents.length} procesados</span>
                     </div>
-                    <div class="exec-check-item ${run.validation!.flags.length === 0 ? 'exec-check-pass' : (run.validation!.flags.filter(f => f.level === 'critical').length > 0 ? 'exec-check-fail' : 'exec-check-warn')}">
-                        <span class="exec-check-icon">${run.validation!.flags.length === 0 ? '✓' : '⚠️'}</span>
-                        <span class="exec-check-text">Banderas: ${run.validation!.flags.length === 0 ? 'Sin observaciones' : run.validation!.flags.length + ' pendiente(s)'}</span>
+                    <div class="exec-check-item ${run.validation!.flags.filter(f => f.level === 'warning' || f.level === 'critical').length === 0 ? 'exec-check-pass' : (run.validation!.flags.filter(f => f.level === 'critical').length > 0 ? 'exec-check-fail' : 'exec-check-warn')}">
+                        <span class="exec-check-icon">${run.validation!.flags.filter(f => f.level === 'warning' || f.level === 'critical').length === 0 ? '✓' : '⚠️'}</span>
+                        <span class="exec-check-text">Banderas: ${run.validation!.flags.filter(f => f.level === 'warning' || f.level === 'critical').length === 0 ? 'Sin observaciones' : run.validation!.flags.filter(f => f.level === 'warning' || f.level === 'critical').length + ' pendiente(s)'}</span>
                     </div>
                     <div class="exec-check-item ${run.profile!.currentOperationalAddress ? 'exec-check-pass' : 'exec-check-fail'}">
                         <span class="exec-check-icon">${run.profile!.currentOperationalAddress ? '✓' : '❌'}</span>
@@ -1183,25 +1266,35 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         }
         .exec-doc-item {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 0.25rem;
         }
         .exec-doc-icon {
-            font-size: 1rem;
+            font-size: 0.9rem;
+            flex-shrink: 0;
         }
         .exec-doc-label {
             font-weight: 600;
             color: #475569;
+            white-space: nowrap;
+            font-size: 0.75rem;
         }
         .exec-doc-value {
             font-family: 'Monaco', 'Menlo', monospace;
             font-weight: 600;
             color: #0f172a;
+            word-break: break-all;
+            font-size: 0.8rem;
         }
         .exec-doc-detail {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #64748b;
+            width: 100%;
+            padding-left: 1.25rem;
         }
         .exec-doc-passport {
             padding-bottom: 0.5rem;
@@ -1729,37 +1822,28 @@ async function generateVisualReport(run: KycRun): Promise<string> {
         }
         
         function exportToExcel() {
-            // Excel file was already generated server-side
-            const excelPath = '${getExcelFilePath(run.customerId, run.runId)}';
+            // Excel file was already generated server-side (same directory as HTML)
+            const excelFilename = 'report-${run.runId}.xlsx';
             const companyNameSafe = '${companyName.replace(/[^a-z0-9]/gi, '_')}';
             const dateStr = '${new Date(run.createdAt).toISOString().split('T')[0]}';
-            const filename = 'KYC_Report_' + companyNameSafe + '_' + dateStr + '.xlsx';
+            const downloadName = 'KYC_Report_' + companyNameSafe + '_' + dateStr + '.xlsx';
             
-            // Convert to file:// URL for opening
-            const fileUrl = 'file://' + excelPath.replace(/\\\\/g, '/');
-            
-            // Show user-friendly message with file location
+            // Show user-friendly message
             const button = event.target;
             const originalText = button.innerHTML;
             button.innerHTML = '✅ ${t.nav.exportExcel}';
             
-            // Create a message with the file path
-            const message = 'Excel file generated successfully!\\n\\n' +
-                          'File: ' + filename + '\\n\\n' +
-                          'Location: ' + excelPath + '\\n\\n' +
-                          'The file has been saved. You can find it in the reports folder.';
+            // Create download link using relative path (same directory)
+            const link = document.createElement('a');
+            link.href = excelFilename;
+            link.download = downloadName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             
-            alert(message);
-            
-            // Try to open the file location (works on some systems)
             setTimeout(() => {
-                try {
-                    window.open(fileUrl, '_blank');
-                } catch (e) {
-                    // If opening fails, user can navigate manually
-                }
                 button.innerHTML = originalText;
-            }, 1000);
+            }, 1500);
         }
     </script>
 </head>
@@ -1853,14 +1937,40 @@ async function generateVisualReport(run: KycRun): Promise<string> {
             <div class="lg:col-span-2 space-y-6">
                 ${sectionsHtml}
                 
-                <!-- Metadata Footer -->
-                <div class="metadata-section rounded-lg">
-                    <div class="font-semibold mb-2 text-gray-700">Report Metadata</div>
-                    <div class="grid grid-cols-2 gap-4 text-xs font-mono">
-                        <div>Run ID: ${run.runId}</div>
-                        <div>Generated: ${new Date().toISOString()}</div>
-                        <div>Customer ID: ${run.customerId}</div>
-                        <div>System Version: 1.0.0</div>
+                <!-- Decision-Based Legal Citations -->
+                ${generateCitationsHtml(run.profile!, run.validation!)}
+                
+                <!-- Transparency & Metadata Footer - For US Investors -->
+                <div class="metadata-section rounded-lg bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200">
+                    <div class="font-semibold mb-3 text-gray-800 text-base flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                        Transparency Report / Reporte de Transparencia
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div class="bg-white rounded-lg p-3 shadow-sm border border-slate-100">
+                            <div class="text-xs text-gray-500 mb-1">⏱️ ${t.transparency.processingTime}</div>
+                            <div class="font-semibold text-gray-800">${run.processingTimeMs ? (run.processingTimeMs / 1000).toFixed(1) + 's' : '~' + (run.documents.length * 8) + 's (est.)'}</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 shadow-sm border border-slate-100">
+                            <div class="text-xs text-gray-500 mb-1">🕐 ${t.transparency.reportGenerated}</div>
+                            <div class="font-semibold text-gray-800">${new Date().toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 shadow-sm border border-slate-100">
+                            <div class="text-xs text-gray-500 mb-1">💰 ${t.transparency.estimatedCost}</div>
+                            <div class="font-semibold text-green-700">${run.estimatedCostUsd ? '$' + run.estimatedCostUsd.toFixed(2) + ' USD' : '~$' + (run.documents.length * 0.08).toFixed(2) + ' USD (est.)'}</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-3 shadow-sm border border-slate-100">
+                            <div class="text-xs text-gray-500 mb-1">📄 ${t.transparency.documentsProcessed}</div>
+                            <div class="font-semibold text-gray-800">${run.documents.length} docs</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono text-gray-600">
+                        <div><span class="text-gray-400">${t.transparency.runId}:</span> ${run.runId.substring(0, 8)}...</div>
+                        <div><span class="text-gray-400">${t.transparency.aiModel}:</span> ${run.aiModel || 'Gemini 2.5'}</div>
+                        <div><span class="text-gray-400">${t.transparency.customerId}:</span> ${run.customerId}</div>
+                        <div><span class="text-gray-400">${t.transparency.systemVersion}:</span> 1.0.0</div>
                     </div>
                 </div>
             </div>
@@ -2017,11 +2127,12 @@ async function generateExcelReport(run: KycRun): Promise<string> {
   const validation = run.validation!;
   
   const companyName = profile.companyIdentity?.razon_social || profile.companyTaxProfile?.razon_social || "Unknown Company";
-  const rfc = profile.companyTaxProfile?.rfc || "N/A";
+  // RFC can come from SAT Constancia (preferred) OR from Acta Constitutiva
+  const rfc = profile.companyTaxProfile?.rfc || profile.companyIdentity?.rfc || "N/A";
   
   // Sheet 1: Summary
   const summaryData = [
-    ['KYC Report Summary / Resumen KYC'],
+    ['KYC Intel Report Summary / Resumen KYC Intel'],
     [],
     ['Company Name / Nombre de la Empresa', companyName],
     ['RFC', rfc],
@@ -2222,17 +2333,60 @@ async function generateExcelReport(run: KycRun): Promise<string> {
   
   // FM2/INE Information
   if (profile.representativeIdentity) {
-    const rep = profile.representativeIdentity;
-    const docType = rep.document_type?.toUpperCase() || 'FM2/INE';
+    const rep = profile.representativeIdentity as any; // Cast to any to access INE-specific fields
+    const hasIneFields = !!(rep.clave_elector || rep.cic || rep.ocr_number);
+    const docType = rep.document_type?.toUpperCase() || (hasIneFields ? 'INE' : 'FM2/INE');
+    
     identityData.push([`--- ${docType} ---`, '', '']);
+    
+    // Basic identity (both INE and FM2)
     identityData.push([docType, 'Nombre Completo / Full Name', rep.full_name || 'N/A']);
-    identityData.push([docType, 'Número de Documento / Document Number', rep.document_number || 'N/A']);
     identityData.push([docType, 'CURP', rep.curp || 'N/A']);
-    identityData.push([docType, 'Nacionalidad / Nationality', rep.nationality || 'N/A']);
     identityData.push([docType, 'Fecha de Nacimiento / DOB', rep.date_of_birth || 'N/A']);
-    identityData.push([docType, 'Sexo / Sex', rep.sex || 'N/A']);
-    if (rep.issue_date) identityData.push([docType, 'Fecha de Expedición / Issue Date', rep.issue_date]);
-    if (rep.expiry_date) identityData.push([docType, 'Fecha de Vencimiento / Expiry Date', rep.expiry_date]);
+    identityData.push([docType, 'Sexo / Sex', rep.sex === 'H' ? 'Hombre / Male' : rep.sex === 'M' ? 'Mujer / Female' : (rep.sex || 'N/A')]);
+    identityData.push([docType, 'Nacionalidad / Nationality', rep.nationality || (hasIneFields ? 'MEXICANA' : 'N/A')]);
+    
+    // INE-specific fields (back of card)
+    if (hasIneFields) {
+      identityData.push(['', '', '']);
+      identityData.push([docType, '--- DATOS DEL REVERSO / BACK SIDE DATA ---', '']);
+      identityData.push([docType, 'Clave de Elector / Voter ID', rep.clave_elector || 'N/A']);
+      identityData.push([docType, 'CIC (Código de Credencial)', rep.cic || 'N/A']);
+      identityData.push([docType, 'Número OCR / OCR Number', rep.ocr_number || 'N/A']);
+      if (rep.seccion) identityData.push([docType, 'Sección Electoral / Section', rep.seccion]);
+      if (rep.estado_registro) identityData.push([docType, 'Estado de Registro / Registration State', rep.estado_registro]);
+      if (rep.localidad) identityData.push([docType, 'Localidad / Locality', rep.localidad]);
+      identityData.push([docType, 'Año de Emisión / Issue Year', rep.emission_year || 'N/A']);
+      identityData.push([docType, 'Vigencia / Valid Until', rep.vigencia_year || 'N/A']);
+      
+      // MRZ if available
+      if (rep.mrz_line1 || rep.mrz_line2 || rep.mrz_line3) {
+        identityData.push(['', '', '']);
+        identityData.push([docType, '--- MRZ (Machine Readable Zone) ---', '']);
+        if (rep.mrz_line1) identityData.push([docType, 'MRZ Línea 1', rep.mrz_line1]);
+        if (rep.mrz_line2) identityData.push([docType, 'MRZ Línea 2', rep.mrz_line2]);
+        if (rep.mrz_line3) identityData.push([docType, 'MRZ Línea 3', rep.mrz_line3]);
+      }
+    }
+    
+    // FM2-specific fields
+    if (rep.document_number && !hasIneFields) {
+      identityData.push([docType, 'Número de Documento / Document Number', rep.document_number]);
+      if (rep.issue_date) identityData.push([docType, 'Fecha de Expedición / Issue Date', rep.issue_date]);
+      if (rep.expiry_date) identityData.push([docType, 'Fecha de Vencimiento / Expiry Date', rep.expiry_date]);
+    }
+    
+    // Address if available
+    if (rep.address) {
+      identityData.push(['', '', '']);
+      identityData.push([docType, '--- DOMICILIO / ADDRESS ---', '']);
+      if (rep.address.street) identityData.push([docType, 'Calle / Street', rep.address.street]);
+      if (rep.address.colonia) identityData.push([docType, 'Colonia', rep.address.colonia]);
+      if (rep.address.municipio) identityData.push([docType, 'Municipio', rep.address.municipio]);
+      if (rep.address.estado) identityData.push([docType, 'Estado', rep.address.estado]);
+      if (rep.address.cp) identityData.push([docType, 'C.P.', rep.address.cp]);
+    }
+    
     identityData.push(['', '', '']);
   }
   

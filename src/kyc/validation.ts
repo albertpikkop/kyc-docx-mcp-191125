@@ -590,6 +590,960 @@ export interface FreshnessInfo {
   maxAgeDays: number | null;
 }
 
+// --- 4.1 Address Comparison and POA Validation ---
+
+/**
+ * Normalizes Mexican state names to a canonical form
+ * Handles: CDMX, Ciudad de México, Distrito Federal, Mexico City, MEX., etc.
+ */
+function normalizeEstado(estado: string | null | undefined): string {
+  if (!estado) return '';
+  const s = estado.toUpperCase().trim();
+  
+  // Mexico City variants
+  if (s === 'CDMX' || s === 'CIUDAD DE MEXICO' || s === 'CIUDAD DE MÉXICO' || 
+      s === 'DISTRITO FEDERAL' || s === 'D.F.' || s === 'DF' || 
+      s === 'MEXICO CITY' || s === 'CD. DE MEXICO' || s === 'CD DE MEXICO') {
+    return 'CIUDAD_DE_MEXICO';
+  }
+  
+  // Estado de México variants
+  if (s === 'MEXICO' || s === 'MEX' || s === 'MEX.' || s === 'EDO. MEX' || 
+      s === 'EDO MEX' || s === 'ESTADO DE MEXICO' || s === 'ESTADO DE MÉXICO' ||
+      s === 'EDO. DE MEXICO' || s === 'EDO DE MEXICO') {
+    return 'ESTADO_DE_MEXICO';
+  }
+  
+  return s.replace(/[.,]/g, '').replace(/\s+/g, '_');
+}
+
+/**
+ * Normalizes street names for comparison
+ * Handles: CDA (Cerrada), AV (Avenida), CALLE, etc.
+ */
+function normalizeStreet(street: string | null | undefined): string {
+  if (!street) return '';
+  let s = street.toUpperCase().trim();
+  
+  // Remove common prefixes that don't change the location
+  s = s.replace(/^(CALLE|C\.|CDA|CDA\.|CERRADA|CERRADA DE|AV|AV\.|AVENIDA|BLVD|BLVD\.|BOULEVARD|PRIV|PRIV\.|PRIVADA|AND|AND\.|ANDADOR)\s+/i, '');
+  
+  // Normalize spacing and punctuation
+  s = s.replace(/[.,]/g, ' ').replace(/\s+/g, ' ').trim();
+  
+  return s;
+}
+
+/**
+ * Normalizes exterior/interior numbers for comparison
+ * Handles: "MZ 2 LT10" vs "2, LT 10" vs "MZA 2 LOTE 10"
+ */
+function normalizeNumber(ext: string | null | undefined, int: string | null | undefined): string {
+  const combined = [ext, int].filter(Boolean).join(' ').toUpperCase();
+  if (!combined) return '';
+  
+  // Extract MZ/MZA (manzana) and LT/LOTE numbers
+  const mzMatch = combined.match(/M(?:Z|ZA|ANZANA)?\s*(\d+)/i);
+  const ltMatch = combined.match(/L(?:T|OTE|TE)?\s*(\d+)/i);
+  
+  const parts: string[] = [];
+  if (mzMatch) parts.push(`MZ${mzMatch[1]}`);
+  if (ltMatch) parts.push(`LT${ltMatch[1]}`);
+  
+  // If we found manzana/lote format, use normalized version
+  if (parts.length > 0) {
+    return parts.join('_');
+  }
+  
+  // Otherwise just clean up the number
+  return combined.replace(/[.,\s]/g, '').replace(/^(NUM|NO|#)/i, '');
+}
+
+/**
+ * Interface for address comparison result
+ */
+export interface AddressComparisonResult {
+  isEquivalent: boolean;
+  confidence: number; // 0-1
+  matchDetails: {
+    cpMatch: boolean;
+    coloniaMatch: boolean;
+    municipioMatch: boolean;
+    estadoMatch: boolean;
+    streetSimilar: boolean;
+    numberEquivalent: boolean;
+  };
+  normalizedAddresses?: {
+    address1: string;
+    address2: string;
+  };
+}
+
+/**
+ * Compares two Mexican addresses for equivalence
+ * Returns confidence score and match details
+ */
+export function compareAddresses(
+  addr1: { street?: string | null; ext_number?: string | null; int_number?: string | null; colonia?: string | null; municipio?: string | null; estado?: string | null; cp?: string | null } | null | undefined,
+  addr2: { street?: string | null; ext_number?: string | null; int_number?: string | null; colonia?: string | null; municipio?: string | null; estado?: string | null; cp?: string | null } | null | undefined
+): AddressComparisonResult {
+  if (!addr1 || !addr2) {
+    return {
+      isEquivalent: false,
+      confidence: 0,
+      matchDetails: {
+        cpMatch: false,
+        coloniaMatch: false,
+        municipioMatch: false,
+        estadoMatch: false,
+        streetSimilar: false,
+        numberEquivalent: false
+      }
+    };
+  }
+  
+  // Normalize components
+  const cp1 = (addr1.cp || '').replace(/\D/g, '');
+  const cp2 = (addr2.cp || '').replace(/\D/g, '');
+  const cpMatch: boolean = !!(cp1 && cp2 && cp1 === cp2);
+  
+  const col1 = (addr1.colonia || '').toUpperCase().replace(/[.,]/g, '').trim();
+  const col2 = (addr2.colonia || '').toUpperCase().replace(/[.,]/g, '').trim();
+  const coloniaMatch: boolean = !!(col1 && col2 && col1 === col2);
+  
+  const mun1 = (addr1.municipio || '').toUpperCase().replace(/[.,]/g, '').trim();
+  const mun2 = (addr2.municipio || '').toUpperCase().replace(/[.,]/g, '').trim();
+  const municipioMatch: boolean = !!(mun1 && mun2 && (mun1 === mun2 || mun1.includes(mun2) || mun2.includes(mun1)));
+  
+  const est1 = normalizeEstado(addr1.estado);
+  const est2 = normalizeEstado(addr2.estado);
+  const estadoMatch: boolean = !!(est1 && est2 && est1 === est2);
+  
+  const street1 = normalizeStreet(addr1.street);
+  const street2 = normalizeStreet(addr2.street);
+  // Check if streets are similar (one contains the other or >70% token match)
+  const streetSimilar: boolean = !!(street1 && street2 && (
+    street1 === street2 ||
+    street1.includes(street2) || 
+    street2.includes(street1) ||
+    calculateTokenOverlap(street1, street2) > 0.7
+  ));
+  
+  const num1 = normalizeNumber(addr1.ext_number, addr1.int_number);
+  const num2 = normalizeNumber(addr2.ext_number, addr2.int_number);
+  const numberEquivalent: boolean = !!(num1 && num2 && (num1 === num2 || num1.includes(num2) || num2.includes(num1)));
+  
+  // Calculate confidence score
+  let confidence = 0;
+  if (cpMatch) confidence += 0.30;       // CP is most important
+  if (coloniaMatch) confidence += 0.25;  // Colonia is key
+  if (municipioMatch) confidence += 0.20;
+  if (estadoMatch) confidence += 0.10;
+  if (streetSimilar) confidence += 0.10;
+  if (numberEquivalent) confidence += 0.05;
+  
+  // Is equivalent if confidence >= 0.75 (CP + Colonia + Municipio at minimum)
+  const isEquivalent = confidence >= 0.75;
+  
+  return {
+    isEquivalent,
+    confidence,
+    matchDetails: {
+      cpMatch,
+      coloniaMatch,
+      municipioMatch,
+      estadoMatch,
+      streetSimilar,
+      numberEquivalent
+    },
+    normalizedAddresses: {
+      address1: `${street1} ${num1}, ${col1}, ${mun1}, ${est1}, ${cp1}`,
+      address2: `${street2} ${num2}, ${col2}, ${mun2}, ${est2}, ${cp2}`
+    }
+  };
+}
+
+/**
+ * Calculates token overlap between two strings
+ */
+function calculateTokenOverlap(str1: string, str2: string): number {
+  const tokens1 = new Set(str1.split(/\s+/).filter(t => t.length > 1));
+  const tokens2 = new Set(str2.split(/\s+/).filter(t => t.length > 1));
+  
+  if (tokens1.size === 0 || tokens2.size === 0) return 0;
+  
+  let matches = 0;
+  for (const t of tokens1) {
+    if (tokens2.has(t)) matches++;
+  }
+  
+  return matches / Math.min(tokens1.size, tokens2.size);
+}
+
+/**
+ * Extracts surname(s) from a full name
+ * Handles Mexican naming conventions: APELLIDO_PATERNO APELLIDO_MATERNO NOMBRE(S)
+ * Or: NOMBRE(S) APELLIDO_PATERNO APELLIDO_MATERNO
+ */
+export function extractSurnames(fullName: string | null | undefined): string[] {
+  if (!fullName) return [];
+  
+  const name = fullName.toUpperCase().trim().replace(/\s+/g, ' ');
+  const parts = name.split(' ').filter(p => p.length > 1);
+  
+  if (parts.length < 2) return parts;
+  
+  // Common Mexican patterns:
+  // 1. "APELLIDO_P APELLIDO_M NOMBRE(S)" - return first 2 parts
+  // 2. "NOMBRE(S) APELLIDO_P APELLIDO_M" - return last 2 parts
+  // 3. "DE SOMETHING" - compound surname
+  
+  const surnames: string[] = [];
+  
+  // Check for compound surnames with "DE", "DEL", "DE LA", "DE LOS"
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === 'DE' || parts[i] === 'DEL' || parts[i] === 'LA' || parts[i] === 'LOS') {
+      // Include compound: "DE CELLO" or "DE LA PEÑA"
+      if (i + 1 < parts.length) {
+        surnames.push(`${parts[i]} ${parts[i + 1]}`);
+      }
+    } else if (i > 0 && (parts[i-1] === 'DE' || parts[i-1] === 'DEL')) {
+      // Already handled above
+    } else {
+      surnames.push(parts[i]);
+    }
+  }
+  
+  // Return unique surnames (avoid duplicates from compound handling)
+  return [...new Set(surnames)];
+}
+
+/**
+ * Checks if two names share a surname (indicates family relationship)
+ */
+export function sharesSurname(name1: string | null | undefined, name2: string | null | undefined): boolean {
+  const surnames1 = extractSurnames(name1);
+  const surnames2 = extractSurnames(name2);
+  
+  if (surnames1.length === 0 || surnames2.length === 0) return false;
+  
+  for (const s1 of surnames1) {
+    for (const s2 of surnames2) {
+      // Exact match or one contains the other (for compound surnames)
+      if (s1 === s2 || s1.includes(s2) || s2.includes(s1)) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Interface for POA validation result
+ */
+export interface PoaValidationResult {
+  isValid: boolean;
+  nameMatches: boolean;
+  addressMatchesSat: boolean;
+  thirdPartyType: 'none' | 'family' | 'landlord' | 'unknown';
+  flags: KycValidationFlag[];
+  scorePenalty: number;
+  mitigatingFactors: string[];
+}
+
+/**
+ * Validates Proof of Address against client identity
+ * Implements Mexican KYC rules for third-party POA acceptance
+ */
+export function validateProofOfAddress(profile: KycProfile): PoaValidationResult {
+  const flags: KycValidationFlag[] = [];
+  let scorePenalty = 0;
+  const mitigatingFactors: string[] = [];
+  
+  const isPF = isPersonaFisica(profile);
+  // entityType is used for more detailed classification if needed
+  // const entityType = classifyEntityType(profile);
+  
+  // Get client name from SAT (authoritative source)
+  const clientName = profile.companyTaxProfile?.razon_social || 
+                     profile.companyIdentity?.razon_social || '';
+  
+  // Get SAT fiscal address
+  const satAddress = profile.companyTaxProfile?.fiscal_address || profile.currentFiscalAddress;
+  
+  // Check utility bill POA (Telmex/CFE)
+  const utilityPoa = profile.addressEvidence?.[0];
+  const utilityPoaName = utilityPoa?.client_name || '';
+  const utilityPoaAddress = utilityPoa?.client_address;
+  
+  // Check bank statement as alternative POA
+  const bankName = profile.bankIdentity?.account_holder_name || '';
+  const bankAddress = profile.bankIdentity?.address_on_file;
+  
+  // 1. Check if bank statement can serve as POA (name matches client)
+  const bankNameMatches: boolean = !!(bankName && clientName && 
+    (normalizeNameForComparison(bankName) === normalizeNameForComparison(clientName) ||
+     calculateTokenOverlap(bankName.toUpperCase(), clientName.toUpperCase()) > 0.7));
+  
+  if (bankNameMatches && bankAddress) {
+    // Bank statement is valid POA since it's in client's name
+    mitigatingFactors.push(`Estado de cuenta bancario a nombre del cliente (${bankName}) es válido como comprobante de domicilio.`);
+    
+    // Check if bank address matches SAT
+    const bankSatComparison = compareAddresses(bankAddress, satAddress);
+    if (bankSatComparison.isEquivalent) {
+      mitigatingFactors.push(`Dirección bancaria coincide con domicilio fiscal (${Math.round(bankSatComparison.confidence * 100)}% confianza).`);
+    }
+    
+    return {
+      isValid: true,
+      nameMatches: true,
+      addressMatchesSat: bankSatComparison.isEquivalent,
+      thirdPartyType: 'none',
+      flags,
+      scorePenalty: 0,
+      mitigatingFactors
+    };
+  }
+  
+  // 2. Check utility POA
+  if (!utilityPoa || !utilityPoaName) {
+    // No utility POA and no valid bank POA
+    if (!bankNameMatches) {
+      flags.push({
+        code: "LOW_DOC_COVERAGE",
+        level: "warning",
+        message: "No se encontró comprobante de domicilio válido (recibo de servicios o estado de cuenta a nombre del cliente)."
+      });
+      scorePenalty += 0.15;
+    }
+    
+    return {
+      isValid: bankNameMatches,
+      nameMatches: bankNameMatches,
+      addressMatchesSat: false,
+      thirdPartyType: 'none',
+      flags,
+      scorePenalty,
+      mitigatingFactors
+    };
+  }
+  
+  // 3. Check if utility POA name matches client
+  const utilityNameMatches = clientName && utilityPoaName &&
+    (normalizeNameForComparison(utilityPoaName) === normalizeNameForComparison(clientName) ||
+     calculateTokenOverlap(utilityPoaName.toUpperCase(), clientName.toUpperCase()) > 0.7);
+  
+  if (utilityNameMatches) {
+    // Perfect - POA is in client's name
+    const addressComparison = compareAddresses(utilityPoaAddress, satAddress);
+    
+    return {
+      isValid: true,
+      nameMatches: true,
+      addressMatchesSat: addressComparison.isEquivalent,
+      thirdPartyType: 'none',
+      flags,
+      scorePenalty: 0,
+      mitigatingFactors: [`Comprobante de domicilio a nombre del cliente.`]
+    };
+  }
+  
+  // 4. POA is in third party's name - analyze the situation
+  const addressComparison = compareAddresses(utilityPoaAddress, satAddress);
+  const isFamily = sharesSurname(utilityPoaName, clientName);
+  
+  // For Persona Moral: POA MUST be in company's name
+  if (!isPF) {
+    flags.push({
+      code: "POA_NAME_MISMATCH",
+      level: "critical",
+      message: `Comprobante de domicilio a nombre de tercero ("${utilityPoaName}"). Para Persona Moral, el comprobante DEBE estar a nombre de la empresa ("${clientName}").`,
+      action_required: "Proporcionar comprobante de domicilio a nombre de la empresa.",
+      supporting_docs: ["Recibo CFE/Telmex a nombre de la empresa", "Contrato de arrendamiento + recibo del arrendador"]
+    });
+    scorePenalty += 0.25;
+    
+    // Partial mitigation if address matches SAT
+    if (addressComparison.isEquivalent) {
+      mitigatingFactors.push(`La dirección del comprobante coincide con el domicilio fiscal SAT (${Math.round(addressComparison.confidence * 100)}% confianza).`);
+      scorePenalty -= 0.10; // Reduce penalty
+      
+      flags.push({
+        code: "POA_ADDRESS_VERIFIED",
+        level: "info",
+        message: `Dirección verificada: El comprobante de servicios confirma que el domicilio fiscal existe y tiene servicios activos.`
+      });
+    }
+    
+    return {
+      isValid: false,
+      nameMatches: false,
+      addressMatchesSat: addressComparison.isEquivalent,
+      thirdPartyType: isFamily ? 'family' : 'unknown',
+      flags,
+      scorePenalty,
+      mitigatingFactors
+    };
+  }
+  
+  // 5. For Persona Física: Third-party POA may be acceptable with conditions
+  if (isFamily) {
+    // Family member's POA - acceptable per SAT rules with supporting docs
+    flags.push({
+      code: "POA_THIRD_PARTY_FAMILY",
+      level: "warning",
+      message: `Comprobante de domicilio a nombre de familiar ("${utilityPoaName}"). Apellido compartido con cliente ("${clientName}").`,
+      action_required: "Opcional: Proporcionar acta de nacimiento para confirmar parentesco.",
+      supporting_docs: ["Acta de nacimiento del cliente"]
+    });
+    scorePenalty += 0.05; // Minor penalty
+    
+    mitigatingFactors.push(`Apellido compartido sugiere relación familiar (${utilityPoaName} ↔ ${clientName}).`);
+    
+    // If address also matches SAT, further mitigation
+    if (addressComparison.isEquivalent) {
+      mitigatingFactors.push(`La dirección del comprobante coincide con el domicilio fiscal SAT (${Math.round(addressComparison.confidence * 100)}% confianza).`);
+      scorePenalty = 0; // No penalty if family + address matches
+      
+      flags.push({
+        code: "POA_ADDRESS_VERIFIED",
+        level: "info",
+        message: `Domicilio verificado: El comprobante confirma residencia en el mismo domicilio fiscal.`
+      });
+    }
+    
+    return {
+      isValid: true, // Valid for PF with family POA
+      nameMatches: false,
+      addressMatchesSat: addressComparison.isEquivalent,
+      thirdPartyType: 'family',
+      flags,
+      scorePenalty,
+      mitigatingFactors
+    };
+  }
+  
+  // 6. Non-family third party - likely landlord/rental situation
+  flags.push({
+    code: "POA_THIRD_PARTY_LANDLORD",
+    level: "warning",
+    message: `Comprobante de domicilio a nombre de tercero ("${utilityPoaName}"), no familiar del cliente ("${clientName}").`,
+    action_required: "Proporcionar contrato de arrendamiento vigente o carta del propietario.",
+    supporting_docs: [
+      "Contrato de arrendamiento vigente",
+      "Carta del propietario con copia de su INE",
+      "Constancia de residencia municipal"
+    ]
+  });
+  scorePenalty += 0.10;
+  
+  // Mitigation if address matches SAT
+  if (addressComparison.isEquivalent) {
+    mitigatingFactors.push(`La dirección del comprobante coincide con el domicilio fiscal SAT (${Math.round(addressComparison.confidence * 100)}% confianza).`);
+    mitigatingFactors.push(`Posible situación de arrendamiento donde el titular de servicios es el propietario.`);
+    scorePenalty -= 0.05; // Reduce penalty
+    
+    flags.push({
+      code: "POA_ADDRESS_VERIFIED",
+      level: "info",
+      message: `Domicilio verificado: La dirección existe y tiene servicios activos en el mismo domicilio fiscal.`
+    });
+  }
+  
+  return {
+    isValid: addressComparison.isEquivalent, // Valid if address matches (pending rental doc)
+    nameMatches: false,
+    addressMatchesSat: addressComparison.isEquivalent,
+    thirdPartyType: 'landlord',
+    flags,
+    scorePenalty,
+    mitigatingFactors
+  };
+}
+
+/**
+ * Helper to normalize names for comparison
+ */
+function normalizeNameForComparison(name: string): string {
+  return name.toUpperCase()
+    .replace(/[.,;:\-_]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\b(SOCIEDAD|ANONIMA|CAPITAL|VARIABLE|SA|CV|SAPI|DE|RL|SC|AC)\b/g, '')
+    .trim();
+}
+
+// --- 4.3 Immigration Document Validation ---
+
+/**
+ * Immigration Document Types in Mexico
+ * 
+ * OBSOLETE (Pre-November 2012):
+ * - FM1: Data collection form (prerequisite for FM2/FM3)
+ * - FM2: "Inmigrante" - Permanent residence pathway (1 year validity, renewable 5 years)
+ * - FM3: "No Inmigrante" - Temporary residence/work (1 year validity, renewable annually)
+ * 
+ * CURRENT (Post-November 2012):
+ * - FMM: "Forma Migratoria Múltiple" - Tourist/visitor permit (1-180 days)
+ * - Residente Temporal: Temporary residence (1-4 years, card has expiration)
+ * - Residente Permanente: Permanent residence (STATUS never expires, CARD does)
+ * - INE: National ID for Mexican citizens (has expiration)
+ */
+
+export interface ImmigrationValidationResult {
+  isValid: boolean;
+  statusValid: boolean;      // Immigration STATUS validity
+  documentValid: boolean;    // Physical DOCUMENT validity
+  code: string;
+  level: 'info' | 'warning' | 'critical';
+  message: string;
+  action_required?: string;
+  details?: {
+    documentType: string;
+    issueDate?: string | null;
+    expiryDate?: string | null;
+    daysUntilExpiry?: number;
+    isObsolete?: boolean;
+  };
+}
+
+/**
+ * Comprehensive Immigration Document Validation
+ * Based on Mexican Immigration Law (Ley de Migración) and INM regulations
+ */
+export function validateImmigrationDocument(profile: KycProfile): ImmigrationValidationResult {
+  const doc = profile.representativeIdentity;
+  const repIdentity = doc as any; // For accessing INE-specific fields
+  
+  // Check if we have an INE (by INE-specific fields) even without document_type
+  const hasIneFields = !!(repIdentity?.clave_elector || 
+                         (repIdentity?.issuer_country === 'MX' && repIdentity?.curp && repIdentity?.vigencia_year));
+  
+  // No document provided - but allow INE by fields
+  if (!doc || (!doc.document_type && !hasIneFields)) {
+    return {
+      isValid: false,
+      statusValid: false,
+      documentValid: false,
+      code: 'NO_IMMIGRATION_DOC',
+      level: 'critical',
+      message: 'No se proporcionó documento de identidad/migratorio.'
+    };
+  }
+  
+  // If we have INE by fields, treat it as valid Mexican ID
+  if (hasIneFields && !doc.document_type) {
+    // INE is valid Mexican ID - check vigencia
+    const vigenciaYear = parseInt(repIdentity?.vigencia_year) || 0;
+    const currentYear = new Date().getFullYear();
+    const isExpired = vigenciaYear > 0 && vigenciaYear < currentYear;
+    
+    return {
+      isValid: !isExpired,
+      statusValid: true, // Mexican citizen, valid status
+      documentValid: !isExpired,
+      code: isExpired ? 'INE_EXPIRED' : 'INE_VALID',
+      level: isExpired ? 'critical' : 'info',
+      message: isExpired 
+        ? `INE vencida (vigencia: ${vigenciaYear}). Requiere renovación.`
+        : `INE válida (vigencia: ${vigenciaYear}).`,
+      details: {
+        expiryDate: vigenciaYear ? `${vigenciaYear}-12-31` : undefined,
+        isObsolete: isExpired
+      }
+    };
+  }
+  
+  const docType = (doc.document_type || '').toUpperCase().trim();
+  const issueDate = doc.issue_date;
+  const expiryDate = doc.expiry_date;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const issueYear = issueDate ? new Date(issueDate).getFullYear() : 0;
+  
+  // Calculate days until expiry if we have an expiry date
+  let daysUntilExpiry: number | undefined;
+  if (expiryDate) {
+    const expiry = new Date(expiryDate);
+    daysUntilExpiry = Math.floor((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }
+  
+  // =====================================================
+  // 1. FMM - Tourist Permit (NOT valid for KYC)
+  // =====================================================
+  if (docType === 'FMM' || docType.includes('FORMA MIGRATORIA MULTIPLE') || 
+      docType.includes('VISITANTE') || docType === 'TOURIST') {
+    return {
+      isValid: false,
+      statusValid: false,
+      documentValid: false,
+      code: 'INVALID_DOC_TYPE_FMM',
+      level: 'critical',
+      message: 'FMM (permiso de turista/visitante) NO es válido para alta de clientes. ' +
+               'Se requiere Tarjeta de Residente (Temporal o Permanente) o INE para mexicanos.',
+      action_required: 'Solicitar documento de residencia válido.',
+      details: { documentType: 'FMM', isObsolete: false }
+    };
+  }
+  
+  // =====================================================
+  // 2. TARJETA DE RESIDENTE PERMANENTE (Post-2012)
+  // =====================================================
+  // This is the NEW format that replaced FM2 for permanent residents
+  // Key characteristics:
+  // - NO expiration date for adults (18+) - valid INDEFINITELY
+  // - 3-year validity for minors (<18) - must be renewed
+  // - Issued after November 2012
+  // - Per Ley de Migración Art. 54 and Reglamento Art. 137
+  const isPermanentResident = 
+    docType.includes('PERMANENTE') || 
+    docType.includes('PERMANENT') ||
+    docType === 'TARJETA DE RESIDENTE PERMANENTE' ||
+    docType === 'PERMANENT RESIDENT' ||
+    docType === 'RESIDENTE PERMANENTE' ||
+    // Post-2012 document with no expiry is a Permanent Resident card
+    (issueYear >= 2012 && !expiryDate && (docType === 'FM2' || docType.includes('RESIDENTE')));
+  
+  if (isPermanentResident) {
+    // Permanent resident cards for ADULTS have NO expiration (indefinite validity)
+    // Per Reglamento de la Ley de Migración Art. 137
+    if (!expiryDate) {
+      return {
+        isValid: true,
+        statusValid: true,
+        documentValid: true,
+        code: 'IMMIGRATION_DOC_VALID_PERMANENT',
+        level: 'info',
+        message: `Tarjeta de Residente Permanente emitida en ${issueYear || 'fecha desconocida'}. ` +
+                 `Vigencia INDEFINIDA para adultos (Ley de Migración Art. 54, Reglamento Art. 137).`,
+        details: { 
+          documentType: 'RESIDENTE PERMANENTE', 
+          issueDate, 
+          expiryDate: null
+        }
+      };
+    }
+    
+    // Permanent resident card WITH expiry date = minor's card (valid 3 years)
+    // Per Reglamento Art. 137: minors' cards must be renewed every 3 years until age 18
+    if (daysUntilExpiry !== undefined && daysUntilExpiry < 0) {
+      return {
+        isValid: false,
+        statusValid: true, // Status is still valid, just need card renewal
+        documentValid: false,
+        code: 'IMMIGRATION_CARD_EXPIRED',
+        level: 'warning',
+        message: `Tarjeta de Residente Permanente expiró el ${expiryDate}. ` +
+                 `Nota: El estatus de Residente Permanente NO expira, solo la tarjeta física. ` +
+                 `Se requiere renovación de tarjeta en INM.`,
+        action_required: 'Renovar tarjeta de residente en INM (el estatus permanente sigue vigente).',
+        details: { documentType: 'RESIDENTE PERMANENTE', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    // Card with valid expiry (minor's card still current)
+    return {
+      isValid: true,
+      statusValid: true,
+      documentValid: true,
+      code: 'IMMIGRATION_DOC_VALID',
+      level: 'info',
+      message: `Tarjeta de Residente Permanente vigente hasta ${expiryDate}.`,
+      details: { documentType: 'RESIDENTE PERMANENTE', issueDate, expiryDate, daysUntilExpiry }
+    };
+  }
+  
+  // =====================================================
+  // 3. FM2 - Legacy "Inmigrante" Document (Pre-2012)
+  // =====================================================
+  // FM2 was the old format document BEFORE November 2012
+  // These documents ALWAYS had annual expiration dates
+  // ANY FM2 document is now OBSOLETE (>12 years old)
+  if (docType === 'FM2' || docType.includes('INMIGRANTE')) {
+    // All FM2 documents are now obsolete - they were replaced in November 2012
+    return {
+      isValid: false,
+      statusValid: false,
+      documentValid: false,
+      code: 'IMMIGRATION_DOC_OBSOLETE',
+      level: 'critical',
+      message: `Documento FM2 es OBSOLETO. Los documentos FM fueron reemplazados en ` +
+               `Noviembre 2012 por Tarjetas de Residente. Cualquier FM2 tiene más de 12 años.`,
+      action_required: 'Solicitar Tarjeta de Residente Permanente vigente del INM.',
+      details: { 
+        documentType: 'FM2', 
+        issueDate, 
+        expiryDate,
+        isObsolete: true 
+      }
+    };
+  }
+  
+  // =====================================================
+  // 4. FM3 - Legacy "No Inmigrante" Document (Pre-2012)
+  // =====================================================
+  // FM3 was the old format for temporary residents BEFORE November 2012
+  // These documents ALWAYS had 1-year expiration dates
+  // ANY FM3 document is now OBSOLETE (>12 years old)
+  if (docType === 'FM3' || docType.includes('NO INMIGRANTE')) {
+    // All FM3 documents are now obsolete - they were replaced in November 2012
+    return {
+      isValid: false,
+      statusValid: false,
+      documentValid: false,
+      code: 'IMMIGRATION_DOC_OBSOLETE',
+      level: 'critical',
+      message: `Documento FM3 es OBSOLETO. Los documentos FM fueron reemplazados en ` +
+               `Noviembre 2012 por Tarjetas de Residente. Cualquier FM3 tiene más de 12 años.`,
+      action_required: 'Solicitar Tarjeta de Residente Temporal o Permanente vigente del INM.',
+      details: { documentType: 'FM3', issueDate, expiryDate, isObsolete: true }
+    };
+  }
+  
+  // =====================================================
+  // 4. Residente Temporal - Current Valid Document
+  // =====================================================
+  if (docType.includes('TEMPORAL') || docType.includes('RESIDENTE TEMPORAL') ||
+      docType === 'TEMPORARY RESIDENT') {
+    
+    // Residente Temporal MUST have expiry date (1-4 years validity)
+    if (!expiryDate) {
+      return {
+        isValid: false,
+        statusValid: false,
+        documentValid: false,
+        code: 'MISSING_EXPIRY_DATE',
+        level: 'critical',
+        message: 'Tarjeta de Residente Temporal DEBE tener fecha de vencimiento. ' +
+                 'Las tarjetas tienen vigencia de 1 a 4 años. Verificar documento.',
+        action_required: 'Verificar autenticidad del documento o solicitar uno vigente.',
+        details: { documentType: 'RESIDENTE_TEMPORAL', issueDate }
+      };
+    }
+    
+    // Check if expired
+    if (daysUntilExpiry !== undefined && daysUntilExpiry < 0) {
+      return {
+        isValid: false,
+        statusValid: false,
+        documentValid: false,
+        code: 'IMMIGRATION_DOC_EXPIRED',
+        level: 'critical',
+        message: `Tarjeta de Residente Temporal expiró el ${expiryDate} ` +
+                 `(hace ${Math.abs(daysUntilExpiry)} días). El estatus y documento son inválidos.`,
+        action_required: 'El cliente debe renovar su residencia temporal en INM antes de proceder.',
+        details: { documentType: 'RESIDENTE_TEMPORAL', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    // Check if expiring soon (within 30 days)
+    if (daysUntilExpiry !== undefined && daysUntilExpiry <= 30) {
+      return {
+        isValid: true,
+        statusValid: true,
+        documentValid: true,
+        code: 'IMMIGRATION_DOC_EXPIRING_SOON',
+        level: 'warning',
+        message: `Tarjeta de Residente Temporal vence en ${daysUntilExpiry} días (${expiryDate}). ` +
+                 `El cliente debe renovar pronto en INM.`,
+        action_required: 'Recomendar al cliente iniciar trámite de renovación.',
+        details: { documentType: 'RESIDENTE_TEMPORAL', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    // Valid Residente Temporal
+    return {
+      isValid: true,
+      statusValid: true,
+      documentValid: true,
+      code: 'IMMIGRATION_DOC_VALID',
+      level: 'info',
+      message: `Tarjeta de Residente Temporal válida hasta ${expiryDate}.`,
+      details: { documentType: 'RESIDENTE_TEMPORAL', issueDate, expiryDate, daysUntilExpiry }
+    };
+  }
+  
+  // =====================================================
+  // 5. Residente Permanente - STATUS Never Expires
+  // =====================================================
+  if (docType.includes('PERMANENTE') || docType.includes('RESIDENTE PERMANENTE') ||
+      docType === 'PERMANENT RESIDENT') {
+    
+    // CRITICAL: Permanent resident STATUS never expires
+    // But the physical CARD does need renewal every 5-10 years
+    
+    if (expiryDate && daysUntilExpiry !== undefined && daysUntilExpiry < 0) {
+      // Card expired but STATUS is still valid!
+      return {
+        isValid: true,  // STATUS is valid
+        statusValid: true,
+        documentValid: false,  // Card is not valid
+        code: 'IMMIGRATION_CARD_EXPIRED_STATUS_VALID',
+        level: 'warning',
+        message: `La tarjeta física de Residente Permanente expiró el ${expiryDate}, ` +
+                 `PERO el estatus de residencia permanente NUNCA EXPIRA. ` +
+                 `El cliente puede proceder con trámites mientras canjea su tarjeta.`,
+        action_required: 'Recomendar al cliente canjear su tarjeta en INM (trámite de reposición).',
+        details: { documentType: 'RESIDENTE_PERMANENTE', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    // No expiry date - THIS IS NORMAL AND CORRECT FOR ADULT PERMANENT RESIDENTS
+    // Per Mexican Immigration Law (Ley de Migración):
+    // - Adults (18+): Card has NO expiration date (vigencia indefinida)
+    // - Minors under 3: Card valid 1 year
+    // - Minors 3-17: Card valid 4 years
+    if (!expiryDate) {
+      if (issueYear > 0 && (currentYear - issueYear) > 10) {
+        // Card is more than 10 years old - recommend refresh for updated photo/security
+        return {
+          isValid: true,
+          statusValid: true,
+          documentValid: true,
+          code: 'IMMIGRATION_CARD_OLD',
+          level: 'info',
+          message: `Tarjeta de Residente Permanente emitida en ${issueYear} ` +
+                   `(hace ${currentYear - issueYear} años). El estatus es VIGENTE INDEFINIDAMENTE. ` +
+                   `Se recomienda canje de tarjeta solo para actualizar foto y elementos de seguridad.`,
+          details: { documentType: 'RESIDENTE_PERMANENTE', issueDate }
+        };
+      }
+      
+      // Card without expiry date - THIS IS CORRECT for adult permanent residents
+      return {
+        isValid: true,
+        statusValid: true,
+        documentValid: true,
+        code: 'IMMIGRATION_DOC_VALID_PERMANENT',
+        level: 'info',
+        message: 'Tarjeta de Residente Permanente válida. Para adultos (18+), la tarjeta ' +
+                 'NO tiene fecha de vencimiento - esto es CORRECTO per Ley de Migración. ' +
+                 'El estatus de residente permanente es indefinido.',
+        details: { documentType: 'RESIDENTE_PERMANENTE', issueDate }
+      };
+    }
+    
+    // Card expiring soon
+    if (daysUntilExpiry !== undefined && daysUntilExpiry <= 90) {
+      return {
+        isValid: true,
+        statusValid: true,
+        documentValid: true,
+        code: 'IMMIGRATION_CARD_EXPIRING',
+        level: 'info',
+        message: `Tarjeta de Residente Permanente vence en ${daysUntilExpiry} días. ` +
+                 `El estatus NO expira, solo la tarjeta física.`,
+        action_required: 'Recomendar canje de tarjeta en INM.',
+        details: { documentType: 'RESIDENTE_PERMANENTE', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    // Valid permanent resident card
+    return {
+      isValid: true,
+      statusValid: true,
+      documentValid: true,
+      code: 'IMMIGRATION_DOC_VALID',
+      level: 'info',
+      message: `Residente Permanente válido. Estatus indefinido.`,
+      details: { documentType: 'RESIDENTE_PERMANENTE', issueDate, expiryDate, daysUntilExpiry }
+    };
+  }
+  
+  // =====================================================
+  // 6. INE/IFE - Mexican National ID
+  // =====================================================
+  if (docType === 'INE' || docType === 'IFE' || docType.includes('CREDENCIAL')) {
+    // INE is for Mexican citizens - no immigration status needed
+    // But the card itself has expiration
+    
+    if (expiryDate && daysUntilExpiry !== undefined && daysUntilExpiry < 0) {
+      return {
+        isValid: false,
+        statusValid: true,  // Mexican nationality never expires
+        documentValid: false,
+        code: 'IDENTITY_DOC_EXPIRED',
+        level: 'critical',
+        message: `INE expiró el ${expiryDate}. Se requiere INE vigente.`,
+        action_required: 'Solicitar INE vigente del cliente.',
+        details: { documentType: 'INE', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    // INE issue date validation - suspicious if Jan 1
+    if (issueDate) {
+      const issueDateObj = new Date(issueDate);
+      if (issueDateObj.getMonth() === 0 && issueDateObj.getDate() === 1) {
+        // January 1st is suspicious - INE doesn't issue on holidays
+        return {
+          isValid: true,
+          statusValid: true,
+          documentValid: true,
+          code: 'IDENTITY_DOC_SUSPICIOUS_DATE',
+          level: 'warning',
+          message: `Fecha de emisión de INE (${issueDate}) es sospechosa. ` +
+                   `INE no emite credenciales el 1 de enero. Verificar documento.`,
+          details: { documentType: 'INE', issueDate, expiryDate, daysUntilExpiry }
+        };
+      }
+    }
+    
+    // Valid INE
+    return {
+      isValid: true,
+      statusValid: true,
+      documentValid: true,
+      code: 'IDENTITY_DOC_VALID',
+      level: 'info',
+      message: `INE válida${expiryDate ? ` hasta ${expiryDate}` : ''}.`,
+      details: { documentType: 'INE', issueDate, expiryDate, daysUntilExpiry }
+    };
+  }
+  
+  // =====================================================
+  // 7. Passport - Additional Identity Document
+  // =====================================================
+  if (docType.includes('PASAPORTE') || docType === 'PASSPORT') {
+    if (expiryDate && daysUntilExpiry !== undefined && daysUntilExpiry < 0) {
+      return {
+        isValid: false,
+        statusValid: true,
+        documentValid: false,
+        code: 'IDENTITY_DOC_EXPIRED',
+        level: 'warning',
+        message: `Pasaporte expiró el ${expiryDate}. Para extranjeros, se requiere ` +
+                 `pasaporte vigente junto con documento migratorio.`,
+        action_required: 'Solicitar pasaporte vigente.',
+        details: { documentType: 'PASSPORT', issueDate, expiryDate, daysUntilExpiry }
+      };
+    }
+    
+    return {
+      isValid: true,
+      statusValid: true,
+      documentValid: true,
+      code: 'IDENTITY_DOC_VALID',
+      level: 'info',
+      message: `Pasaporte válido${expiryDate ? ` hasta ${expiryDate}` : ''}.`,
+      details: { documentType: 'PASSPORT', issueDate, expiryDate, daysUntilExpiry }
+    };
+  }
+  
+  // =====================================================
+  // 8. Unknown Document Type
+  // =====================================================
+  return {
+    isValid: true,
+    statusValid: true,
+    documentValid: true,
+    code: 'UNKNOWN_DOC_TYPE',
+    level: 'warning',
+    message: `Tipo de documento no reconocido: "${docType}". Verificar manualmente.`,
+    details: { documentType: docType, issueDate, expiryDate, daysUntilExpiry }
+  };
+}
+
 export function checkFreshness(profile: KycProfile, asOf: Date = new Date()): FreshnessInfo[] {
   const results: FreshnessInfo[] = [];
 
@@ -734,11 +1688,18 @@ function determineNationality(profile: KycProfile): 'mexican' | 'foreign' | 'unk
   const passportIssuer = profile.passportIdentity?.issuer_country?.toUpperCase() || null;
   const ineDocType = profile.representativeIdentity?.document_type?.toUpperCase() || null;
   
+  // Check for INE-specific fields (clave_elector, issuer_country === 'MX')
+  // INE uses different schema than FM2 - need to detect by fields
+  const repIdentity = profile.representativeIdentity as any;
+  const hasIneFields = !!(repIdentity?.clave_elector || 
+                         (repIdentity?.issuer_country === 'MX' && repIdentity?.curp));
+  
   // Mexican indicators
   const mexicanNationalityTerms = ['MEXICANA', 'MEXICANO', 'MEXICO', 'MX', 'MEX'];
   
-  // If document is INE, the person is definitely Mexican (only Mexican citizens can have INE)
-  if (ineDocType === 'INE' || ineDocType === 'IFE') {
+  // If document is INE (by doc_type or by INE-specific fields), person is Mexican
+  // Only Mexican citizens can have INE
+  if (ineDocType === 'INE' || ineDocType === 'IFE' || hasIneFields) {
     return 'mexican';
   }
   
@@ -809,8 +1770,18 @@ function validateIdentityDocuments(
   
   // Helper to check document types
   const repDocType = profile.representativeIdentity?.document_type?.toUpperCase() || '';
-  const hasIne = !!profile.representativeIdentity?.document_number && 
-                 (repDocType === 'INE' || repDocType === 'IFE');
+  
+  // INE detection: Check for INE-specific fields (clave_elector, curp with vigencia)
+  // INE schema uses different fields than FM2/Immigration - need to check both patterns
+  // Using 'as any' because INE fields aren't in the ImmigrationProfile type (tech debt)
+  const repIdentity = profile.representativeIdentity as any;
+  const hasIneByFields = !!(repIdentity?.clave_elector || 
+                           (repIdentity?.curp && (repIdentity?.vigencia_year || repIdentity?.emission_year)));
+  const hasIneByDocType = !!profile.representativeIdentity?.document_number && 
+                          (repDocType === 'INE' || repDocType === 'IFE');
+  const hasIne = hasIneByFields || hasIneByDocType;
+  
+  // FM2/FM3 detection: Requires document_number AND immigration document type
   const hasFm2 = !!profile.representativeIdentity?.document_number && 
                  (repDocType === 'FM2' || repDocType === 'FM3' || 
                   repDocType.includes('RESIDENTE') || repDocType.includes('TEMPORAL') || 
@@ -932,6 +1903,36 @@ function validateIdentityDocuments(
       scorePenalty += 0.05;
     }
     
+    // FM2 expiry validation
+    const fm2IssueDate = profile.representativeIdentity?.issue_date;
+    const fm2ExpiryDate = profile.representativeIdentity?.expiry_date;
+    if (hasFm2 && fm2IssueDate && !fm2ExpiryDate) {
+      // FM2 with no expiry date - check if it's too old
+      const issueYear = new Date(fm2IssueDate).getFullYear();
+      // FM2/Tarjeta de Residente Permanente without expiry is VALID indefinitely for adults
+      // Per Ley de Migración Art. 54 and Reglamento Art. 137
+      // Only add info-level message, not a warning
+      const currentYear = new Date().getFullYear();
+      if (issueYear >= 2012) {
+        // Post-2012 document without expiry = Residente Permanente (valid indefinitely)
+        flags.push({
+          code: "OTHER",
+          level: "info",
+          message: `Documento migratorio emitido en ${issueYear} sin fecha de expiración = Residente Permanente con vigencia indefinida para adultos.`
+        });
+        // No penalty - this is a valid document
+      } else if (currentYear - issueYear > 12) {
+        // Pre-2012 documents are genuinely obsolete (>12 years old)
+        flags.push({
+          code: "IMMIGRATION_DOC_EXPIRED",
+          level: "warning",
+          message: `Documento migratorio (FM2) emitido en ${issueYear} (${currentYear - issueYear} años). Los FM2 fueron reemplazados por Tarjetas de Residente en 2012.`,
+          action_required: "Verificar si el estatus migratorio ha sido renovado con una Tarjeta de Residente."
+        });
+        scorePenalty += 0.1;
+      }
+    }
+    
     // Both documents present - verify names match
     if (hasPassport && hasFm2) {
       const passportName = profile.passportIdentity?.full_name?.toUpperCase().trim() || '';
@@ -1034,6 +2035,59 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   const identityValidation = validateIdentityDocuments(profile, isPF, nationality);
   flags.push(...identityValidation.flags);
   score -= identityValidation.scorePenalty;
+  
+  // =========================================================
+  // D.1 IMMIGRATION DOCUMENT VALIDATION
+  // Comprehensive validation of FM2, FM3, FMM, Residente Temporal/Permanente
+  // Based on Mexican Immigration Law (Ley de Migración) and INM regulations
+  // =========================================================
+  if (profile.representativeIdentity) {
+    const immigrationValidation = validateImmigrationDocument(profile);
+    
+    // List of codes that indicate valid/good status (no penalty needed)
+    const validCodes = [
+      'IDENTITY_DOC_VALID',
+      'IMMIGRATION_DOC_VALID',
+      'IMMIGRATION_DOC_VALID_PERMANENT',  // Residente Permanente without expiry = VALID
+      'IMMIGRATION_DOC_NO_EXPIRY'         // Permanent resident no expiry = OK
+    ];
+    
+    // Only flag if not a valid status
+    if (!validCodes.includes(immigrationValidation.code)) {
+      
+      // Determine the appropriate flag code
+      let flagCode: KycValidationFlag['code'] = 'OTHER';
+      if (immigrationValidation.code.includes('EXPIRED') || 
+          immigrationValidation.code.includes('OBSOLETE')) {
+        flagCode = 'IMMIGRATION_DOC_EXPIRED';
+      } else if (immigrationValidation.code.includes('INVALID') ||
+                 immigrationValidation.code.includes('FMM')) {
+        flagCode = 'REP_ID_MISMATCH';
+      } else if (immigrationValidation.code === 'IMMIGRATION_CARD_OLD') {
+        // Old card but still valid - just informational
+        flagCode = 'OTHER';
+      }
+      
+      flags.push({
+        code: flagCode,
+        level: immigrationValidation.level,
+        message: immigrationValidation.message,
+        action_required: immigrationValidation.action_required
+      });
+      
+      // Score penalties based on severity
+      if (immigrationValidation.level === 'critical') {
+        if (!immigrationValidation.statusValid) {
+          score -= 0.25; // Status invalid - major penalty
+        } else {
+          score -= 0.10; // Status valid but document issue
+        }
+      } else if (immigrationValidation.level === 'warning') {
+        score -= 0.05;
+      }
+      // 'info' level = no penalty (just informational)
+    }
+  }
 
   // E. Corporate checks (SKIP for Persona Física)
   if (!isPF) {
@@ -1100,6 +2154,13 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     }
   }
 
+  // C.2 PROOF OF ADDRESS VALIDATION (NEW)
+  // This validates the POA document's name against the client
+  // and handles third-party POA scenarios (family, landlord, etc.)
+  const poaValidation = validateProofOfAddress(profile);
+  flags.push(...poaValidation.flags);
+  score -= poaValidation.scorePenalty;
+
   // D. Doc Coverage (PF Mode: Skip Acta requirement)
   if (!isPF && !profile.companyIdentity) {
     flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Company Identity (Acta Constitutiva)." });
@@ -1109,9 +2170,45 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Tax Profile (SAT Constancia)." });
     score -= 0.3;
   }
+  
+  // D.1 Check for missing Folio Mercantil (Persona Moral only)
+  if (!isPF && profile.companyIdentity) {
+    const registry = profile.companyIdentity.registry;
+    if (!registry?.fme && !registry?.folio && !registry?.nci) {
+      flags.push({ 
+        code: "MISSING_FME", 
+        level: "warning", 
+        message: "Falta Folio Mercantil Electrónico (FME) o número de inscripción en el Registro Público de Comercio.",
+        action_required: "Solicitar boleta de inscripción o constancia del Registro Público de Comercio."
+      });
+      // Don't penalize score heavily - it's often not in the Acta itself
+      score -= 0.05;
+    }
+  }
+  
+  // D.2 Tax Regime validation for commercial capability
+  if (profile.companyTaxProfile?.tax_regime) {
+    const regime = profile.companyTaxProfile.tax_regime.toUpperCase();
+    if (regime.includes('SIN OBLIGACIONES')) {
+      const entityType = classifyEntityType(profile);
+      if (entityType === 'PERSONA_FISICA_SIN_OBLIGACIONES') {
+        flags.push({
+          code: "TAX_REGIME_NO_COMMERCE",
+          level: "warning",
+          message: `Régimen Fiscal: "Sin obligaciones fiscales". Esta persona NO puede emitir facturas ni realizar actividad empresarial. Apto solo para relaciones personales/no comerciales.`,
+          action_required: "Si se requiere para actividad comercial, el cliente debe cambiar su régimen fiscal ante SAT (RESICO o Actividad Empresarial)."
+        });
+        // Don't penalize if it's valid for their use case
+      }
+    }
+  }
+  
+  // D.3 POA Doc Coverage - only if POA validation didn't already add flags
   if (profile.addressEvidence.length === 0 && !profile.bankIdentity && profile.bankAccounts.length === 0) {
-      flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "No Proof of Address or Bank Statements provided." });
-      score -= 0.2;
+      if (!poaValidation.flags.some(f => f.code === "LOW_DOC_COVERAGE")) {
+        flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "No Proof of Address or Bank Statements provided." });
+        score -= 0.2;
+      }
   }
 
   // PF Mode: Additional name matching check (identity doc requirement already handled above)
@@ -1166,6 +2263,95 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       score -= 0.1;
   }
 
+  // =========================================================================
+  // F. VALIDATION CHECKLIST - Consistent summary for all clients
+  // =========================================================================
+  // This ensures users can see what HAS been validated, not just what's missing
+  
+  const checklist: string[] = [];
+  
+  // 1. Entity Classification
+  if (isPF) {
+    checklist.push(`✓ Tipo de Entidad: Persona Física`);
+  } else {
+    checklist.push(`✓ Tipo de Entidad: Persona Moral`);
+    // Acta Constitutiva
+    if (profile.companyIdentity) {
+      checklist.push(`✓ Acta Constitutiva: Verificada`);
+      if (profile.companyIdentity.registry?.folio || profile.companyIdentity.registry?.fme) {
+        checklist.push(`✓ Registro Público: Folio ${profile.companyIdentity.registry.folio || profile.companyIdentity.registry.fme}`);
+      }
+    } else {
+      checklist.push(`✗ Acta Constitutiva: No proporcionada`);
+    }
+  }
+  
+  // 2. Constancia SAT
+  if (profile.companyTaxProfile?.rfc) {
+    checklist.push(`✓ Constancia SAT: RFC ${profile.companyTaxProfile.rfc}`);
+    checklist.push(`✓ Régimen Fiscal: ${profile.companyTaxProfile.tax_regime || 'No especificado'}`);
+  } else {
+    checklist.push(`✗ Constancia SAT: No proporcionada`);
+  }
+  
+  // 3. Identity Documents
+  if (nationality === 'mexican') {
+    if (profile.representativeIdentity?.document_type === 'INE') {
+      checklist.push(`✓ Identificación: INE vigente`);
+    } else if (profile.passportIdentity) {
+      checklist.push(`✓ Identificación: Pasaporte mexicano`);
+    } else {
+      checklist.push(`✗ Identificación: Falta INE o Pasaporte`);
+    }
+  } else if (nationality === 'foreign') {
+    // Foreign national - need passport + immigration doc
+    if (profile.passportIdentity) {
+      checklist.push(`✓ Pasaporte: ${profile.passportIdentity.nationality || 'Extranjero'}`);
+    } else {
+      checklist.push(`✗ Pasaporte: No proporcionado`);
+    }
+    if (profile.representativeIdentity) {
+      const docType = profile.representativeIdentity.document_type || 'Documento migratorio';
+      if (docType.includes('PERMANENTE')) {
+        checklist.push(`✓ Estatus Migratorio: Residente Permanente (vigencia indefinida)`);
+      } else if (docType.includes('TEMPORAL')) {
+        const expiry = profile.representativeIdentity.expiry_date || 'No especificada';
+        checklist.push(`✓ Estatus Migratorio: Residente Temporal (vigencia: ${expiry})`);
+      } else {
+        checklist.push(`✓ Estatus Migratorio: ${docType}`);
+      }
+    } else {
+      checklist.push(`✗ Estatus Migratorio: No proporcionado`);
+    }
+  }
+  
+  // 4. Proof of Address
+  if (profile.addressEvidence && profile.addressEvidence.length > 0) {
+    const latestPoa = profile.addressEvidence[0];
+    const poaName = latestPoa.client_name || 'N/A';
+    checklist.push(`✓ Comprobante de Domicilio: ${latestPoa.vendor_name || 'Servicio'} a nombre de "${poaName}"`);
+  } else {
+    checklist.push(`✗ Comprobante de Domicilio: No proporcionado`);
+  }
+  
+  // 5. Bank Account - Check both bankAccounts array AND bankIdentity (demo mode)
+  if (profile.bankIdentity) {
+    // Demo mode uses bankIdentity
+    checklist.push(`✓ Cuenta Bancaria: ${profile.bankIdentity.bank_name || 'Banco'} - ${profile.bankIdentity.account_holder_name || 'Titular'}`);
+  } else if (profile.bankAccounts && profile.bankAccounts.length > 0) {
+    const bank = profile.bankAccounts[0];
+    checklist.push(`✓ Cuenta Bancaria: ${bank.bank_name || 'Banco'} - ${bank.account_holder_name || 'Titular'}`);
+  } else {
+    checklist.push(`✗ Cuenta Bancaria: No proporcionada`);
+  }
+  
+  // Add checklist as info-level flag (using OTHER code type for compatibility)
+  flags.push({
+    code: "OTHER",
+    level: "info",
+    message: `📋 VALIDATION_CHECKLIST:\n${checklist.join('\n')}`
+  });
+
   return {
     customerId: profile.customerId,
     score: Math.max(0, score),
@@ -1188,15 +2374,23 @@ export function buildTrace(profile: KycProfile): TraceSection {
     
     trace.ubos = profile.companyIdentity.shareholders.map(sh => {
       const shares = sh.shares ?? null;
-      const percentage = shares && totalShares ? (shares / totalShares) * 100 : null;
       const isUbo = ubos.some(u => u.name === sh.name);
       const uboThreshold = 25;
+
+      // PRIORITY: Use explicit percentage from extraction if available (e.g., Sociedad Civil with 80%/20%)
+      // Only fall back to share-based calculation if no explicit percentage was extracted
+      let computedPercentage: number | null = null;
+      if (sh.percentage !== null && sh.percentage !== undefined) {
+        computedPercentage = sh.percentage;
+      } else if (shares && totalShares > 0) {
+        computedPercentage = Number(((shares / totalShares) * 100).toFixed(2));
+      }
 
       return {
         name: sh.name,
         shares,
         totalShares,
-        computedPercentage: percentage ? Number(percentage.toFixed(2)) : (sh.percentage ?? null), // Fallback to explicit percentage if share calc fails
+        computedPercentage,
         thresholdApplied: uboThreshold,
         isUbo,
       } as UboTrace;

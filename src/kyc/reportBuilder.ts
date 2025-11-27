@@ -74,13 +74,41 @@ export function buildKycReport(
   if (isPF) {
       hechosBody += "### 1. Identidad Personal (Fuente: INE/FM2)\n";
       if (profile.representativeIdentity) {
-          const id = profile.representativeIdentity;
+          const id = profile.representativeIdentity as any; // Cast to access INE-specific fields
+          const hasIneFields = !!(id.clave_elector || id.cic || id.ocr_number);
+          const docType = hasIneFields ? 'INE' : (id.document_type || 'FM2');
+          
+          // Front side data
           hechosBody += `- **Nombre Completo:** ${id.full_name || "N/A"}\n`;
           hechosBody += `- **CURP:** ${id.curp || "N/A"}\n`;
-          hechosBody += `- **Documento:** ${id.document_type || "N/A"}\n`;
-          hechosBody += `- **Número de Documento:** ${id.document_number || "N/A"}\n`;
           if (id.date_of_birth) {
               hechosBody += `- **Fecha de Nacimiento:** ${id.date_of_birth}\n`;
+          }
+          hechosBody += `- **Sexo:** ${id.sex === 'H' ? 'Hombre' : id.sex === 'M' ? 'Mujer' : (id.sex || 'N/A')}\n`;
+          hechosBody += `- **Nacionalidad:** ${id.nationality || (hasIneFields ? 'MEXICANA' : 'N/A')}\n`;
+          
+          // Back side data (INE-specific)
+          if (hasIneFields) {
+              hechosBody += `\n**Datos del Reverso del INE:**\n`;
+              hechosBody += `- **Clave de Elector:** ${id.clave_elector || "N/A"}\n`;
+              hechosBody += `- **CIC:** ${id.cic || "N/A"}\n`;
+              hechosBody += `- **OCR:** ${id.ocr_number || "N/A"}\n`;
+              if (id.seccion) hechosBody += `- **Sección Electoral:** ${id.seccion}\n`;
+              if (id.estado_registro) hechosBody += `- **Estado de Registro:** ${id.estado_registro}\n`;
+              hechosBody += `- **Año de Emisión:** ${id.emission_year || "N/A"}\n`;
+              hechosBody += `- **Vigencia:** ${id.vigencia_year || "N/A"}\n`;
+          } else {
+              // FM2 data
+              hechosBody += `- **Documento:** ${docType}\n`;
+              if (id.document_number) hechosBody += `- **Número de Documento:** ${id.document_number}\n`;
+          }
+          
+          // Address from INE/FM2
+          if (id.address) {
+              hechosBody += `\n**Domicilio en ${docType}:**\n`;
+              const addr = id.address;
+              const addrStr = [addr.street, addr.colonia, addr.municipio, addr.estado, addr.cp].filter(Boolean).join(', ');
+              hechosBody += `- ${addrStr || 'N/A'}\n`;
           }
       } else {
           hechosBody += "- *No se encontró documento de identidad (INE/FM2).*\n";
@@ -144,19 +172,23 @@ export function buildKycReport(
   if (!isPF) {
       hechosBody += "### 3. Identidad del Representante\n";
       if (profile.representativeIdentity) {
-          const rep = profile.representativeIdentity;
+          const rep = profile.representativeIdentity as any; // Cast to access INE-specific fields
           hechosBody += `- **Nombre:** ${rep.full_name}\n`;
           
-          // FIX: Check strict length for document_number
-          const docNumRaw = rep.document_number || "";
-          if (docNumRaw.length < 8) { 
-              hechosBody += `- **Documento:** Incomplete/Error (${docNumRaw})\n`;
+          // For INE documents, use CIC as the document identifier
+          // For FM2/Passport, use document_number
+          const isINE = rep.document_type === 'INE' || rep.document_type === 'IFE' || rep.cic;
+          const docNumRaw = isINE ? (rep.cic || "") : (rep.document_number || "");
+          const docType = rep.document_type || (isINE ? 'INE' : 'ID');
+          
+          if (docNumRaw.length < 4) { 
+              hechosBody += `- **Documento:** ${docType} (número no disponible)\n`;
           } else {
               const docNum = options.redacted ? maskString(docNumRaw) : docNumRaw;
-              hechosBody += `- **Documento:** ${rep.document_type} (${docNum})\n`;
+              hechosBody += `- **Documento:** ${docType} (${docNum})\n`;
           }
 
-          hechosBody += `- **Nacionalidad:** ${rep.nationality}\n`;
+          hechosBody += `- **Nacionalidad:** ${rep.nationality || "MEXICANA"}\n`;
           
           // Date of Birth - consistent with Persona Física section
           if (rep.date_of_birth) {
@@ -177,6 +209,26 @@ export function buildKycReport(
           hechosBody += "- *No se encontró documento de identidad del representante.*\n";
       }
       hechosBody += "\n";
+      
+      // 3b. Passport Identity (for foreign nationals)
+      if (profile.passportIdentity) {
+          hechosBody += "### 3b. Pasaporte / Passport\n";
+          const passport = profile.passportIdentity;
+          hechosBody += `- **Nombre / Name:** ${passport.full_name || "N/A"}\n`;
+          hechosBody += `- **Número / Number:** ${options.redacted ? maskString(passport.document_number || "", 4) : (passport.document_number || "N/A")}\n`;
+          hechosBody += `- **Nacionalidad / Nationality:** ${passport.nationality || "N/A"}\n`;
+          hechosBody += `- **País Emisor / Issuer:** ${passport.issuer_country || "N/A"}\n`;
+          if (passport.date_of_birth || passport.birth_date) {
+              hechosBody += `- **Fecha de Nacimiento / DOB:** ${passport.date_of_birth || passport.birth_date}\n`;
+          }
+          if (passport.issue_date) {
+              hechosBody += `- **Fecha de Expedición / Issue Date:** ${passport.issue_date}\n`;
+          }
+          if (passport.expiry_date) {
+              hechosBody += `- **Vigencia / Expiry:** ${passport.expiry_date}\n`;
+          }
+          hechosBody += "\n";
+      }
   }
 
   // 4. Evidencia Operativa (Bank/PoA)
@@ -606,16 +658,29 @@ export function buildKycReport(
           }
           lines.push("");
           
-          // Demo: Show Bank Identity matching logic
+          // Demo: Show Bank Identity matching logic with LEGAL HIERARCHY
+          // SAT Constancia is the SOURCE OF TRUTH per Mexican law (CNBV, LFPIORPI)
+          // Bank records are DERIVED and must match SAT, not the other way around
           if (profile.bankIdentity) {
+               const satRazonSocial = profile.companyTaxProfile?.razon_social || profile.companyIdentity?.razon_social || 'N/A';
+               const bankTitular = profile.bankIdentity.account_holder_name || 'N/A';
+               
                lines.push(`\n**Validación de Identidad Bancaria:**`);
+               lines.push("");
+               lines.push("> ℹ️ **Jerarquía Legal:** La Constancia de Situación Fiscal (SAT) es la fuente autoritativa para la Razón Social. El banco debe coincidir con SAT, no al revés.");
                lines.push("");
                lines.push("| Criterio | Resultado | Detalle |");
                lines.push("|----------|-----------|---------|");
-               lines.push(`| Titular coincide con Razón Social | ${profile.bankIdentity.holder_matches_company ? "✅ Sí" : "❌ No"} | ${profile.bankIdentity.account_holder_name} |`);
-               lines.push(`| Dirección coincide con Operativa | ${profile.bankIdentity.address_matches_operational ? "✅ Sí" : "⚠️ No"} | ${formatAddress(profile.bankIdentity.address_on_file, options.redacted)} |`);
+               lines.push(`| Razón Social (SAT) coincide con Titular Bancario | ${profile.bankIdentity.holder_matches_company ? "✅ Sí" : "⚠️ Difiere"} | SAT: "${satRazonSocial}" → Banco: "${bankTitular}" |`);
+               lines.push(`| Dirección Operativa coincide con Estado de Cuenta | ${profile.bankIdentity.address_matches_operational ? "✅ Sí" : "⚠️ No"} | ${formatAddress(profile.bankIdentity.address_on_file, options.redacted)} |`);
                lines.push(`| Documento Reciente (<90 días) | ${profile.bankIdentity.within_90_days ? "✅ Sí" : "⚠️ No"} | ${profile.bankIdentity.age_in_days} días |`);
                lines.push("");
+               
+               // Add warning if bank differs from SAT
+               if (!profile.bankIdentity.holder_matches_company) {
+                   lines.push(`> ⚠️ **Nota Legal:** El nombre del titular bancario ("${bankTitular}") difiere de la Razón Social en SAT ("${satRazonSocial}"). Para efectos legales, prevalece la Razón Social del SAT. El banco puede tener un error de captura o usar un nombre comercial.`);
+                   lines.push("");
+               }
           }
           
           lines.push("");
