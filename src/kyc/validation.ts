@@ -2183,15 +2183,29 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     });
     
     if (!verifiedUbo) {
-      // Identity verified but it's not a UBO
-      const uboNames = ubos.map(u => u.name).join(', ');
+      // Identity verified but it's not a UBO - the person with ID is not a beneficial owner
+      // This is common when a non-UBO apoderado handles the onboarding
+      const uboNames = ubos.map(u => `${u.name} (${u.percentage?.toFixed(0) || '?'}%)`).join(', ');
+      const verifiedPersonPct = profile.companyIdentity?.shareholders?.find((sh: any) => {
+        const shTokens = new Set(sh.name?.toUpperCase().split(/\s+/) || []);
+        const idTokens = new Set(profile.representativeIdentity?.full_name?.toUpperCase().split(/\s+/) || []);
+        let matchCount = 0;
+        for (const token of idTokens) {
+          if (shTokens.has(token)) matchCount++;
+        }
+        return matchCount >= 2;
+      })?.percentage;
+      
       flags.push({
         code: "UBO_IDENTITY_NOT_VERIFIED",
-        level: "warning",
-        message: `La identidad verificada (${profile.representativeIdentity.full_name}) no corresponde a ningún UBO (>25%). UBOs detectados: ${uboNames}. Se recomienda verificar la identidad del UBO principal.`,
-        action_required: `Solicitar INE o Pasaporte de: ${ubos[0]?.name || 'UBO principal'}`
+        level: "info", // Downgrade to info - this is expected when apoderado handles onboarding
+        message: `INE verificada: ${profile.representativeIdentity.full_name}${verifiedPersonPct ? ` (${verifiedPersonPct}% participación)` : ''}. UBOs según Acta (>25%): ${uboNames}. Los UBOs están identificados en el Acta Constitutiva.`,
+        action_required: `Para verificación completa de UBO, solicitar INE de: ${ubos[0]?.name || 'UBO principal'}`
       });
-      score -= 0.1;
+      // Don't penalize score - UBOs are identified in Acta, just not ID-verified
+    } else {
+      // The verified identity IS a UBO - this is the ideal case
+      // No flag needed
     }
   }
 
@@ -2448,6 +2462,9 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   }
   
   // 2. Constancia SAT
+  // Get personal SAT Constancias from profile metadata (attached by server.ts)
+  const personalSatConstancias = (profile as any)._personalSatConstancias || [];
+  
   if (hasActaConstitutiva) {
     // For Persona Moral: We need the COMPANY's SAT Constancia
     if (checklistSatRfc) {
@@ -2462,12 +2479,37 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
       } else if (checklistSatIsPersonal) {
         // Bad: We have a personal SAT (4-letter RFC) but need company SAT
         checklist.push(`✗ Constancia SAT Empresa: PENDIENTE`);
-        checklist.push(`⚠️ SAT proporcionada: ${checklistSatRfc} (${profile.companyTaxProfile?.razon_social || 'N/A'}) - es SAT de PERSONA FÍSICA, no de la empresa`);
         checklist.push(`   → Se requiere Constancia de Situación Fiscal de "${checklistCompanyName}"`);
       }
     } else {
       checklist.push(`✗ Constancia SAT Empresa: No proporcionada`);
       checklist.push(`   → Se requiere Constancia de Situación Fiscal de "${checklistCompanyName}"`);
+    }
+    
+    // Show ALL personal SAT Constancias (shareholders/representatives)
+    if (personalSatConstancias.length > 0) {
+      checklist.push(`📋 SAT Constancias de Socios/Representantes (${personalSatConstancias.length} documentos):`);
+      for (const sat of personalSatConstancias) {
+        // Check if this person is a shareholder or legal representative
+        const shareholders = profile.companyIdentity?.shareholders || [];
+        const legalReps = profile.companyIdentity?.legal_representatives || [];
+        const satName = (sat.razon_social || '').toUpperCase();
+        
+        const isShareholder = shareholders.some((sh: any) => 
+          satName.includes(sh.name?.split(' ')[0]?.toUpperCase()) || 
+          sh.name?.toUpperCase().includes(satName.split(' ')[0])
+        );
+        const isLegalRep = legalReps.some((rep: any) => 
+          satName.includes(rep.name?.split(' ')[0]?.toUpperCase()) || 
+          rep.name?.toUpperCase().includes(satName.split(' ')[0])
+        );
+        
+        const role = isShareholder && isLegalRep ? 'Socio/Representante' : 
+                     isShareholder ? 'Socio' : 
+                     isLegalRep ? 'Representante Legal' : 'Persona relacionada';
+        
+        checklist.push(`   ✓ ${sat.razon_social}: RFC ${sat.rfc} (${role})`);
+      }
     }
   } else {
     // For Persona Física

@@ -546,38 +546,66 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
   }
 
   // === SAT SELECTION LOGIC ===
-  // For Persona Moral: Use SAT that matches the Acta's RFC
-  // For Persona Física: Use any personal SAT
+  // CRITICAL: Determine if this is a Persona Moral based on having an Acta (not RFC)
+  // RFC is often NOT in the Acta - it's assigned by SAT after incorporation
+  const hasActa = !!companyIdentity;
   const actaRfc = companyIdentity?.rfc?.toUpperCase().trim();
-  const isActaPersonaMoral = actaRfc && /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/i.test(actaRfc);
+  const personaMoralRfcPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/i;  // 3 letters = corporate
+  const personaFisicaRfcPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/i; // 4 letters = individual
   
-  if (isActaPersonaMoral && actaRfc) {
-    // Look for company SAT that matches Acta RFC
-    const matchingCompanySat = allSatConstancias.find(sat => 
-      sat.rfc.toUpperCase().trim() === actaRfc
-    );
-    
-    if (matchingCompanySat) {
-      companyTaxProfile = matchingCompanySat.payload;
-      console.log(`[SAT Selection] Using company SAT: ${matchingCompanySat.rfc} (matches Acta RFC)`);
+  // Separate SATs by type
+  const companySats = allSatConstancias.filter(sat => personaMoralRfcPattern.test(sat.rfc));
+  const personalSats = allSatConstancias.filter(sat => personaFisicaRfcPattern.test(sat.rfc));
+  
+  console.log(`[SAT Selection] Has Acta: ${hasActa}, Acta RFC: ${actaRfc || 'null'}`);
+  console.log(`[SAT Selection] Company SATs (3-letter RFC): ${companySats.map(s => s.rfc).join(', ') || 'none'}`);
+  console.log(`[SAT Selection] Personal SATs (4-letter RFC): ${personalSats.map(s => s.rfc).join(', ') || 'none'}`);
+  
+  if (hasActa) {
+    // This is a Persona Moral - we need a company SAT
+    if (actaRfc && personaMoralRfcPattern.test(actaRfc)) {
+      // Acta has RFC - look for matching company SAT
+      const matchingCompanySat = companySats.find(sat => 
+        sat.rfc.toUpperCase().trim() === actaRfc
+      );
+      
+      if (matchingCompanySat) {
+        companyTaxProfile = matchingCompanySat.payload;
+        console.log(`[SAT Selection] Using company SAT: ${matchingCompanySat.rfc} (matches Acta RFC)`);
+      } else if (companySats.length > 0) {
+        // Have company SAT but doesn't match Acta RFC - use it but flag mismatch
+        companyTaxProfile = companySats[0].payload;
+        console.log(`[SAT Selection] WARNING: Company SAT ${companySats[0].rfc} doesn't match Acta RFC ${actaRfc}`);
+      } else {
+        // No company SAT at all - leave undefined, validation will flag
+        companyTaxProfile = undefined;
+        console.log(`[SAT Selection] WARNING: No company SAT found. Only personal SATs available: ${personalSats.map(s => s.rfc).join(', ')}`);
+      }
     } else {
-      // No matching company SAT found - this is a flag
-      console.log(`[SAT Selection] WARNING: No SAT found matching company RFC ${actaRfc}`);
-      console.log(`[SAT Selection] Available SATs: ${allSatConstancias.map(s => `${s.rfc} (${s.isCompany ? 'company' : 'personal'})`).join(', ')}`);
-      // Don't use personal SAT as company tax profile - leave it undefined
-      companyTaxProfile = undefined;
+      // Acta has no RFC (common case) - look for any company SAT
+      if (companySats.length > 0) {
+        companyTaxProfile = companySats[0].payload;
+        console.log(`[SAT Selection] Using company SAT: ${companySats[0].rfc} (Acta has no RFC)`);
+      } else {
+        // No company SAT - leave undefined, validation will flag WRONG_SAT_TYPE
+        companyTaxProfile = undefined;
+        console.log(`[SAT Selection] WARNING: Acta present but no company SAT. Personal SATs: ${personalSats.map(s => s.rfc).join(', ')}`);
+      }
     }
   } else {
-    // Persona Física or no Acta - use any available SAT
-    const anySat = allSatConstancias[0];
-    if (anySat) {
-      companyTaxProfile = anySat.payload;
-      console.log(`[SAT Selection] Using personal SAT: ${anySat.rfc}`);
+    // No Acta = Persona Física - use any available SAT (prefer personal)
+    if (personalSats.length > 0) {
+      companyTaxProfile = personalSats[0].payload;
+      console.log(`[SAT Selection] Using personal SAT: ${personalSats[0].rfc}`);
+    } else if (companySats.length > 0) {
+      companyTaxProfile = companySats[0].payload;
+      console.log(`[SAT Selection] Using company SAT: ${companySats[0].rfc} (no personal SAT)`);
     }
   }
   
-  // Store personal SATs for shareholder/representative verification
-  const personalSatConstancias = allSatConstancias.filter(sat => !sat.isCompany);
+  // Store ALL personal SATs for shareholder/representative verification
+  // This allows the report to show all individuals' tax status
+  const personalSatConstancias = personalSats;
 
   const profile = buildKycProfile({
     customerId: customer_id,
