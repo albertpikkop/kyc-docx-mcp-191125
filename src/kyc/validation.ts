@@ -35,45 +35,62 @@ export type EntityType =
  * Classifies the entity type based on Acta and SAT Constancia data
  * 
  * PRIORITY ORDER:
- * 1. Acta RFC (if present) - most authoritative for Persona Moral
- * 2. SAT RFC pattern
- * 3. Tax regime analysis
- * 4. Presence of Acta
+ * 1. Presence of Acta Constitutiva - ALWAYS means Persona Moral
+ * 2. Acta RFC (if present) - confirms Persona Moral
+ * 3. SAT RFC pattern (only if no Acta)
+ * 4. Tax regime analysis (only if no Acta)
+ * 
+ * CRITICAL: An Acta Constitutiva is ONLY created for corporate entities.
+ * If we have an Acta, the entity is ALWAYS Persona Moral, regardless of 
+ * whether the company's RFC is in the Acta or what SAT Constancias we have.
+ * Personal SAT Constancias of shareholders should NOT change this classification.
  */
 export function classifyEntityType(profile: KycProfile): EntityType {
   const taxProfile = profile.companyTaxProfile;
   const hasActa = !!profile.companyIdentity;
   const actaRfc = profile.companyIdentity?.rfc?.toUpperCase().trim();
+  const razonSocial = profile.companyIdentity?.razon_social?.toUpperCase() || '';
   
   const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;  // 3 letters = corporate
   const personaFisicaPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/; // 4 letters = individual
   
-  // 1. PRIORITY: Check Acta RFC first (most authoritative for Persona Moral)
+  // 1. HIGHEST PRIORITY: If we have an Acta Constitutiva, it's ALWAYS Persona Moral
+  //    An Acta is only created for corporate entities (SA, SC, SAPI, etc.)
+  if (hasActa) {
+    // Additional confirmation: check if razon_social contains corporate suffixes
+    const corporateSuffixes = ['S.A.', 'SA ', 'S.C.', 'SC ', 'S.A.P.I.', 'SAPI', 'S.A.S.', 'SAS', 
+                               'S. DE R.L.', 'SOCIEDAD', 'DE C.V.', 'CV'];
+    const hasCorporateSuffix = corporateSuffixes.some(suffix => razonSocial.includes(suffix));
+    
+    if (hasCorporateSuffix || actaRfc || profile.companyIdentity?.shareholders?.length) {
+      return 'PERSONA_MORAL';
+    }
+    
+    // Even without corporate suffix, an Acta implies corporate entity
+    return 'PERSONA_MORAL';
+  }
+  
+  // 2. If Acta has RFC, confirm Persona Moral (redundant if hasActa check passed, but explicit)
   if (actaRfc && personaMoralPattern.test(actaRfc)) {
     return 'PERSONA_MORAL';
   }
   
-  // 2. Check SAT RFC pattern
+  // 3. NO ACTA: Check SAT RFC pattern for Persona Física classification
   if (taxProfile?.rfc) {
     const satRfc = taxProfile.rfc.toUpperCase().trim();
     
-    // If SAT RFC indicates Persona Moral
-    if (personaMoralPattern.test(satRfc) && hasActa) {
+    // If SAT RFC indicates Persona Moral (and no Acta - unusual case)
+    if (personaMoralPattern.test(satRfc)) {
       return 'PERSONA_MORAL';
     }
     
-    // If SAT RFC indicates Persona Física, check tax regime
+    // If SAT RFC indicates Persona Física
     if (personaFisicaPattern.test(satRfc)) {
-      // But if we have an Acta with company RFC, it's still Persona Moral
-      // (the SAT might be a personal SAT of a shareholder)
-      if (hasActa && actaRfc && personaMoralPattern.test(actaRfc)) {
-        return 'PERSONA_MORAL';
-      }
       return classifyPersonaFisicaSubtype(taxProfile);
     }
   }
   
-  // 3. Fallback to tax regime analysis
+  // 4. Fallback to tax regime analysis (only if no Acta)
   if (taxProfile?.tax_regime) {
     const regime = taxProfile.tax_regime.toUpperCase();
     
@@ -86,7 +103,7 @@ export function classifyEntityType(profile: KycProfile): EntityType {
     if (regime.includes('ACTIVIDAD') || regime.includes('EMPRESARIAL') || 
         regime.includes('PROFESIONAL') || regime.includes('RESICO') ||
         regime.includes('RIF') || regime.includes('SIMPLIFICADO')) {
-      return hasActa ? 'PERSONA_MORAL' : 'PERSONA_FISICA_EMPRESARIAL';
+      return 'PERSONA_FISICA_EMPRESARIAL';
     }
     
     // Check for explicit Persona Física indicators
@@ -95,10 +112,8 @@ export function classifyEntityType(profile: KycProfile): EntityType {
     }
   }
   
-  // 4. If has Acta, it's corporate
-  if (hasActa) {
-    return 'PERSONA_MORAL';
-  }
+  // 5. No classification possible
+  // (This case should not happen if hasActa check passed above)
   
   return 'UNKNOWN';
 }
@@ -1647,6 +1662,10 @@ export interface EntityCoherenceResult {
 /**
  * Checks if Acta Constitutiva and SAT Constancia refer to the same entity.
  * Returns true if coherent (or if one document is missing, assuming coherent until proven otherwise).
+ * 
+ * CRITICAL: If the SAT is a personal SAT (4-letter RFC = Persona Física) but we have an Acta
+ * (Persona Moral), this is NOT an entity mismatch - it's a "wrong SAT type" issue.
+ * The validation should continue, but flag that the company SAT is missing.
  */
 export function checkEntityCoherence(profile: KycProfile): EntityCoherenceResult {
   const acta = profile.companyIdentity;
@@ -1655,6 +1674,23 @@ export function checkEntityCoherence(profile: KycProfile): EntityCoherenceResult
   // Can only check consistency if both documents are present
   if (!acta || !sat) {
     return { isCoherent: true };
+  }
+
+  // CRITICAL: Check if SAT is a personal SAT (Persona Física) while Acta is for company
+  // Personal SAT RFC pattern: 4 letters + 6 digits + 3 homoclave (e.g., KATA6910101W6)
+  // Company SAT RFC pattern: 3 letters + 6 digits + 3 homoclave (e.g., DIP030930MM0)
+  const satRfc = sat.rfc?.toUpperCase().trim();
+  const satIsPersonal = satRfc && /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/.test(satRfc);
+  
+  if (satIsPersonal) {
+    // The SAT is a personal SAT, not a company SAT.
+    // This is NOT an entity mismatch - it's a "wrong SAT type" situation.
+    // Return coherent=true to allow validation to continue.
+    // The WRONG_SAT_TYPE flag will be added by the main validation logic.
+    return { 
+      isCoherent: true,
+      reason: `SAT is personal (${satRfc}), not company SAT. Validation will flag wrong SAT type.`
+    };
   }
 
   // 1. RFC Match (Exact, Case-Insensitive)
@@ -1668,14 +1704,14 @@ export function checkEntityCoherence(profile: KycProfile): EntityCoherenceResult
     }
   }
 
-  // 2. Razón Social Match (Normalized)
+  // 2. Razón Social Match (Normalized) - Only for corporate SATs
   const actaName = normalizeString(acta.razon_social);
   const satName = normalizeString(sat.razon_social);
 
   // Handle SA DE CV variations explicitly if needed, but normalized comparison often catches it.
   // normalizeString removes dots, so "S.A. DE C.V." -> "S A DE C V" vs "SA DE CV" -> "SA DE CV".
   // Let's enhance normalization to remove spaces between single letters if needed, or just simple substring match?
-  // Prompt requirements: "Remove abbreviations (“S.A. DE C.V.” ≈ “SA DE CV”)"
+  // Prompt requirements: "Remove abbreviations ("S.A. DE C.V." ≈ "SA DE CV")"
   
   // Let's do a more robust comparison: check if one is contained in the other or very similar.
   // Or simpler: strip spaces entirely for the comparison.
@@ -2227,32 +2263,59 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   // D.1 SAT Constancia validation
   const actaRfc = profile.companyIdentity?.rfc?.toUpperCase().trim();
   const satRfc = profile.companyTaxProfile?.rfc?.toUpperCase().trim();
-  const personaMoralPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;
-  const isActaPersonaMoral = actaRfc && personaMoralPattern.test(actaRfc);
+  const personaMoralRfcPattern = /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/;  // 3 letters = corporate
+  const personaFisicaRfcPattern = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/; // 4 letters = individual
   
-  if (!profile.companyTaxProfile) {
-    if (isActaPersonaMoral) {
+  // CRITICAL: Determine if this is a Persona Moral based on having an Acta
+  // An Acta Constitutiva is ONLY created for corporate entities
+  const hasActa = !!profile.companyIdentity;
+  const isPersonaMoral = hasActa; // If we have an Acta, it's ALWAYS Persona Moral
+  const hasActaRfc = actaRfc && personaMoralRfcPattern.test(actaRfc);
+  
+  // Check if the SAT we have is a personal SAT (not company SAT)
+  const satIsPersonal = satRfc && personaFisicaRfcPattern.test(satRfc);
+  const satIsCorporate = satRfc && personaMoralRfcPattern.test(satRfc);
+  
+  // Get company name for better error messages
+  const companyName = profile.companyIdentity?.razon_social || 'la empresa';
+  
+  if (isPersonaMoral) {
+    // For Persona Moral: We need the COMPANY's SAT Constancia
+    if (!profile.companyTaxProfile) {
+      // No SAT at all
       flags.push({ 
         code: "MISSING_COMPANY_SAT", 
         level: "critical", 
-        message: `Falta Constancia de Situación Fiscal de la empresa (RFC: ${actaRfc}). Se requiere SAT de la Persona Moral, no de socios individuales.`,
-        action_required: `Solicitar Constancia de Situación Fiscal del SAT con RFC: ${actaRfc}`
+        message: `Falta Constancia de Situación Fiscal de la empresa "${companyName}". Se requiere SAT de la Persona Moral, no de socios individuales.`,
+        action_required: `Solicitar Constancia de Situación Fiscal del SAT de la empresa. El RFC de la empresa NO está en el Acta - debe obtenerse del SAT.`
       });
-    } else {
-      flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Missing Tax Profile (SAT Constancia)." });
-    }
-    score -= 0.3;
-  } else if (isActaPersonaMoral && satRfc && satRfc !== actaRfc) {
-    // SAT RFC doesn't match Acta RFC - wrong SAT provided
-    const satIsPersonal = /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/.test(satRfc);
-    if (satIsPersonal) {
+      score -= 0.3;
+    } else if (satIsPersonal) {
+      // We have a SAT but it's a personal SAT (4-letter RFC = Persona Física)
+      const satHolderName = profile.companyTaxProfile.razon_social || 'desconocido';
       flags.push({ 
         code: "WRONG_SAT_TYPE", 
         level: "critical", 
-        message: `SAT Constancia proporcionada es de Persona Física (${satRfc}: ${profile.companyTaxProfile.razon_social}), pero se requiere SAT de la Persona Moral (RFC: ${actaRfc}).`,
-        action_required: `Solicitar Constancia de Situación Fiscal de la empresa con RFC: ${actaRfc}`
+        message: `SAT Constancia proporcionada es de Persona Física (${satRfc}: ${satHolderName}), pero se requiere SAT de la Persona Moral "${companyName}".`,
+        action_required: `Solicitar Constancia de Situación Fiscal de la EMPRESA (no de socios individuales). El RFC de la empresa tendrá formato de 3 letras (ej: DIP######XX#).`
+      });
+      score -= 0.3;
+    } else if (hasActaRfc && satRfc && satRfc !== actaRfc) {
+      // We have both Acta RFC and SAT RFC but they don't match
+      flags.push({ 
+        code: "RFC_MISMATCH", 
+        level: "critical", 
+        message: `RFC del Acta (${actaRfc}) no coincide con RFC del SAT (${satRfc}). Verificar que ambos documentos correspondan a la misma empresa.`,
+        action_required: `Verificar documentos. Si el Acta es correcto, solicitar SAT con RFC: ${actaRfc}`
       });
       score -= 0.25;
+    }
+    // If satIsCorporate and (no actaRfc OR matches), that's good - no flag needed
+  } else {
+    // For Persona Física: Standard SAT validation
+    if (!profile.companyTaxProfile) {
+      flags.push({ code: "LOW_DOC_COVERAGE", level: "critical", message: "Falta Constancia de Situación Fiscal (SAT)." });
+      score -= 0.3;
     }
   }
   
@@ -2356,18 +2419,27 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   const checklist: string[] = [];
   
   // 1. Entity Classification
-  const companyRfc = profile.companyIdentity?.rfc?.toUpperCase().trim();
-  const isCompanyPersonaMoral = companyRfc && /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/.test(companyRfc);
+  // CRITICAL: Persona Moral is determined by having an Acta, NOT by having RFC in the Acta
+  const hasActaConstitutiva = !!profile.companyIdentity;
+  const companyRfcFromActa = profile.companyIdentity?.rfc?.toUpperCase().trim();
+  const checklistCompanyName = profile.companyIdentity?.razon_social || 'la empresa';
+  const checklistSatRfc = profile.companyTaxProfile?.rfc?.toUpperCase().trim();
+  const checklistSatIsPersonal = checklistSatRfc && /^[A-Z]{4}\d{6}[A-Z0-9]{3}$/.test(checklistSatRfc);
+  const checklistSatIsCorporate = checklistSatRfc && /^[A-Z]{3}\d{6}[A-Z0-9]{3}$/.test(checklistSatRfc);
   
   if (isPF) {
     checklist.push(`✓ Tipo de Entidad: Persona Física`);
   } else {
     checklist.push(`✓ Tipo de Entidad: Persona Moral`);
     // Acta Constitutiva
-    if (profile.companyIdentity) {
-      checklist.push(`✓ Acta Constitutiva: Verificada`);
-      checklist.push(`✓ RFC Empresa: ${companyRfc || 'No especificado'}`);
-      if (profile.companyIdentity.registry?.folio || profile.companyIdentity.registry?.fme) {
+    if (hasActaConstitutiva) {
+      checklist.push(`✓ Acta Constitutiva: Verificada (${checklistCompanyName})`);
+      if (companyRfcFromActa) {
+        checklist.push(`✓ RFC Empresa (del Acta): ${companyRfcFromActa}`);
+      } else {
+        checklist.push(`⚠️ RFC Empresa: No especificado en Acta (se requiere SAT de la empresa para obtener RFC)`);
+      }
+      if (profile.companyIdentity?.registry?.folio || profile.companyIdentity?.registry?.fme) {
         checklist.push(`✓ Registro Público: Folio ${profile.companyIdentity.registry.folio || profile.companyIdentity.registry.fme}`);
       }
     } else {
@@ -2376,19 +2448,26 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   }
   
   // 2. Constancia SAT
-  if (isCompanyPersonaMoral) {
-    // For Persona Moral, check if SAT matches company RFC
-    if (profile.companyTaxProfile?.rfc) {
-      const satRfc = profile.companyTaxProfile.rfc.toUpperCase().trim();
-      if (satRfc === companyRfc) {
-        checklist.push(`✓ Constancia SAT Empresa: RFC ${satRfc}`);
-        checklist.push(`✓ Régimen Fiscal: ${profile.companyTaxProfile.tax_regime || 'No especificado'}`);
-      } else {
-        checklist.push(`✗ Constancia SAT Empresa: Pendiente (RFC requerido: ${companyRfc})`);
-        checklist.push(`⚠️ SAT proporcionada: ${satRfc} (${profile.companyTaxProfile.razon_social}) - es SAT personal, no de empresa`);
+  if (hasActaConstitutiva) {
+    // For Persona Moral: We need the COMPANY's SAT Constancia
+    if (checklistSatRfc) {
+      if (checklistSatIsCorporate) {
+        // Good: We have a corporate SAT (3-letter RFC)
+        if (!companyRfcFromActa || checklistSatRfc === companyRfcFromActa) {
+          checklist.push(`✓ Constancia SAT Empresa: RFC ${checklistSatRfc}`);
+          checklist.push(`✓ Régimen Fiscal: ${profile.companyTaxProfile?.tax_regime || 'No especificado'}`);
+        } else {
+          checklist.push(`⚠️ Constancia SAT: RFC ${checklistSatRfc} no coincide con RFC del Acta (${companyRfcFromActa})`);
+        }
+      } else if (checklistSatIsPersonal) {
+        // Bad: We have a personal SAT (4-letter RFC) but need company SAT
+        checklist.push(`✗ Constancia SAT Empresa: PENDIENTE`);
+        checklist.push(`⚠️ SAT proporcionada: ${checklistSatRfc} (${profile.companyTaxProfile?.razon_social || 'N/A'}) - es SAT de PERSONA FÍSICA, no de la empresa`);
+        checklist.push(`   → Se requiere Constancia de Situación Fiscal de "${checklistCompanyName}"`);
       }
     } else {
-      checklist.push(`✗ Constancia SAT Empresa: No proporcionada (RFC requerido: ${companyRfc})`);
+      checklist.push(`✗ Constancia SAT Empresa: No proporcionada`);
+      checklist.push(`   → Se requiere Constancia de Situación Fiscal de "${checklistCompanyName}"`);
     }
   } else {
     // For Persona Física
