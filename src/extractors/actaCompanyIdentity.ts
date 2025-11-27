@@ -10,7 +10,16 @@ GLOBAL HARDENING RULES:
 - Never infer or generate data not clearly printed.
 - If a field is not present, set to null. Do NOT use "N/A", "Unknown", "--", or empty strings.
 - Normalize all dates to YYYY-MM-DD.
-- RFC must remain null unless strictly printed inside the Acta. Do NOT invent it.
+
+CRITICAL RFC RULE - READ CAREFULLY:
+- RFC (Registro Federal de Contribuyentes) is ALMOST NEVER printed in an Acta Constitutiva.
+- RFC is assigned by SAT (Servicio de Administración Tributaria) AFTER the company is incorporated.
+- The Acta Constitutiva is created BEFORE the company has an RFC.
+- DO NOT calculate or invent RFC from company name + incorporation date.
+- DO NOT generate RFC in the format [3 letters][6 digits][3 chars] based on company initials and date.
+- RFC must be set to NULL unless you see the exact phrase "RFC:" or "Registro Federal de Contribuyentes:" followed by the actual RFC number explicitly printed in the document.
+- If you are tempted to "fill in" the RFC based on the company name and date, STOP - set it to null instead.
+- The only exception is reformation/modification deeds that reference an existing RFC.
 
 EXTRACT THE FOLLOWING DEEP KYC DATA:
 
@@ -201,8 +210,54 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
       normalizedIdentity.founding_address.country = "MX";
     }
 
-    // Ensure RFC is explicitly strictly handled (though normalization handles strict nulls)
-    // Double check logic for specific fields if needed
+    // CRITICAL: RFC HALLUCINATION PREVENTION
+    // Gemini often invents/calculates RFC from company name + date even when instructed not to.
+    // RFC is RARELY printed in Acta Constitutiva - it comes from SAT registration AFTER incorporation.
+    // We MUST force RFC to null unless we have high confidence it was explicitly found.
+    // 
+    // A "calculated" RFC follows the pattern: [First 3 letters of name] + [YYMMDD of incorporation] + [3 char homoclave]
+    // If the RFC matches this pattern AND matches the company name/date, it was likely hallucinated.
+    if (normalizedIdentity.rfc) {
+      const rfc = normalizedIdentity.rfc.toUpperCase().trim();
+      const razonSocial = (normalizedIdentity.razon_social || '').toUpperCase();
+      const incDate = normalizedIdentity.incorporation_date;
+      
+      // Check if RFC looks like it was calculated from company name + date
+      // Pattern: 3 letters (company initials) + 6 digits (YYMMDD) + 3 chars (homoclave)
+      const rfcMatch = rfc.match(/^([A-Z]{3})(\d{6})([A-Z0-9]{3})$/);
+      if (rfcMatch && incDate) {
+        const rfcInitials = rfcMatch[1];
+        const rfcDatePart = rfcMatch[2];
+        
+        // Extract initials from company name (first letter of first 3 significant words)
+        const words = razonSocial.split(/\s+/).filter(w => 
+          w.length > 2 && !['DE', 'LA', 'EL', 'LOS', 'LAS', 'SA', 'SC', 'CV', 'SAPI', 'SAS'].includes(w)
+        );
+        const calculatedInitials = words.slice(0, 3).map(w => w[0]).join('');
+        
+        // Extract date from incorporation_date (YYYY-MM-DD -> YYMMDD)
+        const dateParts = incDate.split('-');
+        if (dateParts.length === 3) {
+          const calculatedDatePart = dateParts[0].slice(2) + dateParts[1] + dateParts[2];
+          
+          // If RFC initials match calculated initials AND date matches, it was likely hallucinated
+          if (rfcInitials === calculatedInitials && rfcDatePart === calculatedDatePart) {
+            console.log(`[RFC HALLUCINATION DETECTED] RFC "${rfc}" appears to be calculated from company name "${razonSocial}" and date "${incDate}". Setting to null.`);
+            normalizedIdentity.rfc = null;
+          }
+        }
+      }
+      
+      // Additional check: RFC should NOT be in Acta unless it's a reformation/modification deed
+      // For new incorporations, RFC doesn't exist yet - it's assigned by SAT after registration
+      // If this is an original constitution (not a reformation), RFC should be null
+      const isOriginalConstitution = !normalizedIdentity.modifications || normalizedIdentity.modifications.length === 0;
+      if (isOriginalConstitution && normalizedIdentity.rfc) {
+        // For original constitutions, RFC is almost never present
+        // Only keep it if it's clearly NOT calculated (different pattern)
+        console.log(`[RFC WARNING] Original constitution deed should not contain RFC. Verify if "${normalizedIdentity.rfc}" was explicitly printed.`);
+      }
+    }
 
     // Re-apply logical derivations for legal representatives (can_sign_contracts)
     if (Array.isArray(normalizedIdentity.legal_representatives)) {
