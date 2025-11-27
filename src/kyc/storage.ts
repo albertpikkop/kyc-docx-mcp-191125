@@ -856,9 +856,38 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
                                 <span class="exec-can-sign-icon">✅</span>
                                 <span class="exec-can-sign-text">PUEDE FIRMAR</span>
                             </div>
-                            <div class="exec-power-detail">
-                                <strong>Facultades:</strong> Poderes Amplios (Administración, Dominio, Pleitos, Títulos)
-                            </div>
+                            ${(() => {
+                                const poderList = Array.isArray(matchedRep.poder_scope) ? matchedRep.poder_scope : [];
+                                const corePoders = poderList.filter((p: string) => 
+                                    /PLEITOS|ADMINISTRACI|DOMINIO|T[ÍI]TULOS/i.test(p)
+                                );
+                                const otherPoders = poderList.filter((p: string) => 
+                                    !/PLEITOS|ADMINISTRACI|DOMINIO|T[ÍI]TULOS/i.test(p)
+                                );
+                                return `
+                                    <div style="margin-top: 8px; padding: 12px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+                                        <div style="font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 8px;">
+                                            Poderes Otorgados en Acta (${poderList.length} facultades):
+                                        </div>
+                                        ${corePoders.length > 0 ? `
+                                            <div style="font-size: 12px; margin-bottom: 8px;">
+                                                <strong style="color: #15803d;">Poderes Generales (4 canónicos):</strong>
+                                                <div style="margin-left: 12px; margin-top: 4px;">
+                                                    ${corePoders.map((p: string) => `<div style="color: #166534;">✓ ${p}</div>`).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        ${otherPoders.length > 0 ? `
+                                            <div style="font-size: 12px;">
+                                                <strong style="color: #374151;">Facultades Especiales (${otherPoders.length}):</strong>
+                                                <div style="margin-left: 12px; margin-top: 4px; color: #4b5563;">
+                                                    ${otherPoders.map((p: string) => `<div>• ${p}</div>`).join('')}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            })()}
                         ` : canSignLimited ? `
                             <div class="exec-can-sign-badge exec-can-sign-limited">
                                 <span class="exec-can-sign-icon">⚠️</span>
@@ -881,6 +910,31 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
                             <span class="exec-role-label">Cargo:</span>
                             <span class="exec-role-value">${matchedRep.role || 'Apoderado'}</span>
                         </div>
+                        ${(() => {
+                            // Find shareholder info for this person
+                            const shareholders = run.profile?.companyIdentity?.shareholders || [];
+                            const matchedShareholder = shareholders.find((sh: any) => {
+                                const shTokens = new Set((sh.name || '').toUpperCase().split(/\s+/));
+                                const repTokens = new Set((matchedRep.name || '').toUpperCase().split(/\s+/));
+                                let matchCount = 0;
+                                for (const token of repTokens) {
+                                    if (shTokens.has(token)) matchCount++;
+                                }
+                                return matchCount >= 2;
+                            });
+                            
+                            if (matchedShareholder) {
+                                const pct = matchedShareholder.percentage || 0;
+                                const isUbo = pct >= 25;
+                                return `
+                                    <div style="margin-top: 8px; padding: 8px 12px; background: ${isUbo ? '#fef3c7' : '#f3f4f6'}; border-radius: 6px; font-size: 12px;">
+                                        <strong>Participación:</strong> ${pct}% del capital social
+                                        ${isUbo ? '<span style="color: #b45309; margin-left: 8px;">⚠️ Beneficiario Controlador (>25%)</span>' : '<span style="color: #6b7280; margin-left: 8px;">(No es Beneficiario Controlador)</span>'}
+                                    </div>
+                                `;
+                            }
+                            return '';
+                        })()}
                     </div>
                 ` : repIdentityName ? `
                     <div class="exec-signing-authority">
@@ -913,18 +967,68 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
             <div class="exec-card-body">
                 <div class="exec-info-note">ℹ️ Personas con facultades según el Acta (no verificadas con ID)</div>
                 ${otherReps.length > 0 ? `
-                    <div class="exec-signatory-list">
+                    <div class="exec-signatory-list-detailed">
                         ${otherReps.slice(0, 4).map(r => {
                             const power = getPowerScope(r);
+                            const poderList = Array.isArray(r.poder_scope) ? r.poder_scope : [];
+                            // Group powers by type for cleaner display
+                            const corePoders = poderList.filter((p: string) => 
+                                /PLEITOS|ADMINISTRACI|DOMINIO|T[ÍI]TULOS/i.test(p)
+                            );
+                            const otherPoders = poderList.filter((p: string) => 
+                                !/PLEITOS|ADMINISTRACI|DOMINIO|T[ÍI]TULOS/i.test(p)
+                            );
+                            
+                            // Find shareholder info for this person
+                            const shareholders = run.profile?.companyIdentity?.shareholders || [];
+                            const matchedShareholder = shareholders.find((sh: any) => {
+                                const shTokens = new Set((sh.name || '').toUpperCase().split(/\s+/));
+                                const repTokens = new Set((r.name || '').toUpperCase().split(/\s+/));
+                                let matchCount = 0;
+                                for (const token of repTokens) {
+                                    if (shTokens.has(token)) matchCount++;
+                                }
+                                return matchCount >= 2;
+                            });
+                            const shareholderPct = matchedShareholder?.percentage || 0;
+                            const isUbo = shareholderPct >= 25;
+                            
                             return `
-                                <div class="exec-signatory-item">
-                                    <span class="exec-signatory-name">${r.name || 'N/A'}</span>
-                                    <span class="exec-signatory-role">${r.role || 'Rol desconocido'}</span>
-                                    <span class="exec-power-mini exec-power-${power.color}">${power.label}</span>
+                                <div class="exec-signatory-item-detailed" style="border: 1px solid ${isUbo ? '#fbbf24' : '#e5e7eb'}; border-radius: 8px; padding: 12px; margin-bottom: 12px; background: ${isUbo ? '#fffbeb' : '#fafafa'};">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span class="exec-signatory-name" style="font-weight: 600; font-size: 15px;">${r.name || 'N/A'}</span>
+                                        <span class="exec-power-mini exec-power-${power.color}" style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; ${power.color === 'green' ? 'background: #dcfce7; color: #166534;' : power.color === 'yellow' ? 'background: #fef9c3; color: #854d0e;' : 'background: #f3f4f6; color: #6b7280;'}">${power.label}</span>
+                                    </div>
+                                    <div style="display: flex; gap: 16px; color: #6b7280; font-size: 13px; margin-bottom: 8px;">
+                                        <div><strong>Cargo:</strong> ${r.role || 'No especificado'}</div>
+                                        ${matchedShareholder ? `
+                                            <div><strong>Participación:</strong> ${shareholderPct}% ${isUbo ? '<span style="color: #b45309; font-weight: 600;">⚠️ UBO</span>' : ''}</div>
+                                        ` : ''}
+                                    </div>
+                                    ${corePoders.length > 0 ? `
+                                        <div style="font-size: 12px; color: #374151; margin-bottom: 6px;">
+                                            <strong>Poderes Generales (${corePoders.length}):</strong>
+                                            <div style="margin-left: 12px; margin-top: 4px;">
+                                                ${corePoders.map((p: string) => `<div style="color: #059669;">✓ ${p}</div>`).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    ${otherPoders.length > 0 ? `
+                                        <div style="font-size: 12px; color: #374151;">
+                                            <strong>Facultades Especiales (${otherPoders.length}):</strong>
+                                            <div style="margin-left: 12px; margin-top: 4px; color: #6b7280;">
+                                                ${otherPoders.map((p: string) => `<div>• ${p}</div>`).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e5e7eb; font-size: 11px; color: ${r.can_sign_contracts ? '#059669' : '#9ca3af'};">
+                                        ${r.can_sign_contracts ? '✅ Puede firmar contratos en nombre de la sociedad' : '⚠️ Verificar alcance de poderes'}
+                                        ${r.joint_signature_required ? ' • Requiere firma mancomunada' : ' • Firma individual'}
+                                    </div>
                                 </div>
                             `;
                         }).join('')}
-                        ${otherReps.length > 4 ? `<div class="exec-more">+${otherReps.length - 4} más...</div>` : ''}
+                        ${otherReps.length > 4 ? `<div class="exec-more" style="text-align: center; color: #6b7280; padding: 8px;">+${otherReps.length - 4} personas más con poderes...</div>` : ''}
                     </div>
                 ` : `
                     <div class="exec-empty">No hay otros firmantes registrados</div>

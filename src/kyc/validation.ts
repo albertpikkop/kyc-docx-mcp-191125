@@ -2333,19 +2333,32 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     }
   }
   
-  // D.1 Check for missing Folio Mercantil (Persona Moral only)
+  // D.1 Check for missing Folio Mercantil (ONLY for Sociedades Mercantiles)
+  // IMPORTANT: Sociedad Civil (S.C.) does NOT require FME - it's regulated by Código Civil, not LGSM
+  // Only Sociedades Mercantiles (S.A., S.A.P.I., S. de R.L., S.A.S., etc.) require inscription in RPP
   if (!isPF && profile.companyIdentity) {
+    const razonSocial = (profile.companyIdentity.razon_social || '').toUpperCase();
+    
+    // Check if this is a Sociedad Mercantil (requires FME) or Sociedad Civil (doesn't require FME)
+    const isSociedadMercantil = /\b(S\.?A\.?|S\.?A\.?P\.?I\.?|S\.?\s*DE\s*R\.?L\.?|S\.?A\.?S\.?|S\.?C\.?A\.?|SOCIEDAD\s+AN[ÓO]NIMA|SOCIEDAD\s+DE\s+RESPONSABILIDAD\s+LIMITADA)\b/i.test(razonSocial);
+    const isSociedadCivil = /\bSOCIEDAD\s+CIVIL\b|,\s*S\.?C\.?\s*$/i.test(razonSocial);
+    
     const registry = profile.companyIdentity.registry;
-    if (!registry?.fme && !registry?.folio && !registry?.nci) {
-      flags.push({ 
-        code: "MISSING_FME", 
-        level: "warning", 
-        message: "Falta Folio Mercantil Electrónico (FME) o número de inscripción en el Registro Público de Comercio.",
-        action_required: "Solicitar boleta de inscripción o constancia del Registro Público de Comercio."
-      });
-      // Don't penalize score heavily - it's often not in the Acta itself
-      score -= 0.05;
+    
+    if (isSociedadMercantil && !isSociedadCivil) {
+      // Sociedad Mercantil - FME is REQUIRED per Código de Comercio Art. 21
+      if (!registry?.fme && !registry?.folio && !registry?.nci) {
+        flags.push({ 
+          code: "MISSING_FME", 
+          level: "warning", 
+          message: "Falta Folio Mercantil Electrónico (FME) o número de inscripción en el Registro Público de Comercio. Requerido para Sociedades Mercantiles según Código de Comercio Art. 21.",
+          action_required: "Solicitar boleta de inscripción o constancia del Registro Público de Comercio."
+        });
+        score -= 0.05;
+      }
     }
+    // For Sociedad Civil - NO FME required (regulated by Código Civil, not Código de Comercio)
+    // No flag needed
   }
   
   // D.2 Tax Regime validation for commercial capability
