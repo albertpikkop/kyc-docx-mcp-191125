@@ -62,6 +62,10 @@ import { extractCfeProofOfAddress } from "../extractors/cfeProofOfAddress.js";
 import { extractBankStatementProfile } from "../extractors/bankStatementProfile.js";
 import { extractBankStatementTransactions } from "../extractors/bankStatementTransactions.js";
 import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
+import { extractBoletaRPC } from "../extractors/boletaRPCExtractor.js";
+import { extractRNIE } from "../extractors/rnieExtractor.js";
+import { extractSREConvenio } from "../extractors/sreConvenioExtractor.js";
+import { extractAutorizacionDenominacion } from "../extractors/autorizacionDenominacionExtractor.js";
 import { DEMO_CONFIG } from "../core/demoConfig.js";
 import { canonicalizeName } from "../core/canonicalizer.js";
 // Citation engine imported dynamically in handleGetLegalCitations
@@ -273,6 +277,42 @@ export async function handleImportKycDocument({ customer_id, doc_type, file_url,
         // Use the same payload structure as bank statement profile since they share schema
         extractedPayload = identityResult.bank_account_profile ?? null;
         // No transactions for identity page
+        break;
+      case "boleta_rpc":
+        // Boleta de Inscripción del Registro Público de Comercio - contains FME
+        const boletaResult = await extractBoletaRPC(file_url);
+        if (boletaResult.success && boletaResult.data) {
+          extractedPayload = boletaResult.data;
+        } else {
+          throw new Error(boletaResult.error || "Failed to extract Boleta RPC");
+        }
+        break;
+      case "rnie_constancia":
+        // RNIE registration for companies with foreign shareholders
+        const rnieResult = await extractRNIE(file_url);
+        if (rnieResult.success && rnieResult.data) {
+          extractedPayload = rnieResult.data;
+        } else {
+          throw new Error(rnieResult.error || "Failed to extract RNIE Constancia");
+        }
+        break;
+      case "sre_convenio":
+        // SRE Convenio de Extranjería
+        const sreResult = await extractSREConvenio(file_url);
+        if (sreResult.success && sreResult.data) {
+          extractedPayload = { ...sreResult.data, document_type: "sre_convenio" };
+        } else {
+          throw new Error(sreResult.error || "Failed to extract SRE Convenio");
+        }
+        break;
+      case "autorizacion_denominacion":
+        // SE Autorización de Denominación
+        const autResult = await extractAutorizacionDenominacion(file_url);
+        if (autResult.success && autResult.data) {
+          extractedPayload = { ...autResult.data, document_type: "autorizacion_denominacion" };
+        } else {
+          throw new Error(autResult.error || "Failed to extract Autorización Denominación");
+        }
         break;
       default:
         throw new Error(`Unsupported document type: ${doc_type}`);
@@ -542,6 +582,54 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
       case "bank_statement_transactions":
         // Reserved for future transaction analytics
         break;
+      case "boleta_rpc":
+        // Boleta RPC contains FME and official registration data - stored later
+        break;
+      case "rnie_constancia":
+        // RNIE registration for foreign-owned companies - stored later
+        break;
+      case "sre_convenio":
+        // SRE Convenio de Extranjería - stored later
+        break;
+      case "autorizacion_denominacion":
+        // SE Autorización de Denominación - stored later
+        break;
+    }
+  }
+  
+  // Collect registry documents (processed after profile is built)
+  let boletaRPCPayload: any = null;
+  let rnieConstanciaPayload: any = null;
+  let sreConvenioPayload: any = null;
+  let autorizacionDenominacionPayload: any = null;
+  
+  for (const registryDoc of run.documents) {
+    const payload = registryDoc.extractedPayload as any;
+    if (!payload) continue;
+    
+    switch (registryDoc.type) {
+      case "boleta_rpc":
+        if (payload.numero_unico_documento) {
+          boletaRPCPayload = payload;
+          console.log(`[Profile Build] Found Boleta RPC with FME: ${payload.numero_unico_documento}`);
+        }
+        break;
+      case "rnie_constancia":
+        if (payload.folio_ingreso) {
+          rnieConstanciaPayload = payload;
+          console.log(`[Profile Build] Found RNIE Constancia with Folio: ${payload.folio_ingreso}`);
+        }
+        break;
+      case "sre_convenio":
+        if (payload.folio) {
+          sreConvenioPayload = payload;
+        }
+        break;
+      case "autorizacion_denominacion":
+        if (payload.cud) {
+          autorizacionDenominacionPayload = payload;
+        }
+        break;
     }
   }
 
@@ -624,6 +712,22 @@ export async function handleBuildKycProfile({ customer_id }: { customer_id: stri
       razon_social: sat.razon_social,
       isCompany: sat.isCompany
     }));
+  }
+  
+  // Attach registry documents (Boleta RPC, RNIE, SRE Convenio, Autorización Denominación)
+  if (boletaRPCPayload) {
+    (profile as any).boletaRPC = boletaRPCPayload;
+    console.log(`[Profile Build] Added Boleta RPC with FME: ${boletaRPCPayload.numero_unico_documento}`);
+  }
+  if (rnieConstanciaPayload) {
+    (profile as any).rnieConstancia = rnieConstanciaPayload;
+    console.log(`[Profile Build] Added RNIE Constancia with Folio: ${rnieConstanciaPayload.folio_ingreso}`);
+  }
+  if (sreConvenioPayload) {
+    (profile as any).sreConvenio = sreConvenioPayload;
+  }
+  if (autorizacionDenominacionPayload) {
+    (profile as any).autorizacionDenominacion = autorizacionDenominacionPayload;
   }
 
   // Cross-verify UBO data from multiple acta sources for confidence scoring
@@ -929,7 +1033,7 @@ export async function handleAssessCredit({ customer_id }: { customer_id: string 
   }
 
   // Get transactions from bank_statement_transactions documents
-  const txDoc = dbRun.docs.find(d => d.docType === 'bank_statement_transactions');
+  const txDoc = dbRun.docs.find((d: any) => d.docType === 'bank_statement_transactions');
   const transactions = txDoc?.extractedPayload as Array<{
     date: string;
     direction: 'credit' | 'debit';
@@ -1185,7 +1289,7 @@ export async function handleSuggestMissingDocuments({ customer_id }: { customer_
     });
   }
 
-  const existingDocTypes = new Set(dbRun.docs.map(d => d.docType));
+  const existingDocTypes = new Set(dbRun.docs.map((d: any) => d.docType));
   const profile = dbRun.profile as KycProfile | null;
 
   const suggestions: Array<{
@@ -1630,7 +1734,11 @@ const SUPPORTED_DOCS: Record<ImportableDocumentType, string> = {
   "telmex": "Telmex Bill - Extracts Proof of Address",
   "cfe": "CFE Electricity Bill - Extracts Proof of Address",
   "bank_statement": "Bank Statement - Extracts Profile & Transactions",
-  "bank_identity_page": "Bank Identity Page - Extracts Account Profile from Bank Statement Identity Page"
+  "bank_identity_page": "Bank Identity Page - Extracts Account Profile from Bank Statement Identity Page",
+  "boleta_rpc": "Boleta de Inscripción RPC - Extracts FME (Folio Mercantil Electrónico) and registry data",
+  "rnie_constancia": "Constancia RNIE - Extracts foreign investment registration (Registro Nacional de Inversiones Extranjeras)",
+  "sre_convenio": "Convenio de Extranjería SRE - Extracts foreign investment agreement registration",
+  "autorizacion_denominacion": "Autorización de Denominación SE - Extracts company name authorization"
 };
 
 // Wire tools to handlers
@@ -1644,7 +1752,7 @@ server.tool(
   "import_kyc_document",
   {
     customer_id: z.string(),
-    doc_type: z.enum(["acta", "sat_constancia", "fm2", "ine", "passport", "telmex", "cfe", "bank_statement", "bank_identity_page"]),
+    doc_type: z.enum(["acta", "sat_constancia", "fm2", "ine", "passport", "telmex", "cfe", "bank_statement", "bank_identity_page", "boleta_rpc", "rnie_constancia", "sre_convenio", "autorizacion_denominacion"]),
     file_url: z.string(),
     source_name: z.string().optional()
   },

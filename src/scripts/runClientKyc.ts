@@ -19,6 +19,8 @@ import { extractImmigrationProfile } from "../extractors/fm2Immigration.js";
 import { extractCfeProofOfAddress } from "../extractors/cfeProofOfAddress.js";
 import { extractTelmexProofOfAddress } from "../extractors/telmexProofOfAddress.js";
 import { extractBankIdentityPage } from "../extractors/bankIdentityPage.js";
+import { extractPassportIdentity } from "../extractors/passportIdentity.js";
+import { extractIneIdentity } from "../extractors/ineIdentity.js";
 import { buildKycProfile } from "../kyc/profileBuilder.js";
 import { validateKycProfile } from "../kyc/validation.js";
 import { saveRun } from "../kyc/storage.js";
@@ -46,41 +48,86 @@ const BASE_DOCUMENTS_FOLDER = "/Users/ashishpunj/Desktop/mcp-docs";
  */
 const DOCUMENT_PATTERNS: Record<DocumentType, string[]> = {
   acta: ["acta", "constitutiva", "escritura", "constitución"],
-  sat_constancia: ["constancia", "sat", "situacion fiscal", "rfc"],
-  fm2: ["fm2", "immigration", "migración", "residente"],
+  sat_constancia: ["constancia", "sat", "situacion fiscal", "rfc", "gpo"], // Added "gpo" for Grupo Pounj
+  fm2: ["fm2", "fm3", "immigration", "migración", "residente"],
   ine: ["ine", "ife", "credencial", "votar"],
-  passport: ["passport", "pasaporte"],
-  telmex: ["telmex", "telefono", "recibo telmex"],
-  cfe: ["cfe", "luz", "electricidad", "recibo cfe"],
-  bank_identity_page: ["banco", "bank", "estado cuenta", "cuenta", "clabe", "kapital"],
+  // IMPORTANT: "new passport" and "passport front" come FIRST to prefer front page over backside
+  // Backside files often have "backside" in name and contain family details, not holder info
+  // Passports may be named with person's name (e.g., "Passport_Front_Ashish_Punj_...")
+  passport: ["new passport", "passport front", "pasaporte frente", "passport_front", "passport", "pasaporte"],
+  telmex: ["telmex", "telefono", "recibo-", "recibo telmex", "recibo-oct"], // Added "recibo-oct" pattern
+  cfe: ["cfe", "luz", "electricidad", "recibo cfe", "cfe_"], // Added "cfe_" pattern
+  bank_identity_page: ["banco", "bank", "estado cuenta", "esatdo", "cuenta", "clabe", "kapital", "octubre", "october"], // Added month names
   bank_statement: ["estado cuenta", "bank statement", "extracto"],
-  bank_statement_transactions: [] // Not auto-detected
+  bank_statement_transactions: [], // Not auto-detected
+  boleta_rpc: ["boleta", "inscripcion", "rpc", "registro publico comercio", "fme"],
+  rnie_constancia: ["rnie", "inversiones extranjeras", "acuse rnie"],
+  sre_convenio: ["sre", "convenio extranjeria", "relaciones exteriores"],
+  autorizacion_denominacion: ["autorizacion", "denominacion", "razon social", "cud"]
+};
+
+// Supported file extensions by document type
+const SUPPORTED_EXTENSIONS: Record<DocumentType, string[]> = {
+  acta: ['.pdf'],
+  sat_constancia: ['.pdf'],
+  fm2: ['.pdf', '.jpg', '.jpeg', '.png'],
+  ine: ['.pdf', '.jpg', '.jpeg', '.png'],
+  passport: ['.pdf', '.jpg', '.jpeg', '.png'],
+  telmex: ['.pdf'],
+  cfe: ['.pdf'],
+  bank_identity_page: ['.pdf'],
+  bank_statement: ['.pdf'],
+  bank_statement_transactions: ['.pdf'],
+  boleta_rpc: ['.pdf'],
+  rnie_constancia: ['.pdf'],
+  sre_convenio: ['.pdf'],
+  autorizacion_denominacion: ['.pdf']
 };
 
 /**
  * Auto-detect documents in a client folder
  */
 function findDocumentsInFolder(clientFolder: string): Array<{ type: DocumentType; fileName: string }> {
-  const files = fs.readdirSync(clientFolder).filter(f => f.toLowerCase().endsWith('.pdf'));
+  const allFiles = fs.readdirSync(clientFolder);
   const documents: Array<{ type: DocumentType; fileName: string }> = [];
   const usedFiles = new Set<string>();
 
-  // Priority order for document types
-  const typeOrder: DocumentType[] = ['acta', 'sat_constancia', 'fm2', 'telmex', 'cfe', 'bank_identity_page', 'bank_statement'];
+  // Priority order for document types - passport should come before fm2 to capture both
+  const typeOrder: DocumentType[] = ['acta', 'sat_constancia', 'passport', 'fm2', 'ine', 'telmex', 'cfe', 'bank_identity_page', 'bank_statement'];
 
   for (const docType of typeOrder) {
     const patterns = DOCUMENT_PATTERNS[docType];
-    for (const file of files) {
-      if (usedFiles.has(file)) continue;
-      
-      const fileLower = file.toLowerCase();
-      const matches = patterns.some(pattern => fileLower.includes(pattern));
-      
-      if (matches) {
-        documents.push({ type: docType, fileName: file });
-        usedFiles.add(file);
-        break; // Take first match for each type
+    const allowedExtensions = SUPPORTED_EXTENSIONS[docType] || ['.pdf'];
+    
+    // Filter files by allowed extensions for this doc type
+    const eligibleFiles = allFiles.filter(f => {
+      const ext = path.extname(f).toLowerCase();
+      return allowedExtensions.includes(ext);
+    });
+    
+    // For passports: skip files with "backside" - they contain family info, not holder info
+    // Indian passport backside has: Father's Name, Mother's Name, Spouse's Name - NOT the holder
+    const filteredFiles = docType === 'passport' 
+      ? eligibleFiles.filter(f => !f.toLowerCase().includes('backside'))
+      : eligibleFiles;
+    
+    // Try patterns in order (first pattern has priority)
+    for (const pattern of patterns) {
+      let found = false;
+      for (const file of filteredFiles) {
+        if (usedFiles.has(file)) continue;
+        
+        // Remove numbered prefixes (e.g., "1. Acta..." -> "Acta...")
+        const cleanFileName = file.replace(/^\d+\.\s*/, '');
+        const fileLower = cleanFileName.toLowerCase();
+        if (fileLower.includes(pattern)) {
+          documents.push({ type: docType, fileName: file });
+          usedFiles.add(file);
+          found = true;
+          break; // Take first match for this pattern
+        }
       }
+      if (found) break; // Pattern matched, move to next doc type
     }
   }
 
@@ -163,6 +210,8 @@ async function main() {
   let companyIdentity: any = null;
   let companyTaxProfile: any = null;
   let representativeIdentity: any = null;
+  let passportIdentity: any = null;
+  // ineIdentity is extracted but handled in MCP server flow, not buildKycProfile
 
   // Process each document
   for (const doc of documents) {
@@ -184,6 +233,15 @@ async function main() {
         case "fm2":
           extractedPayload = await extractImmigrationProfile(fileUrl);
           representativeIdentity = extractedPayload;
+          break;
+        case "passport":
+          extractedPayload = await extractPassportIdentity(fileUrl);
+          passportIdentity = extractedPayload;
+          break;
+        case "ine":
+          extractedPayload = await extractIneIdentity(fileUrl);
+          // INE identity is stored in kycDocuments but not passed to buildKycProfile
+          // (handled separately in MCP server flow)
           break;
         case "telmex":
           extractedPayload = await extractTelmexProofOfAddress(fileUrl);
@@ -228,7 +286,9 @@ async function main() {
     companyTaxProfile,
     proofsOfAddress,
     bankAccounts,
-    representativeIdentity
+    representativeIdentity,
+    passportIdentity
+    // Note: ineIdentity is handled separately in the MCP server flow
   });
 
   console.log("Validating KYC Profile...");
@@ -253,9 +313,16 @@ async function main() {
     // Automatically open in browser
     await openInBrowser(reportUrl);
     
+    // Count only warning/critical flags, not info-level notes
+    const actualFlags = validation.flags.filter(f => f.level === 'warning' || f.level === 'critical');
+    const infoNotes = validation.flags.filter(f => f.level === 'info');
+    
     console.log(`\n📊 Summary:`);
     console.log(`   Score: ${(validation.score * 100).toFixed(0)}/100`);
-    console.log(`   Flags: ${validation.flags.length}`);
+    console.log(`   Warnings: ${actualFlags.length}${actualFlags.length > 0 ? ' ⚠️' : ' ✓'}`);
+    if (infoNotes.length > 0) {
+      console.log(`   Notes: ${infoNotes.length} informational`);
+    }
     console.log(`   Run ID: ${run.runId}`);
   } else {
     console.error("❌ Failed to generate report");

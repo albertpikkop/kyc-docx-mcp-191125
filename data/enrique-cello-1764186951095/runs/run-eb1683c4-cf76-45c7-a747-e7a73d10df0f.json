@@ -1,0 +1,48 @@
+{
+  "runId": "eb1683c4-cf76-45c7-a747-e7a73d10df0f",
+  "customerId": "enrique-cello-1764186951095",
+  "createdAt": "2025-11-26T23:16:07.575Z",
+  "documents": [
+    {
+      "id": "b45e0169-bebb-4531-8f7b-651597da0681",
+      "customerId": "enrique-cello-1764186951095",
+      "type": "ine",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/INE_enrique-cello.pdf",
+      "extractedAt": "2025-11-26T23:16:07.575Z",
+      "extractedPayload": {
+        "full_name": "DE CELLO DIAZ ENRIQUE",
+        "curp": "CEDE981004HDFLZN05",
+        "clave_elector": "CLDZEN98100409H300",
+        "address": {
+          "colonia": "COL COPALERA",
+          "country": "MX",
+          "cp": "56337",
+          "estado": "MEX",
+          "municipio": "CHIMALHUACAN",
+          "street": "CDA INDEPENDENCIA MZA 2 LT 10"
+        },
+        "issuer_country": "MX",
+        "card_version": null,
+        "cic": "2775551185",
+        "date_of_birth": "1998-10-04",
+        "document_type": "INE",
+        "emission_year": "2016",
+        "estado_registro": "MEX",
+        "localidad": null,
+        "mrz_line1": "IDMEX2775551185<<5959107315436",
+        "mrz_line2": "9810042H3512311MEX<02<<07992<9",
+        "mrz_line3": "DE<CELLO<DIAZ<<ENRIQUE<<<<<<<",
+        "nationality": null,
+        "ocr_number": "5959107315436",
+        "seccion": "5959",
+        "sex": "H",
+        "vigencia_year": "2035",
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "INE_enrique-cello.pdf"
+    }
+  ]
+}

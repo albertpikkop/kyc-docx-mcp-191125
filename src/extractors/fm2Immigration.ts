@@ -158,6 +158,32 @@ export async function extractImmigrationProfile(fileUrl: string): Promise<any> {
     if (normalizedProfile.curp) {
         normalizedProfile.curp = sanitizeCurp(normalizedProfile.curp);
     }
+    
+    // CRITICAL: Post-process document_type classification
+    // Documents labeled as "FM2" but issued after 2012 without expiry are actually
+    // "Tarjeta de Residente Permanente" (Permanent Resident Card)
+    const docType = (normalizedProfile.document_type || '').toUpperCase();
+    const issueDate = normalizedProfile.issue_date;
+    const expiryDate = normalizedProfile.expiry_date;
+    
+    if (docType === 'FM2' || docType.includes('FM2') || docType.includes('INMIGRANTE')) {
+      const issueYear = issueDate ? new Date(issueDate).getFullYear() : 0;
+      
+      // Post-2012 document without expiry = Residente Permanente
+      if (issueYear >= 2012 && !expiryDate) {
+        normalizedProfile.document_type = 'RESIDENTE PERMANENTE';
+        console.log('📋 Document reclassified: FM2 → RESIDENTE PERMANENTE (post-2012, no expiry = permanent status)');
+      }
+      // Post-2012 document with expiry = Residente Temporal
+      else if (issueYear >= 2012 && expiryDate) {
+        normalizedProfile.document_type = 'RESIDENTE TEMPORAL';
+        console.log('📋 Document reclassified: FM2 → RESIDENTE TEMPORAL (post-2012, has expiry = temporal status)');
+      }
+      // Pre-2012 = Legacy FM2 (obsolete)
+      else if (issueYear > 0 && issueYear < 2012) {
+        console.log(`⚠️ Legacy FM2 detected from ${issueYear} - document is obsolete`);
+      }
+    }
 
     // Attach metadata
     (normalizedProfile as any)._metadata = {

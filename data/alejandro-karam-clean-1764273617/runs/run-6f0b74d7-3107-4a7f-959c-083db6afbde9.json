@@ -1,0 +1,152 @@
+{
+  "runId": "6f0b74d7-3107-4a7f-959c-083db6afbde9",
+  "customerId": "alejandro-karam-clean-1764273617",
+  "createdAt": "2025-11-27T20:01:10.432Z",
+  "documents": [
+    {
+      "id": "15e65b58-b5e2-4032-aef9-f041ac3fffa5",
+      "customerId": "alejandro-karam-clean-1764273617",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alejandro-karam/documents/Acta_Constitutiva_CIVIL_DESARROLLO_EMPRESA_INTEGRAL_PERSONA_SOCIEDAD.pdf",
+      "extractedAt": "2025-11-27T20:01:10.432Z",
+      "extractedPayload": {
+        "razon_social": "DESARROLLO INTEGRAL PERSONA-EMPRESA, SOCIEDAD CIVIL",
+        "rfc": "DIP030930MM0",
+        "registro_mercantil": "Inscrito en el Registro Público de la Propiedad de esta ciudad, en el folio de personas morales número sesenta y cinco mil ciento dieciocho",
+        "incorporation_date": "2003-09-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ELOISA ARROYO MARTINEZ",
+            "role": "Socio Director",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder General para Pleitos y Cobranzas",
+              "Poder General para Actos de Administración",
+              "Poder General para Actos de Administración en materia laboral",
+              "Poder General para Actos de Dominio",
+              "Poder General para Suscribir Títulos de Crédito",
+              "Desistirse del juicio de amparo",
+              "Otorgar y suscribir toda clase de documentos públicos y privados",
+              "Hacer manifestaciones, renuncias y protestas",
+              "Manejar cuentas de cheques de la Sociedad",
+              "Otorgar, suscribir, emitir, endosar, negociar, avalar y operar con títulos de crédito de toda clase",
+              "Nombrar y remover gerentes, subgerentes, agentes y demás empleados",
+              "Otorgar toda clase de poderes generales y especiales y revocarlos"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "ALEJANDRO KARAM TOUMEH",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder General para Pleitos y Cobranzas",
+              "Poder General para Actos de Administración",
+              "Poder General para Actos de Dominio",
+              "Poder General para Otorgar o Suscribir Títulos de Crédito",
+              "Poder General para Pleitos y Cobranzas y Actos de Administración y Dirección Laboral",
+              "Facultades para abrir, girar y cerrar cuentas bancarias y de inversión",
+              "Facultades de sustitución y/o delegación para otorgar y revocar poderes generales o especiales",
+              "Interponer y desistirse de toda clase de procedimientos, inclusive amparo",
+              "Transigir",
+              "Comprometer en árbitros",
+              "Absolver y articular posiciones",
+              "Hacer cesión de bienes",
+              "Recusar",
+              "Recibir pagos",
+              "Presentar denuncias y querellas en materia penal y desistirse de ellas",
+              "Coadyuvar con el Ministerio Público",
+              "Otorgar el perdón del ofendido"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ELOISA ARROYO MARTINEZ",
+            "shares": 1,
+            "percentage": 80,
+            "share_series": null,
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "ALEJANDRO KARAM TOUMEH",
+            "shares": 1,
+            "percentage": 20,
+            "share_series": null,
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "La prestación de servicios profesionales de reclutamiento de personal, incluyendo la búsqueda, capacitación, selección, organización, supervisión, coordinación y control de persona para su colocación definitiva, temporal o eventual en todo tipo de empresas e industrias",
+          "La prestación de servicios profesionales consistentes en la asesoría, consultoría, capacitación, auditoría y supervisión, en áreas financieras, administrativas, contable, económica, jurídica, ambiental, de control interno y gestión de riesgos, de comercio exterior y recursos humanos",
+          "La realización de todo tipo de estudios, proyectos, evaluaciones, diagnósticos y dictámenes en las áreas contables, de planeación estratégica, de mercado, financiera, administrativa, y ambiental de control interno y gestión de riesgos",
+          "La elaboración y realización de seminarios, cursos, conferencias, ferias, fiestas, exhibiciones, exposiciones y demás eventos similares",
+          "La prestación de servicios profesionales o técnicos para la organización, planeación, operación, desarrollo, evaluación, control y administración de todo tipo de empresas o actividades relacionadas con la producción de bienes o servicios, a través del uso de la tecnología actual y futura",
+          "La consultoría, capacitación, entrenamiento de personal, accesoria para el reclutamiento, selección y evaluación de recursos humanos de instituciones privadas y públicas, la promoción de conferencias, simposium, convenciones y todo lo relacionado con el desarrollo profesional y personal de todo tipo de personas",
+          "La asesoría y diseño de estructura organizacional; diseño e implantación de planes de compensación variable en base al desempeño y logro de objetivos; asesoría en capacitación y desarrollo de los recursos humanos, desarrollo de seminarios y cursos",
+          "La ingeniería y re-ingeniería de procesos y programas de calidad y mejora continua, así como la elaboración de documentación de políticas, métodos, procedimientos y diagramas de flujo de procesos",
+          "Todos aquellos servicios de consultoría y asesoría relativos a las áreas anteriormente mencionadas",
+          "Adquirir por cualquier título derechos literarios o artísticos, relacionados con su objeto",
+          "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias así como celebrar cualquier clase de contratos, relacionados con el objeto anterior, con la administración pública, sea federal o local",
+          "Emitir, girar, endosar, aceptar, avalar y suscribir toda clase de títulos de crédito, sin que constituyan una especulación comercial",
+          "Adquirir partes sociales, en sociedades relacionadas con su objeto",
+          "Adquirir toda clase de bienes muebles e inmuebles, derechos reales y personales",
+          "Contratar al personal necesario",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros"
+        ],
+        "notary": {
+          "name": "ARTURO TALAVERA AUTRIQUE",
+          "notary_number": "122",
+          "protocol_number": "78664",
+          "protocol_date": "2024-07-04",
+          "office_location": "CIUDAD DE MEXICO"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": "Folio de personas morales número 65118"
+        },
+        "governance": {
+          "board_type": "Socio Director",
+          "quorum_rules": "Primera convocatoria: 60% del capital social (75% para reformas). Segunda convocatoria: 51% del capital social.",
+          "voting_rights": "Un voto por aportación al capital social. Decisiones por mayoría de votos.",
+          "share_transfer_rules": null,
+          "capital_rules": "La Asamblea General de Socios tiene la facultad de determinar el aumento o disminución del Capital Social."
+        },
+        "modifications": [
+          "Ratificación de ELOISA ARROYO MARTINEZ como Socio Director de la sociedad",
+          "Otorgamiento de Poder General a favor de ALEJANDRO KARAM TOUMEH",
+          "Reforma a las cláusulas DECIMA SEGUNDA, DECIMA SEPTIMA, TRIGESIMA SEPTIMA, y CUADRAGESIMA SEGUNDA de los Estatutos Sociales"
+        ],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Acta_Constitutiva_CIVIL_DESARROLLO_EMPRESA_INTEGRAL_PERSONA_SOCIEDAD.pdf"
+    }
+  ]
+}

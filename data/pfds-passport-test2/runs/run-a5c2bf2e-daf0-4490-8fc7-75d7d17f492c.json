@@ -1,0 +1,19 @@
+{
+  "runId": "a5c2bf2e-daf0-4490-8fc7-75d7d17f492c",
+  "customerId": "pfds-passport-test2",
+  "createdAt": "2025-11-26T04:34:39.987Z",
+  "documents": [
+    {
+      "id": "ff9b3a48-0065-4ad6-849a-fdedce230836",
+      "customerId": "pfds-passport-test2",
+      "type": "passport",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/New passport - Sep 18 2018 - 12-33 PM - p1 copy.jpeg",
+      "extractedAt": "2025-11-26T04:34:39.987Z",
+      "extractedPayload": {
+        "data": null,
+        "error": "Fallback extraction (gpt) also failed: filePath.startsWith is not a function"
+      },
+      "sourceName": "New passport - Sep 18 2018 - 12-33 PM - p1 copy.jpeg"
+    }
+  ]
+}

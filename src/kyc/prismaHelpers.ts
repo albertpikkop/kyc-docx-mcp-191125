@@ -6,12 +6,41 @@
  */
 
 // Prisma client will be generated after running: npm run prisma:generate
-// @ts-ignore - Generated file, will exist after prisma generate
-// import { PrismaClient } from '../generated/prisma/index.js';
 import { KycProfile, KycValidationResult } from './types.js';
 
-// const prisma = new PrismaClient();
-const prisma = {} as any; // Mock for CLI usage where Prisma is not generated
+// Try to import Prisma client, fallback to mock if not available
+let prisma: any;
+try {
+  // @ts-ignore - Generated file, will exist after prisma generate
+  const prismaModule = require('../generated/prisma/index.js');
+  const PrismaClient = prismaModule.PrismaClient || prismaModule.default?.PrismaClient;
+  if (PrismaClient) {
+    prisma = new PrismaClient();
+  } else {
+    throw new Error('PrismaClient not found');
+  }
+} catch (error) {
+  // Prisma not generated or not available - use mock that throws helpful errors
+  console.warn('⚠️  Prisma client not available. Database operations will fail.');
+  console.warn('   To fix: Set DATABASE_URL and run: npm run prisma:generate');
+  prisma = {
+    org: {
+      upsert: () => Promise.reject(new Error('Prisma not initialized. Set DATABASE_URL and run: npm run prisma:generate')),
+      findFirst: () => Promise.reject(new Error('Prisma not initialized')),
+    },
+    run: {
+      findFirst: () => Promise.reject(new Error('Prisma not initialized. Set DATABASE_URL and run: npm run prisma:generate')),
+      create: () => Promise.reject(new Error('Prisma not initialized')),
+      update: () => Promise.reject(new Error('Prisma not initialized')),
+    },
+    doc: {
+      create: () => Promise.reject(new Error('Prisma not initialized')),
+    },
+    auditEvent: {
+      create: () => Promise.reject(new Error('Prisma not initialized')),
+    },
+  };
+}
 
 /**
  * Get or create an organization by API key
@@ -95,19 +124,25 @@ export async function saveDecision(
 
 /**
  * Log an audit event for an organization
+ * Silently fails if Prisma is not available (non-critical operation)
  */
 export async function logAudit(
   orgId: string,
   eventType: string,
   metadata?: Record<string, unknown>
 ): Promise<void> {
-  await prisma.auditEvent.create({
-    data: {
-      orgId,
-      eventType,
-      metadata: metadata ? (metadata as object) : null,
-    },
-  });
+  try {
+    await prisma.auditEvent.create({
+      data: {
+        orgId,
+        eventType,
+        metadata: metadata ? (metadata as object) : null,
+      },
+    });
+  } catch (e) {
+    // Silently fail - audit logging is non-critical
+    console.warn(`Audit logging failed for ${eventType}: Prisma not available`);
+  }
 }
 
 /**

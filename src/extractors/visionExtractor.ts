@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { MODEL, validateModel, type GPT5Model } from '../model.js';
 import {
   normalizeEmptyToNull,
@@ -10,6 +11,20 @@ import {
 } from '../kyc/validators.js';
 import { withRetry } from '../utils/retry.js';
 import { logExtractorError } from '../utils/logging.js';
+
+/**
+ * Normalize file URL or path to a regular filesystem path
+ */
+function normalizeFilePath(filePathOrUrl: string): string {
+  if (filePathOrUrl.startsWith('file://')) {
+    try {
+      return fileURLToPath(filePathOrUrl);
+    } catch (e) {
+      return filePathOrUrl.replace('file://', '');
+    }
+  }
+  return filePathOrUrl;
+}
 
 // Base instruction for generic document extraction if no specific instructions are provided
 const BASE_INSTRUCTIONS = `
@@ -24,7 +39,7 @@ GLOBAL HARDENING RULES:
 - Do not invent data.
 `;
 
-export async function extractDocument(filePath: string, schema: any, instructions?: string): Promise<any> {
+export async function extractDocument(filePathOrUrl: string, schema: any, instructions?: string): Promise<any> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY is not set in environment variables');
@@ -32,6 +47,9 @@ export async function extractDocument(filePath: string, schema: any, instruction
 
   const client = new OpenAI({ apiKey });
   const model: GPT5Model = validateModel(MODEL);
+
+  // Normalize file:// URLs to regular paths
+  const filePath = normalizeFilePath(filePathOrUrl);
 
   console.log(`Extracting document using model: ${model}`);
   console.log(`Processing file: ${filePath}`);

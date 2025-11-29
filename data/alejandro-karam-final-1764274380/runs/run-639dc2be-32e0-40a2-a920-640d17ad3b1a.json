@@ -1,0 +1,664 @@
+{
+  "runId": "639dc2be-32e0-40a2-a920-640d17ad3b1a",
+  "customerId": "alejandro-karam-final-1764274380",
+  "createdAt": "2025-11-27T20:13:42.386Z",
+  "documents": [
+    {
+      "id": "d9caf367-a099-4de7-a626-f4e5ff416d68",
+      "customerId": "alejandro-karam-final-1764274380",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alejandro-karam/documents/Acta_Constitutiva_CIVIL_DESARROLLO_EMPRESA_INTEGRAL_PERSONA_SOCIEDAD.pdf",
+      "extractedAt": "2025-11-27T20:13:42.387Z",
+      "extractedPayload": {
+        "razon_social": "DESARROLLO INTEGRAL PERSONA-EMPRESA, SOCIEDAD CIVIL",
+        "rfc": "DIP030930MM0",
+        "registro_mercantil": "folio de personas morales número sesenta y cinco mil ciento dieciocho",
+        "incorporation_date": "2003-09-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ELOISA ARROYO MARTINEZ",
+            "role": "Socio Director",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder General para Pleitos y Cobranzas",
+              "Poder General para Actos de Administración",
+              "Poder General para Actos de Administración en materia laboral",
+              "Poder General para Actos de Dominio",
+              "Poder General para Suscribir Títulos de Crédito",
+              "Nombrar y remover gerentes, subgerentes, agentes y demás empleados",
+              "Otorgar toda clase de poderes generales y especiales y revocarlos"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "ALEJANDRO KARAM TOUMEH",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder General para Pleitos y Cobranzas",
+              "Poder General para Actos de Administración",
+              "Poder General para Pleitos y Cobranzas y Actos de Administración y Dirección Laboral",
+              "Poder General para Actos de Dominio",
+              "Poder General para Otorgar o Suscribir Títulos de Crédito",
+              "Facultades para abrir, girar y cerrar cuentas bancarias y de inversión",
+              "Facultades de sustitución y/o delegación para otorgar poderes generales o especiales"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ELOISA ARROYO MARTINEZ",
+            "shares": 1,
+            "percentage": 80,
+            "share_series": null,
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "ALEJANDRO KARAM TOUMEH",
+            "shares": 1,
+            "percentage": 20,
+            "share_series": null,
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "La prestación de servicios profesionales de reclutamiento de personal, incluyendo la búsqueda, capacitación, selección, organización, supervisión, coordinación y control de persona para su colocación definitiva, temporal o eventual en todo tipo de empresas e industrias",
+          "La prestación de servicios profesionales consistentes en la asesoría, consultoría, capacitación, auditoría y supervisión, en áreas financieras, administrativas, contable, económica, jurídica, ambiental, de control interno y gestión de riesgos, de comercio exterior y recursos humanos",
+          "La realización de todo tipo de estudios, proyectos, evaluaciones, diagnósticos y dictámenes en las áreas contables, de planeación estratégica, de mercado, financiera, administrativa, y ambiental de control interno y gestión de riesgos",
+          "La elaboración y realización de seminarios, cursos, conferencias, ferias, fiestas, exhibiciones, exposiciones y demás eventos similares",
+          "La prestación de servicios profesionales o técnicos para la organización, planeación, operación, desarrollo, evaluación, control y administración de todo tipo de empresas o actividades relacionadas con la producción de bienes o servicios, a través del uso de la tecnología actual y futura",
+          "La consultoría, capacitación, entrenamiento de personal, accesoria para el reclutamiento, selección y evaluación de recursos humanos de instituciones privadas y públicas, la promoción de conferencias, simposium, convenciones y todo lo relacionado con el desarrollo profesional y personal de todo tipo de personas",
+          "La asesoría y diseño de estructura organizacional; diseño e implantación de planes de compensación variable en base al desempeño y logro de objetivos; asesoría en capacitación y desarrollo de los recursos humanos, desarrollo de seminarios y cursos",
+          "La ingeniería y re-ingeniería de procesos y programas de calidad y mejora continua, así como la elaboración de documentación de políticas, métodos, procedimientos y diagramas de flujo de procesos",
+          "Todos aquellos servicios de consultoría y asesoría relativos a las áreas anteriormente mencionadas",
+          "Adquirir por cualquier título derechos literarios o artísticos, relacionados con su objeto",
+          "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias así como celebrar cualquier clase de contratos, relacionados con el objeto anterior, con la administración pública, sea federal o local",
+          "Emitir, girar, endosar, aceptar, avalar y suscribir toda clase de títulos de crédito, sin que constituyan una especulación comercial",
+          "Adquirir partes sociales, en sociedades relacionadas con su objeto",
+          "Adquirir toda clase de bienes muebles e inmuebles, derechos reales y personales",
+          "Contratar al personal necesario",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros"
+        ],
+        "notary": {
+          "name": "ARTURO TALAVERA AUTRIQUE",
+          "notary_number": "122",
+          "protocol_number": "78664",
+          "protocol_date": "2024-07-04",
+          "office_location": "CIUDAD DE MEXICO"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Administrador Único",
+          "quorum_rules": "Primera convocatoria: 60% del capital social (75% para reformar estatutos, disolución o nombrar liquidadores). Segunda o ulteriores convocatorias: 51% de los socios.",
+          "voting_rights": "Las decisiones se toman por mayoría de votos. Cada socio tiene un voto proporcional a su aportación al capital social. El presidente tiene voto de calidad en caso de empate.",
+          "share_transfer_rules": null,
+          "capital_rules": "La Asamblea General de Socios es la autoridad para determinar el aumento o disminución del capital social."
+        },
+        "modifications": [
+          "Ratificación del Socio Director a favor de ELOISA ARROYO MARTINEZ",
+          "Otorgamiento de poder general a favor de ALEJANDRO KARAM TOUMEH",
+          "Reforma a las cláusulas DECIMA SEGUNDA, DECIMA SEPTIMA, TRIGESIMA SEPTIMA y CUADRAGESIMA SEGUNDA de los estatutos sociales"
+        ],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Acta_Constitutiva_CIVIL_DESARROLLO_EMPRESA_INTEGRAL_PERSONA_SOCIEDAD.pdf"
+    },
+    {
+      "id": "d5f9c388-282f-42af-ac4e-876017485e0a",
+      "customerId": "alejandro-karam-final-1764274380",
+      "type": "ine",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alejandro-karam/documents/INE_ALEJANDRO_KARAM_TOUMEH.pdf",
+      "extractedAt": "2025-11-27T20:14:01.526Z",
+      "extractedPayload": {
+        "full_name": "KARAM TOUMEH ALEJANDRO",
+        "curp": "KATA691010HDFRML09",
+        "clave_elector": "KRTMAL69101009H300",
+        "address": {
+          "colonia": "ROMERO DE TERRROS",
+          "country": "MX",
+          "cp": "04310",
+          "estado": "CDMX",
+          "municipio": "COYOACAN",
+          "street": "C CERRO DEL HOMBRE 205"
+        },
+        "issuer_country": "MX",
+        "card_version": null,
+        "cic": "2382839522",
+        "date_of_birth": "1969-10-10",
+        "document_type": "INE",
+        "emission_year": "2022",
+        "estado_registro": "MEX",
+        "localidad": null,
+        "mrz_line1": "IDMEX2382839522<<0726062565055",
+        "mrz_line2": "6910103H3212312MEX<04<<46375<0",
+        "mrz_line3": "KARAM<TOUMEH<<ALEJANDRO<<<<<<<<<<",
+        "nationality": null,
+        "ocr_number": null,
+        "seccion": "0726",
+        "sex": "H",
+        "vigencia_year": "2032",
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "INE_ALEJANDRO_KARAM_TOUMEH.pdf"
+    },
+    {
+      "id": "57ed582c-3501-4d7d-b912-3cbd8c5cc0d6",
+      "customerId": "alejandro-karam-final-1764274380",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alejandro-karam/documents/SAT_Constancia_ALEJANDRO_KARAM_TOUMEH.pdf",
+      "extractedAt": "2025-11-27T20:14:20.096Z",
+      "extractedPayload": {
+        "rfc": "KATA6910101W6",
+        "razon_social": "ALEJANDRO KARAM TOUMEH",
+        "commercial_name": null,
+        "capital_regime": null,
+        "tax_regime": "Régimen de las Personas Físicas con Actividades Empresariales y Profesionales",
+        "start_of_operations": "1990-02-01",
+        "status": "ACTIVO",
+        "last_status_change": "1990-03-20",
+        "issue": {
+          "place_municipio": "COYOACAN",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2023-04-18"
+        },
+        "fiscal_address": {
+          "street": "CERRO DEL HOMBRE",
+          "ext_number": "205",
+          "int_number": null,
+          "colonia": "ROMERO DE TERREROS",
+          "municipio": "COYOACAN",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "04310",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de consultoria en administración",
+            "percentage": 100,
+            "start_date": "2019-06-12",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Declaración anual de ISR. Personas Físicas.",
+            "due_rule": "A más tardar el 30 de abril del ejercicio siguiente.",
+            "start_date": "2016-01-01",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último dia del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2019-06-12",
+            "end_date": null
+          },
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2019-06-12",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR por servicios profesionales. Régimen de Actividades Empresariales y Profesionales",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2019-06-12",
+            "end_date": null
+          }
+        ],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "SAT_Constancia_ALEJANDRO_KARAM_TOUMEH.pdf"
+    },
+    {
+      "id": "0a94ec8d-7e83-47ce-b3f8-17f529a178e8",
+      "customerId": "alejandro-karam-final-1764274380",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alejandro-karam/documents/SAT_Constancia_ARROYO_ELOISA_MARTINEZ.pdf",
+      "extractedAt": "2025-11-27T20:14:44.040Z",
+      "extractedPayload": {
+        "rfc": "AOME701030TG4",
+        "razon_social": "ELOISA ARROYO MARTINEZ",
+        "commercial_name": null,
+        "capital_regime": null,
+        "tax_regime": "Régimen de las Personas Físicas con Actividades Empresariales y Profesionales",
+        "start_of_operations": "1993-08-09",
+        "status": "ACTIVO",
+        "last_status_change": "1993-08-09",
+        "issue": {
+          "place_municipio": "TLALPAN",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2023-04-18"
+        },
+        "fiscal_address": {
+          "street": "CDA CONVENTO ALJIBE",
+          "ext_number": "45",
+          "int_number": "9",
+          "colonia": "SANTA URSULA XITLA",
+          "municipio": "TLALPAN",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "14420",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Otros servicios profesionales, científicos y técnicos",
+            "percentage": 100,
+            "start_date": "2002-04-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Declaración anual de ISR. Personas Físicas.",
+            "due_rule": "A más tardar el 30 de abril del ejercicio siguiente.",
+            "start_date": "2002-03-31",
+            "end_date": null
+          },
+          {
+            "description": "Declaración informativa de IVA con la anual de ISR",
+            "due_rule": "Conjuntamente con la declaración anual del ejercicio.",
+            "start_date": "2002-03-31",
+            "end_date": null
+          },
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2002-03-31",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR por servicios profesionales. Régimen de Actividades Empresariales y Profesionales",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2002-03-31",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2006-09-01",
+            "end_date": null
+          }
+        ],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "SAT_Constancia_ARROYO_ELOISA_MARTINEZ.pdf"
+    },
+    {
+      "id": "0d92122e-909e-4115-b436-9c551557a7ec",
+      "customerId": "alejandro-karam-final-1764274380",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alejandro-karam/documents/Lista_Asistentes_compressed.pdf",
+      "extractedAt": "2025-11-27T20:15:42.084Z",
+      "extractedPayload": {
+        "razon_social": "DESARROLLO INTEGRAL PERSONA-EMPRESAS SOCIEDAD CIVIL",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2024-07-01",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [],
+        "shareholders": [
+          {
+            "name": "ELOISA ARROYO MARTINEZ",
+            "shares": 1,
+            "percentage": 80,
+            "share_series": null,
+            "share_class": null,
+            "has_voting_rights": null,
+            "share_type": null,
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "ALEJANDRO KARAM TOUMEH",
+            "shares": 1,
+            "percentage": 20,
+            "share_series": null,
+            "share_class": null,
+            "has_voting_rights": null,
+            "share_type": null,
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [],
+        "notary": {
+          "name": "ARIADNA ADERA AUTRIQUE",
+          "notary_number": "122",
+          "protocol_number": null,
+          "protocol_date": "2024-07-01",
+          "office_location": "CIUDAD DE MEXICO"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": null,
+          "quorum_rules": null,
+          "voting_rights": null,
+          "share_transfer_rules": null,
+          "capital_rules": null
+        },
+        "modifications": null,
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Lista_Asistentes"
+    }
+  ],
+  "profile": {
+    "customerId": "alejandro-karam-final-1764274380",
+    "addressEvidence": [],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "acta",
+        "address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2003-09-30"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-27T20:49:29.189Z",
+    "companyIdentity": {
+      "razon_social": "DESARROLLO INTEGRAL PERSONA-EMPRESA, SOCIEDAD CIVIL",
+      "rfc": "DIP030930MM0",
+      "registro_mercantil": "folio de personas morales número sesenta y cinco mil ciento dieciocho",
+      "incorporation_date": "2003-09-30",
+      "founding_address": {
+        "street": null,
+        "ext_number": null,
+        "int_number": null,
+        "colonia": null,
+        "municipio": "Ciudad de México",
+        "estado": "Ciudad de México",
+        "cp": null,
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "legal_representatives": [
+        {
+          "name": "ELOISA ARROYO MARTINEZ",
+          "role": "Socio Director",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder General para Pleitos y Cobranzas",
+            "Poder General para Actos de Administración",
+            "Poder General para Actos de Administración en materia laboral",
+            "Poder General para Actos de Dominio",
+            "Poder General para Suscribir Títulos de Crédito",
+            "Nombrar y remover gerentes, subgerentes, agentes y demás empleados",
+            "Otorgar toda clase de poderes generales y especiales y revocarlos"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "ALEJANDRO KARAM TOUMEH",
+          "role": "Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder General para Pleitos y Cobranzas",
+            "Poder General para Actos de Administración",
+            "Poder General para Pleitos y Cobranzas y Actos de Administración y Dirección Laboral",
+            "Poder General para Actos de Dominio",
+            "Poder General para Otorgar o Suscribir Títulos de Crédito",
+            "Facultades para abrir, girar y cerrar cuentas bancarias y de inversión",
+            "Facultades de sustitución y/o delegación para otorgar poderes generales o especiales"
+          ],
+          "joint_signature_required": false
+        }
+      ],
+      "shareholders": [
+        {
+          "name": "ELOISA ARROYO MARTINEZ",
+          "shares": 1,
+          "percentage": 80,
+          "share_series": null,
+          "share_class": "FIJO",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "ALEJANDRO KARAM TOUMEH",
+          "shares": 1,
+          "percentage": 20,
+          "share_series": null,
+          "share_class": "FIJO",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": false
+        }
+      ],
+      "corporate_purpose": [
+        "La prestación de servicios profesionales de reclutamiento de personal, incluyendo la búsqueda, capacitación, selección, organización, supervisión, coordinación y control de persona para su colocación definitiva, temporal o eventual en todo tipo de empresas e industrias",
+        "La prestación de servicios profesionales consistentes en la asesoría, consultoría, capacitación, auditoría y supervisión, en áreas financieras, administrativas, contable, económica, jurídica, ambiental, de control interno y gestión de riesgos, de comercio exterior y recursos humanos",
+        "La realización de todo tipo de estudios, proyectos, evaluaciones, diagnósticos y dictámenes en las áreas contables, de planeación estratégica, de mercado, financiera, administrativa, y ambiental de control interno y gestión de riesgos",
+        "La elaboración y realización de seminarios, cursos, conferencias, ferias, fiestas, exhibiciones, exposiciones y demás eventos similares",
+        "La prestación de servicios profesionales o técnicos para la organización, planeación, operación, desarrollo, evaluación, control y administración de todo tipo de empresas o actividades relacionadas con la producción de bienes o servicios, a través del uso de la tecnología actual y futura",
+        "La consultoría, capacitación, entrenamiento de personal, accesoria para el reclutamiento, selección y evaluación de recursos humanos de instituciones privadas y públicas, la promoción de conferencias, simposium, convenciones y todo lo relacionado con el desarrollo profesional y personal de todo tipo de personas",
+        "La asesoría y diseño de estructura organizacional; diseño e implantación de planes de compensación variable en base al desempeño y logro de objetivos; asesoría en capacitación y desarrollo de los recursos humanos, desarrollo de seminarios y cursos",
+        "La ingeniería y re-ingeniería de procesos y programas de calidad y mejora continua, así como la elaboración de documentación de políticas, métodos, procedimientos y diagramas de flujo de procesos",
+        "Todos aquellos servicios de consultoría y asesoría relativos a las áreas anteriormente mencionadas",
+        "Adquirir por cualquier título derechos literarios o artísticos, relacionados con su objeto",
+        "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias así como celebrar cualquier clase de contratos, relacionados con el objeto anterior, con la administración pública, sea federal o local",
+        "Emitir, girar, endosar, aceptar, avalar y suscribir toda clase de títulos de crédito, sin que constituyan una especulación comercial",
+        "Adquirir partes sociales, en sociedades relacionadas con su objeto",
+        "Adquirir toda clase de bienes muebles e inmuebles, derechos reales y personales",
+        "Contratar al personal necesario",
+        "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros"
+      ],
+      "notary": {
+        "name": "ARTURO TALAVERA AUTRIQUE",
+        "notary_number": "122",
+        "protocol_number": "78664",
+        "protocol_date": "2024-07-04",
+        "office_location": "CIUDAD DE MEXICO"
+      },
+      "registry": {
+        "fme": null,
+        "nci": null,
+        "unique_doc_number": null,
+        "registration_city": null,
+        "registration_date": null,
+        "folio": null
+      },
+      "governance": {
+        "board_type": "Administrador Único",
+        "quorum_rules": "Primera convocatoria: 60% del capital social (75% para reformar estatutos, disolución o nombrar liquidadores). Segunda o ulteriores convocatorias: 51% de los socios.",
+        "voting_rights": "Las decisiones se toman por mayoría de votos. Cada socio tiene un voto proporcional a su aportación al capital social. El presidente tiene voto de calidad en caso de empate.",
+        "share_transfer_rules": null,
+        "capital_rules": "La Asamblea General de Socios es la autoridad para determinar el aumento o disminución del capital social."
+      },
+      "modifications": [
+        "Ratificación del Socio Director a favor de ELOISA ARROYO MARTINEZ",
+        "Otorgamiento de poder general a favor de ALEJANDRO KARAM TOUMEH",
+        "Reforma a las cláusulas DECIMA SEGUNDA, DECIMA SEPTIMA, TRIGESIMA SEPTIMA y CUADRAGESIMA SEGUNDA de los estatutos sociales"
+      ],
+      "_metadata": {
+        "modelUsed": "gemini-2.5-flash",
+        "costUsd": 0.001
+      }
+    },
+    "foundingAddress": {
+      "street": null,
+      "ext_number": null,
+      "int_number": null,
+      "colonia": null,
+      "municipio": "Ciudad de México",
+      "estado": "Ciudad de México",
+      "cp": null,
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "representativeIdentity": {
+      "full_name": "KARAM TOUMEH ALEJANDRO",
+      "curp": "KATA691010HDFRML09",
+      "clave_elector": "KRTMAL69101009H300",
+      "address": {
+        "colonia": "ROMERO DE TERRROS",
+        "country": "MX",
+        "cp": "04310",
+        "estado": "CDMX",
+        "municipio": "COYOACAN",
+        "street": "C CERRO DEL HOMBRE 205"
+      },
+      "issuer_country": "MX",
+      "card_version": null,
+      "cic": "2382839522",
+      "date_of_birth": "1969-10-10",
+      "document_type": "INE",
+      "emission_year": "2022",
+      "estado_registro": "MEX",
+      "localidad": null,
+      "mrz_line1": "IDMEX2382839522<<0726062565055",
+      "mrz_line2": "6910103H3212312MEX<04<<46375<0",
+      "mrz_line3": "KARAM<TOUMEH<<ALEJANDRO<<<<<<<<<<",
+      "nationality": null,
+      "ocr_number": null,
+      "seccion": "0726",
+      "sex": "H",
+      "vigencia_year": "2032",
+      "_metadata": {
+        "modelUsed": "gemini-2.5-flash",
+        "costUsd": 0.001
+      }
+    },
+    "_personalSatConstancias": [
+      {
+        "rfc": "KATA6910101W6",
+        "razon_social": "ALEJANDRO KARAM TOUMEH",
+        "isCompany": false
+      },
+      {
+        "rfc": "AOME701030TG4",
+        "razon_social": "ELOISA ARROYO MARTINEZ",
+        "isCompany": false
+      }
+    ],
+    "_uboVerification": [
+      {
+        "name": "ELOISA ARROYO MARTINEZ",
+        "percentage": 80,
+        "confidence": 100,
+        "sources": [
+          "Acta_Constitutiva_CIVIL_DESARROLLO_EMPRESA_INTEGRAL_PERSONA_SOCIEDAD.pdf",
+          "Lista_Asistentes"
+        ],
+        "discrepancies": []
+      },
+      {
+        "name": "ALEJANDRO KARAM TOUMEH",
+        "percentage": 20,
+        "confidence": 100,
+        "sources": [
+          "Acta_Constitutiva_CIVIL_DESARROLLO_EMPRESA_INTEGRAL_PERSONA_SOCIEDAD.pdf",
+          "Lista_Asistentes"
+        ],
+        "discrepancies": []
+      }
+    ]
+  },
+  "validation": {
+    "customerId": "alejandro-karam-final-1764274380",
+    "score": 0.4,
+    "flags": [
+      {
+        "code": "UBO_IDENTITY_NOT_VERIFIED",
+        "level": "warning",
+        "message": "La identidad verificada (KARAM TOUMEH ALEJANDRO) no corresponde a ningún UBO (>25%). UBOs detectados: ELOISA ARROYO MARTINEZ. Se recomienda verificar la identidad del UBO principal.",
+        "action_required": "Solicitar INE o Pasaporte de: ELOISA ARROYO MARTINEZ"
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "warning",
+        "message": "No se encontró comprobante de domicilio válido (recibo de servicios o estado de cuenta a nombre del cliente)."
+      },
+      {
+        "code": "MISSING_COMPANY_SAT",
+        "level": "critical",
+        "message": "Falta Constancia de Situación Fiscal de la empresa (RFC: DIP030930MM0). Se requiere SAT de la Persona Moral, no de socios individuales.",
+        "action_required": "Solicitar Constancia de Situación Fiscal del SAT con RFC: DIP030930MM0"
+      },
+      {
+        "code": "MISSING_FME",
+        "level": "warning",
+        "message": "Falta Folio Mercantil Electrónico (FME) o número de inscripción en el Registro Público de Comercio.",
+        "action_required": "Solicitar boleta de inscripción o constancia del Registro Público de Comercio."
+      },
+      {
+        "code": "OTHER",
+        "level": "info",
+        "message": "📋 VALIDATION_CHECKLIST:\n✓ Tipo de Entidad: Persona Moral\n✓ Acta Constitutiva: Verificada\n✓ RFC Empresa: DIP030930MM0\n✗ Constancia SAT Empresa: No proporcionada (RFC requerido: DIP030930MM0)\n✓ Identificación: INE vigente\n✗ Comprobante de Domicilio: No proporcionado\n✗ Cuenta Bancaria: No proporcionada"
+      }
+    ],
+    "generatedAt": "2025-11-27T20:49:38.375Z"
+  }
+}

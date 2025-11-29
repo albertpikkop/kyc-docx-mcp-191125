@@ -1,0 +1,119 @@
+{
+  "runId": "36a8ea47-78b6-484d-b1c0-6ae58c66a1c6",
+  "customerId": "batch-test",
+  "createdAt": "2025-11-26T03:52:47.518Z",
+  "documents": [
+    {
+      "id": "ff53afe4-e121-4e00-9575-d19e99da0bf9",
+      "customerId": "batch-test",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Constancia_PFDS.pdf",
+      "extractedAt": "2025-11-26T03:52:47.519Z",
+      "extractedPayload": {
+        "rfc": "PFD210830KQ7",
+        "razon_social": "PFDS",
+        "commercial_name": "PFDS",
+        "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2021-08-30",
+        "status": "ACTIVO",
+        "last_status_change": "2021-08-30",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-10-14"
+        },
+        "fiscal_address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CIRCUITO INTERIOR MELCHOR OCAMPO Y CALLE HERODOTO",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de mensajería y paquetería local",
+            "percentage": 60,
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 40,
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2022-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      },
+      "sourceName": "Constancia_PFDS.pdf"
+    },
+    {
+      "id": "ac9e4c11-2d5f-44a6-9116-2c3e77194f2a",
+      "customerId": "batch-test",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/FM2 (1).pdf",
+      "extractedAt": "2025-11-26T03:52:47.544Z",
+      "extractedPayload": {
+        "full_name": "PUNJ Ashish",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "0000000445543",
+        "secondary_number": "10495074",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": null,
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX",
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      },
+      "sourceName": "FM2 (1).pdf"
+    }
+  ]
+}

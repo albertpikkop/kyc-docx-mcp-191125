@@ -1,0 +1,93 @@
+{
+  "runId": "800bdd2c-fcf4-45c5-ba5a-b13010fda0d1",
+  "customerId": "pfds-gemini-test",
+  "createdAt": "2025-11-26T15:59:48.387Z",
+  "documents": [
+    {
+      "id": "b5213ae0-c03b-4c50-be2b-1b1269cede60",
+      "customerId": "pfds-gemini-test",
+      "type": "sat_constancia",
+      "fileUrl": "file:///Users/ashishpunj/Desktop/mcp-docs/pfds/SAT_Constancia_pfds.pdf",
+      "extractedAt": "2025-11-26T15:59:48.388Z",
+      "extractedPayload": {
+        "rfc": "PFD210830KQ7",
+        "razon_social": "PFDS",
+        "commercial_name": "PFDS",
+        "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2021-08-30",
+        "status": "ACTIVO",
+        "last_status_change": "2021-08-30",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-10-14"
+        },
+        "fiscal_address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CALLE HERODOTO Y CIRCUITO INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de mensajería y paquetería local",
+            "percentage": 60,
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 40,
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2022-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "SAT_Constancia_pfds.pdf"
+    }
+  ]
+}

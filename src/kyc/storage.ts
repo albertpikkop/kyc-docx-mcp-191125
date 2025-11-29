@@ -2258,6 +2258,42 @@ async function generateExcelReport(run: KycRun): Promise<string> {
       summaryData.push(['Domicilio Social (Acta) - Para Asambleas', 
         [addr.street, addr.ext_number, addr.colonia, addr.municipio, addr.estado, addr.cp].filter(Boolean).join(', ') || 'Solo jurisdicción especificada']);
     }
+    
+    // Notary Information
+    if (profile.companyIdentity.notary) {
+      summaryData.push([]);
+      summaryData.push(['--- Notary Information / Datos Notariales ---']);
+      summaryData.push(['Notario', profile.companyIdentity.notary.name || 'N/A']);
+      summaryData.push(['Notaría No.', profile.companyIdentity.notary.notary_number || 'N/A']);
+      summaryData.push(['Escritura/Protocolo No.', profile.companyIdentity.notary.protocol_number || 'N/A']);
+      summaryData.push(['Fecha de Protocolo', profile.companyIdentity.notary.protocol_date || 'N/A']);
+      summaryData.push(['Lugar de Otorgamiento', profile.companyIdentity.notary.office_location || 'N/A']);
+    }
+    
+    // Registry / Folio Mercantil
+    if (profile.companyIdentity.registry) {
+      summaryData.push([]);
+      summaryData.push(['--- Registry / Registro Público de Comercio ---']);
+      if (profile.companyIdentity.registry.fme) {
+        summaryData.push(['Folio Mercantil Electrónico (FME)', profile.companyIdentity.registry.fme]);
+      }
+      if (profile.companyIdentity.registry.folio) {
+        summaryData.push(['Folio Mercantil', profile.companyIdentity.registry.folio]);
+      }
+      if (profile.companyIdentity.registry.nci) {
+        summaryData.push(['NCI (Número de Control Interno)', profile.companyIdentity.registry.nci]);
+      }
+      if (profile.companyIdentity.registry.unique_doc_number) {
+        summaryData.push(['Número Único de Documento', profile.companyIdentity.registry.unique_doc_number]);
+      }
+      if (profile.companyIdentity.registry.registration_city) {
+        summaryData.push(['Ciudad de Inscripción', profile.companyIdentity.registry.registration_city]);
+      }
+      if (profile.companyIdentity.registry.registration_date) {
+        summaryData.push(['Fecha de Inscripción', profile.companyIdentity.registry.registration_date]);
+      }
+    }
+    
     summaryData.push([]);
   }
   

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de PDF - Cita Legal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: #1e40af;
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .header .info {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .viewer-container {
+            width: 100%;
+            height: calc(100vh - 120px);
+            position: relative;
+        }
+        
+        #pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+        }
+        
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #dc2626;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #1e40af;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📖 Visor de Cita Legal</h1>
+        <div class="info" id="citation-info">Cargando documento...</div>
+    </div>
+    
+    <div class="viewer-container">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Cargando PDF...</p>
+        </div>
+        
+        <div class="error" id="error" style="display: none;">
+            <h2>❌ Error al cargar el PDF</h2>
+            <p id="error-message"></p>
+        </div>
+        
+        <iframe id="pdf-viewer" style="display: none;"></iframe>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const pdfUrl = urlParams.get('pdf');
+        const article = urlParams.get('article'); // e.g., "Artículo 27"
+        const searchText = urlParams.get('search'); // Text to search for
+        const page = urlParams.get('page'); // Page number (optional)
+        
+        if (!pdfUrl) {
+            showError('No se proporcionó URL del PDF');
+            return;
+        }
+        
+        // Update header info
+        const infoEl = document.getElementById('citation-info');
+        let infoText = `Documento: ${decodeURIComponent(pdfUrl.split('/').pop() || 'PDF')}`;
+        if (article) {
+            infoText += ` | ${decodeURIComponent(article)}`;
+        }
+        if (page) {
+            infoText += ` | Página ${page}`;
+        }
+        infoEl.textContent = infoText;
+        
+        // Try to load PDF directly in iframe first (browser's native PDF viewer)
+        // This works for most PDFs and supports page anchors
+        const iframe = document.getElementById('pdf-viewer');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        
+        // Build direct PDF URL with page anchor
+        let directPdfUrl = pdfUrl;
+        if (page) {
+            directPdfUrl += `#page=${page}`;
+        }
+        
+        // Show instructions page, then auto-open PDF in new tab
+        // This is more reliable than embedding PDFs in iframes
+        loading.style.display = 'none';
+        iframe.style.display = 'none';
+        
+        const instructionsDiv = document.createElement('div');
+        instructionsDiv.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); max-width: 500px; text-align: center;';
+        
+        const searchTerm = searchText || article || '';
+        const decodedSearch = decodeURIComponent(searchTerm);
+        
+        instructionsDiv.innerHTML = `
+            <h2 style="color: #1e40af; margin-bottom: 1rem;">📖 Abriendo Cita Legal</h2>
+            <p style="color: #666; margin-bottom: 1.5rem;">
+                El PDF se abrirá en una nueva pestaña en <strong id="countdown">3</strong> segundos...
+            </p>
+            ${decodedSearch ? `
+            <div style="background: #eff6ff; border-left: 4px solid #1e40af; padding: 1rem; margin: 1rem 0; text-align: left; border-radius: 4px;">
+                <strong style="color: #1e40af;">🔍 Texto a buscar en el PDF:</strong><br>
+                <code style="background: white; padding: 0.5rem; border-radius: 4px; display: inline-block; margin-top: 0.5rem; font-size: 0.875rem; word-break: break-word;">${decodedSearch}</code>
+            </div>
+            <p style="color: #666; font-size: 0.875rem; margin-top: 1rem;">
+                <strong>Instrucciones:</strong><br>
+                1. El PDF se abrirá automáticamente<br>
+                2. Presione <kbd style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.875rem;">Ctrl+F</kbd> (o <kbd style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.875rem;">Cmd+F</kbd> en Mac)<br>
+                3. Pegue el texto de arriba y presione Enter<br>
+                4. El texto será resaltado en el PDF
+            </p>
+            ` : ''}
+            <p style="margin-top: 1.5rem;">
+                <a href="${directPdfUrl}" target="_blank" id="open-pdf-link"
+                   style="background: #1e40af; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: 500;">
+                    Abrir PDF ahora
+                </a>
+            </p>
+        `;
+        
+        document.querySelector('.viewer-container').appendChild(instructionsDiv);
+        
+        // Countdown and auto-open
+        let countdown = 3;
+        const countdownEl = document.getElementById('countdown');
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdownEl) {
+                countdownEl.textContent = countdown.toString();
+            }
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                // Open PDF in new tab
+                window.open(directPdfUrl, '_blank');
+                // Update message
+                if (countdownEl) {
+                    instructionsDiv.innerHTML = `
+                        <h2 style="color: #10b981; margin-bottom: 1rem;">✅ PDF Abierto</h2>
+                        <p style="color: #666; margin-bottom: 1rem;">
+                            El PDF se ha abierto en una nueva pestaña.
+                        </p>
+                        ${decodedSearch ? `
+                        <div style="background: #eff6ff; border-left: 4px solid #1e40af; padding: 1rem; margin: 1rem 0; text-align: left; border-radius: 4px;">
+                            <strong style="color: #1e40af;">🔍 Busque este texto:</strong><br>
+                            <code style="background: white; padding: 0.5rem; border-radius: 4px; display: inline-block; margin-top: 0.5rem; font-size: 0.875rem;">${decodedSearch}</code>
+                        </div>
+                        ` : ''}
+                        <p style="color: #666; font-size: 0.875rem;">
+                            Use <kbd style="background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 3px;">Ctrl+F</kbd> en el PDF para buscar.
+                        </p>
+                    `;
+                }
+            }
+        }, 1000);
+        
+        function showError(message) {
+            loading.style.display = 'none';
+            error.style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,720 @@
+{
+  "runId": "ee0d26d6-7cd3-4f4c-ae83-b458b96805da",
+  "customerId": "grupo-pounj-report-1764130439636",
+  "createdAt": "2025-11-26T04:14:05.711Z",
+  "documents": [
+    {
+      "id": "6b891fef-5af5-4d52-a44f-5befcb1ea9f3",
+      "customerId": "grupo-pounj-report-1764130439636",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/CFE_OCTUBRE.pdf",
+      "extractedAt": "2025-11-26T04:14:05.711Z",
+      "extractedPayload": {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "/mnt/data/0_0.png",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60 6",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": null,
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 300,
+        "currency": "MXN",
+        "due_date": "2025-10-23",
+        "billing_month": null,
+        "billing_period_start": "2025-08-05",
+        "billing_period_end": "2025-10-06",
+        "issue_datetime": "2025-10-14",
+        "previous_balance": 0,
+        "current_charges": 300.07,
+        "service": {
+          "category": "electricity",
+          "telephone_number": null,
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null,
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      },
+      "sourceName": "CFE_OCTUBRE.pdf"
+    },
+    {
+      "id": "ad98a6f2-1b66-4c45-ba2c-76136d1d48c2",
+      "customerId": "grupo-pounj-report-1764130439636",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/October 2025.pdf",
+      "extractedAt": "2025-11-26T04:14:14.131Z",
+      "extractedPayload": {
+        "bank_name": "Kapital Bank",
+        "account_holder_name": "POUNJ GROUP",
+        "account_number": "00190681",
+        "clabe": "128180019068100146",
+        "currency": "USD",
+        "statement_period_start": "2025-09-01",
+        "statement_period_end": "2025-09-30",
+        "address_on_statement": {
+          "street": "GUTENBERG",
+          "ext_number": "60 B",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "MEXICO CITY",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "October 2025.pdf"
+    },
+    {
+      "id": "e1037ab4-026b-4438-82ed-7152909190f7",
+      "customerId": "grupo-pounj-report-1764130439636",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/New passport - Sep 18 2018 - 12-33 PM - p1.jpeg",
+      "extractedAt": "2025-11-26T04:14:16.258Z",
+      "extractedPayload": {
+        "full_name": "ASHISH PUNJ",
+        "nationality": "INDIAN",
+        "document_type": "Passport",
+        "document_number": "T0656276",
+        "secondary_number": null,
+        "date_of_birth": "1975-03-16",
+        "curp": null,
+        "sex": "M",
+        "issue_date": "2018-09-10",
+        "expiry_date": "2028-09-09",
+        "issuing_office": "MEXICO CITY",
+        "issuer_country": "MX",
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      },
+      "sourceName": "New passport - Sep 18 2018 - 12-33 PM - p1.jpeg"
+    },
+    {
+      "id": "d7908026-8e7e-467f-b3f7-a5ab6dde0abc",
+      "customerId": "grupo-pounj-report-1764130439636",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/2. Constancia_GPO.pdf",
+      "extractedAt": "2025-11-26T04:14:23.571Z",
+      "extractedPayload": {
+        "rfc": "GPO151215KK6",
+        "razon_social": "GRUPO POUNJ",
+        "commercial_name": "GRUPO POUNJ SA DE CV",
+        "capital_regime": "SOCIEDAD ANONIMA DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2015-12-15",
+        "status": "ACTIVO",
+        "last_status_change": "2015-12-15",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-11-19"
+        },
+        "fiscal_address": {
+          "street": "GUTENBERG",
+          "ext_number": "60 A",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "MELCHOR OCAMPO Y EJERCITO NACIONAL",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 90,
+            "start_date": "2024-07-01",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Otros servicios de almacenamiento general sin instalaciones especializadas",
+            "percentage": 10,
+            "start_date": "2024-07-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2015-12-15",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2015-12-15",
+            "end_date": null
+          },
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2015-12-15",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2016-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-07-01",
+            "end_date": null
+          }
+        ],
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      },
+      "sourceName": "2. Constancia_GPO.pdf"
+    },
+    {
+      "id": "1879878e-097a-4036-a755-fa72d56b1296",
+      "customerId": "grupo-pounj-report-1764130439636",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/1. Acta Grupo Pounj.pdf",
+      "extractedAt": "2025-11-26T04:14:54.501Z",
+      "extractedPayload": {
+        "razon_social": "GRUPO POUNJ, SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2015-12-09",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Distrito Federal",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Administrador General",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas",
+              "Poder general para actos de administración",
+              "Poder general para actos de administración en el área laboral",
+              "Poder general para ejercer actos de dominio",
+              "Poder para otorgar, suscribir, avalar, endosar, ceder y en general negociar toda clase de títulos de crédito u operaciones de crédito distintos a cheques",
+              "Poder para abrir y cerrar las cuentas bancarias de la sociedad",
+              "Poder para realizar en su nombre y representación toda clase de trámites en materia aduanera, importaciones y exportaciones de artículos",
+              "Facultad para sustituir sus poderes y para otorgar poderes generales y especiales"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ASHISH PUNJ",
+            "shares": 42,
+            "percentage": 84,
+            "share_series": null,
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "MANEKA KAUR GREWAL",
+            "shares": 8,
+            "percentage": 16,
+            "share_series": null,
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          }
+        ],
+        "corporate_purpose": [
+          "Venta de servicios de consultoría, servicios relacionados con la documentación como su duplicado, transporte, servicios de mensajería, recolección, distribución, destrucción de documentos, administración de bases de datos, captura de datos, procesamiento de datos, escaneo y digitalización de datos y documentos, servicios de recuperación de datos y de cartera",
+          "La reexpedición, consolidación y subcontratación con otras empresas de servicios de mensajería y paquetería a nivel nacional e internacional",
+          "La prestación de todo tipo de servicios relacionados con la transportación de paquetería, tanto en los Estados Unidos Mexicanos como en el extranjero",
+          "Prestación de servicios de recolección, distribución, documentos, paquetes e información de cualquier persona física o moral, nacional o extranjera",
+          "La prestación de servicios de consultoría, investigación de mercados de productos, servicios y de operaciones de crédito, por sí o por cuenta de terceros",
+          "La comercialización, recolección, investigación y análisis de datos y sistemas de información, su tratamiento, transmisión, soporte de archivos de datos y recuperación de los mismos",
+          "La compra, venta, recolección, administración y custodia, entre otros, de toda clase de documentos, paquetes y correspondencia, por cuenta propia o ajena",
+          "La compra, venta, representación, distribución, intermediación, comisión, consignación, arrendamiento, arrendamiento puro, subarrendamiento, franquicia, exposición, fabricación, maquila, elaboración, transformación, almacenamiento, guarda, adaptación, mantenimiento, reparación, administración, distribución y en general la comercialización por cualquier medio legal de toda clase de artículos, servicios y productos, para uso doméstico, comercial e industrial, permitidos por la ley, ya sean nacionales o extranjeros",
+          "Adquirir, poseer y disponer en cualquier forma legal de toda clase de acciones o participaciones en otras sociedades o asociaciones, ya sean de naturaleza civil o mercantil",
+          "Adquirir, poseer, arrendar y enajenar por cualquier título legal toda clase de bienes muebles e inmuebles que sean necesarios o convenientes para la realización del objeto social, así como vender, arrendar, traspasar, hipotecar o gravar de cualquier manera los bienes adquiridos o explotados por la sociedad",
+          "Representar a toda clase de sociedades o personas físicas, dentro o fuera de la República Mexicana, como agente, comisionista, representante o mandatario",
+          "Prestar y recibir prestado dinero con o sin garantía hipotecaria o prendaria o de cualquier otra naturaleza y, en general, celebrar toda clase de créditos y operaciones pasivas y activas que se relacionen con el objeto social",
+          "Adquirir, enajenar o de cualquier manera legal obtener patentes, derechos, patentes de invención, marcas industriales, nombres comerciales, modelos industriales, modelos de utilidad y demás elementos de propiedad industrial",
+          "Actuar como proveedora y/o contratista del Gobierno Federal, de los Gobiernos Estatales, Gobiernos Locales y de los Gobiernos Municipales, y de sus dependencias y entidades, previos los registros que para el efecto requieran las leyes y reglamentos",
+          "En general, la celebración y ejecución de toda clase de actos, convenios y contratos que se relacionen directa o indirectamente con los objetos de la sociedad",
+          "Para la realización del objeto social obtener cuando sea necesario concesiones, permisos, autorizaciones o resoluciones favorables de la autoridad federal, local o municipal competente"
+        ],
+        "notary": {
+          "name": "Gerardo Correa Etchegaray",
+          "notary_number": "89",
+          "protocol_number": null,
+          "protocol_date": "2015-12-09",
+          "office_location": "Distrito Federal"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": "A201510301016260402",
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Administrador General",
+          "quorum_rules": "Las resoluciones de las Asambleas serán válidas si se toman por mayoría de votos que representen el cincuenta y uno por ciento del capital social en todos los casos.",
+          "voting_rights": "Cada acción da derecho a un voto; las Asambleas quedan legalmente reunidas cuando se represente al menos el cincuenta y un por ciento del capital social.",
+          "share_transfer_rules": "Las acciones son nominativas; la sociedad llevará un Libro de Registro de Acciones Nominativas y solo reconocerá como titular a quien aparezca inscrito en dicho libro; se reconoce derecho de preferencia para suscribir las nuevas acciones que se emitan en aumentos de capital.",
+          "capital_rules": "El capital social será variable, con un mínimo fijo de 50,000 pesos representado por 50 acciones nominativas de 1,000 pesos cada una; el aumento o disminución de la parte variable se acordará en Asamblea General Ordinaria de Accionistas y se formalizará en términos de la Ley General de Sociedades Mercantiles."
+        },
+        "modifications": [],
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      },
+      "sourceName": "1. Acta Grupo Pounj.pdf"
+    }
+  ],
+  "profile": {
+    "customerId": "grupo-pounj-report-1764130439636",
+    "addressEvidence": [
+      {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "/mnt/data/0_0.png",
+          "pages": 2
+        },
+        "client_name": "PEREZ AMARO GERARDO ALFONSO",
+        "client_address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60 6",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": null,
+          "colonia": "Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814QI0",
+        "total_due": 300,
+        "currency": "MXN",
+        "due_date": "2025-10-23",
+        "billing_month": null,
+        "billing_period_start": "2025-08-05",
+        "billing_period_end": "2025-10-06",
+        "issue_datetime": "2025-10-14",
+        "previous_balance": 0,
+        "current_charges": 300.07,
+        "service": {
+          "category": "electricity",
+          "telephone_number": null,
+          "service_number": "974050101112"
+        },
+        "account_reference": "08DM23B010870550",
+        "invoice_number": null,
+        "_metadata": {
+          "modelUsed": "gpt-5.1",
+          "costUsd": 0.05
+        }
+      }
+    ],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "acta",
+        "address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Distrito Federal",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2015-12-09"
+      },
+      {
+        "source": "sat",
+        "address": {
+          "street": "GUTENBERG",
+          "ext_number": "60 A",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "MELCHOR OCAMPO Y EJERCITO NACIONAL",
+          "country": "MX"
+        },
+        "date": "2025-11-19"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "GUTEMBERG",
+          "ext_number": "60 6",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CDMX",
+          "cp": "11300",
+          "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "date": "2025-10-14"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-26T04:14:54.509Z",
+    "companyIdentity": {
+      "razon_social": "GRUPO POUNJ, SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE",
+      "rfc": null,
+      "registro_mercantil": null,
+      "incorporation_date": "2015-12-09",
+      "founding_address": {
+        "street": null,
+        "ext_number": null,
+        "int_number": null,
+        "colonia": null,
+        "municipio": "Ciudad de México",
+        "estado": "Distrito Federal",
+        "cp": null,
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "legal_representatives": [
+        {
+          "name": "ASHISH PUNJ",
+          "role": "Administrador General",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas",
+            "Poder general para actos de administración",
+            "Poder general para actos de administración en el área laboral",
+            "Poder general para ejercer actos de dominio",
+            "Poder para otorgar, suscribir, avalar, endosar, ceder y en general negociar toda clase de títulos de crédito u operaciones de crédito distintos a cheques",
+            "Poder para abrir y cerrar las cuentas bancarias de la sociedad",
+            "Poder para realizar en su nombre y representación toda clase de trámites en materia aduanera, importaciones y exportaciones de artículos",
+            "Facultad para sustituir sus poderes y para otorgar poderes generales y especiales"
+          ],
+          "joint_signature_required": false
+        }
+      ],
+      "shareholders": [
+        {
+          "name": "ASHISH PUNJ",
+          "shares": 42,
+          "percentage": 84,
+          "share_series": null,
+          "share_class": "VARIABLE",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "MANEKA KAUR GREWAL",
+          "shares": 8,
+          "percentage": 16,
+          "share_series": null,
+          "share_class": "VARIABLE",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": true
+        }
+      ],
+      "corporate_purpose": [
+        "Venta de servicios de consultoría, servicios relacionados con la documentación como su duplicado, transporte, servicios de mensajería, recolección, distribución, destrucción de documentos, administración de bases de datos, captura de datos, procesamiento de datos, escaneo y digitalización de datos y documentos, servicios de recuperación de datos y de cartera",
+        "La reexpedición, consolidación y subcontratación con otras empresas de servicios de mensajería y paquetería a nivel nacional e internacional",
+        "La prestación de todo tipo de servicios relacionados con la transportación de paquetería, tanto en los Estados Unidos Mexicanos como en el extranjero",
+        "Prestación de servicios de recolección, distribución, documentos, paquetes e información de cualquier persona física o moral, nacional o extranjera",
+        "La prestación de servicios de consultoría, investigación de mercados de productos, servicios y de operaciones de crédito, por sí o por cuenta de terceros",
+        "La comercialización, recolección, investigación y análisis de datos y sistemas de información, su tratamiento, transmisión, soporte de archivos de datos y recuperación de los mismos",
+        "La compra, venta, recolección, administración y custodia, entre otros, de toda clase de documentos, paquetes y correspondencia, por cuenta propia o ajena",
+        "La compra, venta, representación, distribución, intermediación, comisión, consignación, arrendamiento, arrendamiento puro, subarrendamiento, franquicia, exposición, fabricación, maquila, elaboración, transformación, almacenamiento, guarda, adaptación, mantenimiento, reparación, administración, distribución y en general la comercialización por cualquier medio legal de toda clase de artículos, servicios y productos, para uso doméstico, comercial e industrial, permitidos por la ley, ya sean nacionales o extranjeros",
+        "Adquirir, poseer y disponer en cualquier forma legal de toda clase de acciones o participaciones en otras sociedades o asociaciones, ya sean de naturaleza civil o mercantil",
+        "Adquirir, poseer, arrendar y enajenar por cualquier título legal toda clase de bienes muebles e inmuebles que sean necesarios o convenientes para la realización del objeto social, así como vender, arrendar, traspasar, hipotecar o gravar de cualquier manera los bienes adquiridos o explotados por la sociedad",
+        "Representar a toda clase de sociedades o personas físicas, dentro o fuera de la República Mexicana, como agente, comisionista, representante o mandatario",
+        "Prestar y recibir prestado dinero con o sin garantía hipotecaria o prendaria o de cualquier otra naturaleza y, en general, celebrar toda clase de créditos y operaciones pasivas y activas que se relacionen con el objeto social",
+        "Adquirir, enajenar o de cualquier manera legal obtener patentes, derechos, patentes de invención, marcas industriales, nombres comerciales, modelos industriales, modelos de utilidad y demás elementos de propiedad industrial",
+        "Actuar como proveedora y/o contratista del Gobierno Federal, de los Gobiernos Estatales, Gobiernos Locales y de los Gobiernos Municipales, y de sus dependencias y entidades, previos los registros que para el efecto requieran las leyes y reglamentos",
+        "En general, la celebración y ejecución de toda clase de actos, convenios y contratos que se relacionen directa o indirectamente con los objetos de la sociedad",
+        "Para la realización del objeto social obtener cuando sea necesario concesiones, permisos, autorizaciones o resoluciones favorables de la autoridad federal, local o municipal competente"
+      ],
+      "notary": {
+        "name": "Gerardo Correa Etchegaray",
+        "notary_number": "89",
+        "protocol_number": null,
+        "protocol_date": "2015-12-09",
+        "office_location": "Distrito Federal"
+      },
+      "registry": {
+        "fme": null,
+        "nci": null,
+        "unique_doc_number": "A201510301016260402",
+        "registration_city": null,
+        "registration_date": null,
+        "folio": null
+      },
+      "governance": {
+        "board_type": "Administrador General",
+        "quorum_rules": "Las resoluciones de las Asambleas serán válidas si se toman por mayoría de votos que representen el cincuenta y uno por ciento del capital social en todos los casos.",
+        "voting_rights": "Cada acción da derecho a un voto; las Asambleas quedan legalmente reunidas cuando se represente al menos el cincuenta y un por ciento del capital social.",
+        "share_transfer_rules": "Las acciones son nominativas; la sociedad llevará un Libro de Registro de Acciones Nominativas y solo reconocerá como titular a quien aparezca inscrito en dicho libro; se reconoce derecho de preferencia para suscribir las nuevas acciones que se emitan en aumentos de capital.",
+        "capital_rules": "El capital social será variable, con un mínimo fijo de 50,000 pesos representado por 50 acciones nominativas de 1,000 pesos cada una; el aumento o disminución de la parte variable se acordará en Asamblea General Ordinaria de Accionistas y se formalizará en términos de la Ley General de Sociedades Mercantiles."
+      },
+      "modifications": [],
+      "_metadata": {
+        "modelUsed": "gpt-5.1",
+        "costUsd": 0.05
+      }
+    },
+    "foundingAddress": {
+      "street": null,
+      "ext_number": null,
+      "int_number": null,
+      "colonia": null,
+      "municipio": "Ciudad de México",
+      "estado": "Distrito Federal",
+      "cp": null,
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "companyTaxProfile": {
+      "rfc": "GPO151215KK6",
+      "razon_social": "GRUPO POUNJ",
+      "commercial_name": "GRUPO POUNJ SA DE CV",
+      "capital_regime": "SOCIEDAD ANONIMA DE CAPITAL VARIABLE",
+      "tax_regime": "Régimen General de Ley Personas Morales",
+      "start_of_operations": "2015-12-15",
+      "status": "ACTIVO",
+      "last_status_change": "2015-12-15",
+      "issue": {
+        "place_municipio": "MIGUEL HIDALGO",
+        "place_estado": "CIUDAD DE MEXICO",
+        "issue_date": "2025-11-19"
+      },
+      "fiscal_address": {
+        "street": "GUTENBERG",
+        "ext_number": "60 A",
+        "int_number": null,
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "11300",
+        "cross_streets": "MELCHOR OCAMPO Y EJERCITO NACIONAL",
+        "country": "MX"
+      },
+      "economic_activities": [
+        {
+          "order": 1,
+          "description": "Servicios de consultoría en computación",
+          "percentage": 90,
+          "start_date": "2024-07-01",
+          "end_date": null
+        },
+        {
+          "order": 2,
+          "description": "Otros servicios de almacenamiento general sin instalaciones especializadas",
+          "percentage": 10,
+          "start_date": "2024-07-01",
+          "end_date": null
+        }
+      ],
+      "tax_obligations": [
+        {
+          "description": "Declaración de proveedores de IVA",
+          "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2015-12-15",
+          "end_date": null
+        },
+        {
+          "description": "Declaración anual de ISR del ejercicio Personas morales.",
+          "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+          "start_date": "2015-12-15",
+          "end_date": null
+        },
+        {
+          "description": "Pago definitivo mensual de IVA.",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2015-12-15",
+          "end_date": null
+        },
+        {
+          "description": "Pago provisional mensual de ISR personas morales régimen general",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2016-04-01",
+          "end_date": null
+        },
+        {
+          "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2024-07-01",
+          "end_date": null
+        }
+      ],
+      "_metadata": {
+        "modelUsed": "gpt-5.1",
+        "costUsd": 0.05
+      }
+    },
+    "currentFiscalAddress": {
+      "street": "GUTENBERG",
+      "ext_number": "60 A",
+      "int_number": null,
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MEXICO",
+      "cp": "11300",
+      "cross_streets": "MELCHOR OCAMPO Y EJERCITO NACIONAL",
+      "country": "MX"
+    },
+    "bankIdentity": {
+      "bank_name": "Kapital Bank",
+      "account_holder_name": "POUNJ GROUP",
+      "clabe": "128180019068100146",
+      "clabe_last4": "0146",
+      "address_on_file": {
+        "street": "GUTENBERG",
+        "ext_number": "60 B",
+        "int_number": null,
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "MEXICO CITY",
+        "cp": "11300",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "document_date": "2025-09-30",
+      "age_in_days": 57,
+      "within_90_days": true,
+      "holder_matches_company": true,
+      "address_matches_operational": true
+    },
+    "representativeIdentity": {
+      "full_name": "ASHISH PUNJ",
+      "nationality": "INDIAN",
+      "document_type": "Passport",
+      "document_number": "T0656276",
+      "secondary_number": null,
+      "date_of_birth": "1975-03-16",
+      "curp": null,
+      "sex": "M",
+      "issue_date": "2018-09-10",
+      "expiry_date": "2028-09-09",
+      "issuing_office": "MEXICO CITY",
+      "issuer_country": "MX",
+      "_metadata": {
+        "modelUsed": "gpt-5.1",
+        "costUsd": 0.05
+      }
+    },
+    "currentOperationalAddress": {
+      "street": "GUTEMBERG",
+      "ext_number": "60 6",
+      "int_number": null,
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CDMX",
+      "cp": "11300",
+      "cross_streets": "EJERCITO NACIONAL MEXICAN Y INTERIOR MELCHOR OCAMPO",
+      "country": "MX"
+    }
+  },
+  "validation": {
+    "customerId": "grupo-pounj-report-1764130439636",
+    "score": 0.49999999999999994,
+    "flags": [
+      {
+        "code": "REP_ID_MISMATCH",
+        "level": "critical",
+        "message": "Representante Legal Extranjero: Faltan documentos. Se requiere Pasaporte (identidad) Y FM2/FM3 (autorización para trabajar en México)."
+      },
+      {
+        "code": "POA_NAME_MISMATCH",
+        "level": "critical",
+        "message": "Comprobante de domicilio a nombre de tercero (\"PEREZ AMARO GERARDO ALFONSO\"). Para Persona Moral, el comprobante DEBE estar a nombre de la empresa (\"GRUPO POUNJ\").",
+        "action_required": "Proporcionar comprobante de domicilio a nombre de la empresa.",
+        "supporting_docs": [
+          "Recibo CFE/Telmex a nombre de la empresa",
+          "Contrato de arrendamiento + recibo del arrendador"
+        ]
+      },
+      {
+        "code": "POA_ADDRESS_VERIFIED",
+        "level": "info",
+        "message": "Dirección verificada: El comprobante de servicios confirma que el domicilio fiscal existe y tiene servicios activos."
+      },
+      {
+        "code": "MISSING_FME",
+        "level": "warning",
+        "message": "Falta Folio Mercantil Electrónico (FME) o número de inscripción en el Registro Público de Comercio.",
+        "action_required": "Solicitar boleta de inscripción o constancia del Registro Público de Comercio."
+      },
+      {
+        "code": "OTHER",
+        "level": "info",
+        "message": "📋 VALIDATION_CHECKLIST:\n✓ Tipo de Entidad: Persona Moral\n✓ Acta Constitutiva: Verificada\n✓ Constancia SAT: RFC GPO151215KK6\n✓ Régimen Fiscal: Régimen General de Ley Personas Morales\n✗ Pasaporte: No proporcionado\n✓ Estatus Migratorio: Passport\n✓ Comprobante de Domicilio: Comisión Federal de Electricidad a nombre de \"PEREZ AMARO GERARDO ALFONSO\"\n✓ Cuenta Bancaria: Kapital Bank - POUNJ GROUP"
+      }
+    ],
+    "generatedAt": "2025-11-26T04:14:54.517Z"
+  }
+}

@@ -1,0 +1,568 @@
+{
+  "runId": "6a7ef8e5-973c-41fd-b4dc-356b61db556b",
+  "customerId": "alex-karam-1764262494884",
+  "createdAt": "2025-11-27T16:55:49.016Z",
+  "documents": [
+    {
+      "id": "516d61cf-375c-4c03-a68f-166aadc3bd9f",
+      "customerId": "alex-karam-1764262494884",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alex-karam/Acta_Alex.pdf",
+      "extractedAt": "2025-11-27T16:55:49.016Z",
+      "extractedPayload": {
+        "razon_social": "DESARROLLO INTEGRAL PERSONA-EMPRESA, SOCIEDAD CIVIL",
+        "rfc": null,
+        "registro_mercantil": "folio de personas morales número SESENTA Y CINCO MIL CIENTO DIECIOCHO",
+        "incorporation_date": "2003-09-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ELOÍSA ARROYO MARTÍNEZ",
+            "role": "Socio Director",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder General para Pleitos y Cobranzas",
+              "Poder General para Actos de Administración",
+              "Poder General para Actos de Administración en materia laboral",
+              "Poder General para Actos de Dominio",
+              "Poder General para Suscribir Títulos de Credito",
+              "Manejar cuentas de cheques de la sociedad",
+              "Otorgar, suscribir, emitir, endosar, negociar, avalar y en cualquier forma operar con títulos de crédito de toda clase",
+              "Obligar cambiariamente a la Sociedad",
+              "Nombrar y remover gerentes, subgerentes, agentes y demás empleados",
+              "Otorgar toda clase de poderes generales y especiales y revocarlos"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ELOÍSA ARROYO MARTÍNEZ",
+            "shares": 1,
+            "percentage": 80,
+            "share_series": null,
+            "share_class": null,
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "ALEJANDRO KARAM TOUMEH",
+            "shares": 1,
+            "percentage": 20,
+            "share_series": null,
+            "share_class": null,
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "La prestación de servicios profesionales de reclutamiento de personal, incluyendo la búsqueda, capacitación, selección, organización, supervisión, coordinación y control de personas para su colocación definitiva, temporal o eventual en todo tipo de empresas e industrias",
+          "La prestación de servicios profesionales consistentes en la asesoraría, consultoría, capacitación, auditoría y supervisión, en áreas financiera, administrativa, contable, económica, jurídica, ambiental, de control interno y gestión de riesgos, de comercio exterior y recursos humanos",
+          "La realización de todo tipo de estudios, proyectos, evaluaciones, diagnósticos y dictámenes en las áreas contables, de planeación estratégica, de mercado, financiera, administrativa, y ambiental, de control interno y gestión de riesgos",
+          "La elaboración y realización de seminarios, cursos, conferencias, ferias, fiestas, exhibiciones, exposiciones y demás eventos similares",
+          "La prestación de servicios profesionales o técnicos para la organización, planeación, operación, desarrollo, evaluación, control y administración de todo tipo de empresas o de actividades relacionadas con la producción de bienes o servicios, a través del uso de la tecnología actual y futura",
+          "La consultoría, capacitación, entrenamiento de personal, accesoria para el reclutamiento, selección y evaluación de recursos humanos de instituciones privadas y publicas, la promoción de conferencias, simposium, convenciones y todo lo relacionado con el desarrollo profesional y personal de todo tipo de personas",
+          "La asesoría y diseño de estructura organizacional; diseño e implantación de planes de compensación variable en base al desempeño y logro de objetivos; asesoría en capacitación y desarrollo de los recursos humanos, desarrollo de seminarios y cursos",
+          "La ingeniería y re-ingeniería de procesos y programas de calidad y mejora continua, así como la elaboración de documentación de políticas, métodos, procedimientos y diagramas de flujo de procesos",
+          "Todos aquellos servicios de consultoría y asesoría relativos a las áreas anteriormente mencionadas",
+          "Adquirir por cualquier título derechos literarios o artísticos, relacionados con su objeto",
+          "Obtener por cualquier titulo, concesiones, permisos, autorizaciones o licencias así como celebrar cualquier clase de contratos, relacionados con el objeto anterior, con la administración pública, sea federal o local",
+          "Emitir, girar, endosar, acepta, avalar y suscribir toda clase de títulos de crédito, sin que constituyan una especulación comercial",
+          "Adquirir partes sociales, en sociedades relacionadas con su objeto",
+          "Adquirir toda clase de bienes muebles e inmuebles, derechos reales y personales",
+          "Contratar al personal necesario",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros"
+        ],
+        "notary": {
+          "name": "JESÚS TORRES GÓMEZ",
+          "notary_number": "224",
+          "protocol_number": "31935",
+          "protocol_date": "2018-09-12",
+          "office_location": "Ciudad de México"
+        },
+        "registry": {
+          "fme": "65118",
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": "Ciudad de México",
+          "registration_date": "2021-04-07",
+          "folio": "65118"
+        },
+        "governance": {
+          "board_type": "Administración unipersonal (Socio Director)",
+          "quorum_rules": "Primera convocatoria: 60% del capital social. Segunda o posteriores convocatorias: 51% del capital social. Para reformar estatutos: 75% del capital social.",
+          "voting_rights": "Cada socio tiene un voto proporcional a su aportación al capital social. Las decisiones se toman por mayoría de votos.",
+          "share_transfer_rules": null,
+          "capital_rules": "La Asamblea General de Socios tiene la facultad de determinar el aumento o disminución del capital social."
+        },
+        "modifications": [
+          "Ampliación del objeto social y reforma de la cláusula tercera de los estatutos",
+          "Renuncia de Socio Director ARMANDO ARROYO SOTOMAYOR y revocación de sus facultades",
+          "Nombramiento de ELOÍSA ARROYO MARTÍNEZ como nueva Socio Director y otorgamiento de facultades",
+          "Cesión de partes sociales de los socios anteriores a los nuevos socios ELOÍSA ARROYO MARTÍNEZ y ALEJANDRO KARAM TOUMEH"
+        ],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Acta_Alex.pdf"
+    },
+    {
+      "id": "aa3269c7-70b2-412b-a7dc-56edca104be2",
+      "customerId": "alex-karam-1764262494884",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alex-karam/CFE_Comprobante.pdf",
+      "extractedAt": "2025-11-27T16:56:19.894Z",
+      "extractedPayload": {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "CFE_Comprobante.pdf",
+          "pages": 1
+        },
+        "client_name": "WHOLE SERVICE FOR BUSINESS SA",
+        "client_address": {
+          "street": "MONTECITO",
+          "ext_number": "38",
+          "int_number": "PISO 8 OF08",
+          "colonia": "NAPOLES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CDMX",
+          "cp": "03810",
+          "cross_streets": "INSURGENTES SUR Y DAKOTA",
+          "country": "MX"
+        },
+        "client_tax_id": "WSF0410258IA",
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Río Ródano",
+          "ext_number": "14",
+          "int_number": null,
+          "colonia": "Cuauhtémoc",
+          "municipio": "Alcaldía Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06500",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "CSS160330CP7",
+        "total_due": 1455,
+        "currency": "MXN",
+        "due_date": "2025-02-09",
+        "billing_month": "25 NOV 24-23 ENE 25",
+        "billing_period_start": "2024-11-25",
+        "billing_period_end": "2025-01-23",
+        "issue_datetime": "2025-02-05",
+        "previous_balance": null,
+        "current_charges": 1454.34,
+        "service": {
+          "category": "electricity",
+          "telephone_number": null,
+          "service_number": "971120601577"
+        },
+        "account_reference": "33DM22B013315178",
+        "invoice_number": null,
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "CFE_Comprobante.pdf"
+    },
+    {
+      "id": "9ca0ac05-3216-41a1-8310-f93d8a6cfb30",
+      "customerId": "alex-karam-1764262494884",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alex-karam/Estado-De_Cuenta.pdf",
+      "extractedAt": "2025-11-27T16:56:37.928Z",
+      "extractedPayload": {
+        "bank_name": "Citibanamex",
+        "account_holder_name": "DESARROLLO INTEGRAL PERSONA-EMPRESA SC",
+        "account_number": "9545526450",
+        "clabe": "002180701100438621",
+        "currency": "MXN",
+        "statement_period_start": "2024-12-01",
+        "statement_period_end": "2024-12-31",
+        "address_on_statement": {
+          "street": "MONTECITO",
+          "ext_number": "38",
+          "int_number": "PISO 8 OF08",
+          "colonia": "NAPOLES",
+          "municipio": "BENITO JUAREZ",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "03810",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Estado-De_Cuenta.pdf"
+    },
+    {
+      "id": "f9852d9d-79e7-4cf0-b458-481c5c7ad363",
+      "customerId": "alex-karam-1764262494884",
+      "type": "ine",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/alex-karam/Ine_Id.pdf",
+      "extractedAt": "2025-11-27T16:56:52.804Z",
+      "extractedPayload": {
+        "full_name": "ARROYO MARTINEZ ELOISA",
+        "curp": "AOME701030MDFRRL01",
+        "clave_elector": "ARMREL70103009M101",
+        "address": {
+          "colonia": "SANTA URSULA XITLA",
+          "country": "MX",
+          "cp": "14420",
+          "estado": "D.F.",
+          "municipio": "TLALPAN",
+          "street": null
+        },
+        "issuer_country": "MX",
+        "card_version": null,
+        "cic": "1174153336",
+        "date_of_birth": "1970-10-30",
+        "document_type": "IFE",
+        "emission_year": "2014",
+        "estado_registro": "MEX",
+        "localidad": "0001",
+        "mrz_line1": "IDMEX1174153336<<3909124797403",
+        "mrz_line2": "7010309M2412311MEX<01<<23314<4",
+        "mrz_line3": "ARROYO<MARTINEZ<<ELOISA<<<<<<<",
+        "nationality": null,
+        "ocr_number": "3909124797403",
+        "seccion": "3909",
+        "sex": "M",
+        "vigencia_year": "2024",
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Ine_Id.pdf"
+    }
+  ],
+  "profile": {
+    "customerId": "alex-karam-1764262494884",
+    "addressEvidence": [
+      {
+        "document_type": "cfe_receipt",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "CFE_Comprobante.pdf",
+          "pages": 1
+        },
+        "client_name": "WHOLE SERVICE FOR BUSINESS SA",
+        "client_address": {
+          "street": "MONTECITO",
+          "ext_number": "38",
+          "int_number": "PISO 8 OF08",
+          "colonia": "NAPOLES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CDMX",
+          "cp": "03810",
+          "cross_streets": "INSURGENTES SUR Y DAKOTA",
+          "country": "MX"
+        },
+        "client_tax_id": "WSF0410258IA",
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Río Ródano",
+          "ext_number": "14",
+          "int_number": null,
+          "colonia": "Cuauhtémoc",
+          "municipio": "Alcaldía Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06500",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "CSS160330CP7",
+        "total_due": 1455,
+        "currency": "MXN",
+        "due_date": "2025-02-09",
+        "billing_month": "25 NOV 24-23 ENE 25",
+        "billing_period_start": "2024-11-25",
+        "billing_period_end": "2025-01-23",
+        "issue_datetime": "2025-02-05",
+        "previous_balance": null,
+        "current_charges": 1454.34,
+        "service": {
+          "category": "electricity",
+          "telephone_number": null,
+          "service_number": "971120601577"
+        },
+        "account_reference": "33DM22B013315178",
+        "invoice_number": null,
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      }
+    ],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "acta",
+        "address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2003-09-30"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "MONTECITO",
+          "ext_number": "38",
+          "int_number": "PISO 8 OF08",
+          "colonia": "NAPOLES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CDMX",
+          "cp": "03810",
+          "cross_streets": "INSURGENTES SUR Y DAKOTA",
+          "country": "MX"
+        },
+        "date": "2025-02-05"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-27T16:56:53.817Z",
+    "companyIdentity": {
+      "razon_social": "DESARROLLO INTEGRAL PERSONA-EMPRESA, SOCIEDAD CIVIL",
+      "rfc": null,
+      "registro_mercantil": "folio de personas morales número SESENTA Y CINCO MIL CIENTO DIECIOCHO",
+      "incorporation_date": "2003-09-30",
+      "founding_address": {
+        "street": null,
+        "ext_number": null,
+        "int_number": null,
+        "colonia": null,
+        "municipio": "Ciudad de México",
+        "estado": "Ciudad de México",
+        "cp": null,
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "legal_representatives": [
+        {
+          "name": "ELOÍSA ARROYO MARTÍNEZ",
+          "role": "Socio Director",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder General para Pleitos y Cobranzas",
+            "Poder General para Actos de Administración",
+            "Poder General para Actos de Administración en materia laboral",
+            "Poder General para Actos de Dominio",
+            "Poder General para Suscribir Títulos de Credito",
+            "Manejar cuentas de cheques de la sociedad",
+            "Otorgar, suscribir, emitir, endosar, negociar, avalar y en cualquier forma operar con títulos de crédito de toda clase",
+            "Obligar cambiariamente a la Sociedad",
+            "Nombrar y remover gerentes, subgerentes, agentes y demás empleados",
+            "Otorgar toda clase de poderes generales y especiales y revocarlos"
+          ],
+          "joint_signature_required": false
+        }
+      ],
+      "shareholders": [
+        {
+          "name": "ELOÍSA ARROYO MARTÍNEZ",
+          "shares": 1,
+          "percentage": 80,
+          "share_series": null,
+          "share_class": null,
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "ALEJANDRO KARAM TOUMEH",
+          "shares": 1,
+          "percentage": 20,
+          "share_series": null,
+          "share_class": null,
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": false
+        }
+      ],
+      "corporate_purpose": [
+        "La prestación de servicios profesionales de reclutamiento de personal, incluyendo la búsqueda, capacitación, selección, organización, supervisión, coordinación y control de personas para su colocación definitiva, temporal o eventual en todo tipo de empresas e industrias",
+        "La prestación de servicios profesionales consistentes en la asesoraría, consultoría, capacitación, auditoría y supervisión, en áreas financiera, administrativa, contable, económica, jurídica, ambiental, de control interno y gestión de riesgos, de comercio exterior y recursos humanos",
+        "La realización de todo tipo de estudios, proyectos, evaluaciones, diagnósticos y dictámenes en las áreas contables, de planeación estratégica, de mercado, financiera, administrativa, y ambiental, de control interno y gestión de riesgos",
+        "La elaboración y realización de seminarios, cursos, conferencias, ferias, fiestas, exhibiciones, exposiciones y demás eventos similares",
+        "La prestación de servicios profesionales o técnicos para la organización, planeación, operación, desarrollo, evaluación, control y administración de todo tipo de empresas o de actividades relacionadas con la producción de bienes o servicios, a través del uso de la tecnología actual y futura",
+        "La consultoría, capacitación, entrenamiento de personal, accesoria para el reclutamiento, selección y evaluación de recursos humanos de instituciones privadas y publicas, la promoción de conferencias, simposium, convenciones y todo lo relacionado con el desarrollo profesional y personal de todo tipo de personas",
+        "La asesoría y diseño de estructura organizacional; diseño e implantación de planes de compensación variable en base al desempeño y logro de objetivos; asesoría en capacitación y desarrollo de los recursos humanos, desarrollo de seminarios y cursos",
+        "La ingeniería y re-ingeniería de procesos y programas de calidad y mejora continua, así como la elaboración de documentación de políticas, métodos, procedimientos y diagramas de flujo de procesos",
+        "Todos aquellos servicios de consultoría y asesoría relativos a las áreas anteriormente mencionadas",
+        "Adquirir por cualquier título derechos literarios o artísticos, relacionados con su objeto",
+        "Obtener por cualquier titulo, concesiones, permisos, autorizaciones o licencias así como celebrar cualquier clase de contratos, relacionados con el objeto anterior, con la administración pública, sea federal o local",
+        "Emitir, girar, endosar, acepta, avalar y suscribir toda clase de títulos de crédito, sin que constituyan una especulación comercial",
+        "Adquirir partes sociales, en sociedades relacionadas con su objeto",
+        "Adquirir toda clase de bienes muebles e inmuebles, derechos reales y personales",
+        "Contratar al personal necesario",
+        "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros"
+      ],
+      "notary": {
+        "name": "JESÚS TORRES GÓMEZ",
+        "notary_number": "224",
+        "protocol_number": "31935",
+        "protocol_date": "2018-09-12",
+        "office_location": "Ciudad de México"
+      },
+      "registry": {
+        "fme": "65118",
+        "nci": null,
+        "unique_doc_number": null,
+        "registration_city": "Ciudad de México",
+        "registration_date": "2021-04-07",
+        "folio": "65118"
+      },
+      "governance": {
+        "board_type": "Administración unipersonal (Socio Director)",
+        "quorum_rules": "Primera convocatoria: 60% del capital social. Segunda o posteriores convocatorias: 51% del capital social. Para reformar estatutos: 75% del capital social.",
+        "voting_rights": "Cada socio tiene un voto proporcional a su aportación al capital social. Las decisiones se toman por mayoría de votos.",
+        "share_transfer_rules": null,
+        "capital_rules": "La Asamblea General de Socios tiene la facultad de determinar el aumento o disminución del capital social."
+      },
+      "modifications": [
+        "Ampliación del objeto social y reforma de la cláusula tercera de los estatutos",
+        "Renuncia de Socio Director ARMANDO ARROYO SOTOMAYOR y revocación de sus facultades",
+        "Nombramiento de ELOÍSA ARROYO MARTÍNEZ como nueva Socio Director y otorgamiento de facultades",
+        "Cesión de partes sociales de los socios anteriores a los nuevos socios ELOÍSA ARROYO MARTÍNEZ y ALEJANDRO KARAM TOUMEH"
+      ],
+      "_metadata": {
+        "modelUsed": "gemini-2.5-flash",
+        "costUsd": 0.001
+      }
+    },
+    "foundingAddress": {
+      "street": null,
+      "ext_number": null,
+      "int_number": null,
+      "colonia": null,
+      "municipio": "Ciudad de México",
+      "estado": "Ciudad de México",
+      "cp": null,
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "bankIdentity": {
+      "bank_name": "Citibanamex",
+      "account_holder_name": "DESARROLLO INTEGRAL PERSONA-EMPRESA SC",
+      "clabe": "002180701100438621",
+      "clabe_last4": "8621",
+      "address_on_file": {
+        "street": "MONTECITO",
+        "ext_number": "38",
+        "int_number": "PISO 8 OF08",
+        "colonia": "NAPOLES",
+        "municipio": "BENITO JUAREZ",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "03810",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "document_date": "2024-12-31",
+      "age_in_days": 331,
+      "within_90_days": false,
+      "holder_matches_company": false,
+      "address_matches_operational": true
+    },
+    "representativeIdentity": {
+      "full_name": "ARROYO MARTINEZ ELOISA",
+      "curp": "AOME701030MDFRRL01",
+      "clave_elector": "ARMREL70103009M101",
+      "address": {
+        "colonia": "SANTA URSULA XITLA",
+        "country": "MX",
+        "cp": "14420",
+        "estado": "D.F.",
+        "municipio": "TLALPAN",
+        "street": null
+      },
+      "issuer_country": "MX",
+      "card_version": null,
+      "cic": "1174153336",
+      "date_of_birth": "1970-10-30",
+      "document_type": "IFE",
+      "emission_year": "2014",
+      "estado_registro": "MEX",
+      "localidad": "0001",
+      "mrz_line1": "IDMEX1174153336<<3909124797403",
+      "mrz_line2": "7010309M2412311MEX<01<<23314<4",
+      "mrz_line3": "ARROYO<MARTINEZ<<ELOISA<<<<<<<",
+      "nationality": null,
+      "ocr_number": "3909124797403",
+      "seccion": "3909",
+      "sex": "M",
+      "vigencia_year": "2024",
+      "_metadata": {
+        "modelUsed": "gemini-2.5-flash",
+        "costUsd": 0.001
+      }
+    },
+    "currentOperationalAddress": {
+      "street": "MONTECITO",
+      "ext_number": "38",
+      "int_number": "PISO 8 OF08",
+      "colonia": "NAPOLES",
+      "municipio": "CIUDAD DE MEXICO",
+      "estado": "CDMX",
+      "cp": "03810",
+      "cross_streets": "INSURGENTES SUR Y DAKOTA",
+      "country": "MX"
+    }
+  },
+  "validation": {
+    "customerId": "alex-karam-1764262494884",
+    "score": 0.35,
+    "flags": [
+      {
+        "code": "POA_NAME_MISMATCH",
+        "level": "critical",
+        "message": "Comprobante de domicilio a nombre de tercero (\"WHOLE SERVICE FOR BUSINESS SA\"). Para Persona Moral, el comprobante DEBE estar a nombre de la empresa (\"DESARROLLO INTEGRAL PERSONA-EMPRESA, SOCIEDAD CIVIL\").",
+        "action_required": "Proporcionar comprobante de domicilio a nombre de la empresa.",
+        "supporting_docs": [
+          "Recibo CFE/Telmex a nombre de la empresa",
+          "Contrato de arrendamiento + recibo del arrendador"
+        ]
+      },
+      {
+        "code": "LOW_DOC_COVERAGE",
+        "level": "critical",
+        "message": "Missing Tax Profile (SAT Constancia)."
+      },
+      {
+        "code": "OTHER",
+        "level": "warning",
+        "message": "Latest Proof of Address is older than 90 days (295 days)."
+      },
+      {
+        "code": "OTHER",
+        "level": "info",
+        "message": "📋 VALIDATION_CHECKLIST:\n✓ Tipo de Entidad: Persona Moral\n✓ Acta Constitutiva: Verificada\n✓ Registro Público: Folio 65118\n✗ Constancia SAT: No proporcionada\n✗ Identificación: Falta INE o Pasaporte\n✓ Comprobante de Domicilio: Comisión Federal de Electricidad a nombre de \"WHOLE SERVICE FOR BUSINESS SA\"\n✓ Cuenta Bancaria: Citibanamex - DESARROLLO INTEGRAL PERSONA-EMPRESA SC"
+      }
+    ],
+    "generatedAt": "2025-11-27T16:56:55.332Z"
+  }
+}

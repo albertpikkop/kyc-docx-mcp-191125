@@ -71,7 +71,16 @@ export const PassportIdentitySchema = {
     "nationality",
     "document_type",
     "document_number",
-    "issuer_country"
+    "date_of_birth",
+    "sex",
+    "place_of_birth",
+    "issue_date",
+    "expiry_date",
+    "issuing_authority",
+    "issuer_country",
+    "mrz_line_1",
+    "mrz_line_2",
+    "curp"
   ],
   additionalProperties: false
 };
@@ -95,4 +104,5 @@ export const PassportIdentityZodSchema = z.object({
 });
 
 export type PassportIdentity = z.infer<typeof PassportIdentityZodSchema>;
+
 

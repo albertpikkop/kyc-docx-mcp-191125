@@ -1187,6 +1187,7 @@ export function validateImmigrationDocument(profile: KycProfile): ImmigrationVal
         ? `INE vencida (vigencia: ${vigenciaYear}). Requiere renovación.`
         : `INE válida (vigencia: ${vigenciaYear}).`,
       details: {
+        documentType: 'INE',
         expiryDate: vigenciaYear ? `${vigenciaYear}-12-31` : undefined,
         isObsolete: isExpired
       }
@@ -2288,7 +2289,7 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
   
   // Check if the SAT we have is a personal SAT (not company SAT)
   const satIsPersonal = satRfc && personaFisicaRfcPattern.test(satRfc);
-  const satIsCorporate = satRfc && personaMoralRfcPattern.test(satRfc);
+  // satIsCorporate could be used for future validation but currently satIsPersonal is sufficient
   
   // Get company name for better error messages
   const companyName = profile.companyIdentity?.razon_social || 'la empresa';
@@ -2347,7 +2348,11 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     
     if (isSociedadMercantil && !isSociedadCivil) {
       // Sociedad Mercantil - FME is REQUIRED per Código de Comercio Art. 21
-      if (!registry?.fme && !registry?.folio && !registry?.nci) {
+      // Check multiple sources: registry from Acta, or boletaRPC
+      const hasFMEFromActa = !!(registry?.fme || registry?.folio || registry?.nci);
+      const hasFMEFromBoleta = !!(profile as any).boletaRPC?.numero_unico_documento;
+      
+      if (!hasFMEFromActa && !hasFMEFromBoleta) {
         flags.push({ 
           code: "MISSING_FME", 
           level: "warning", 
@@ -2359,6 +2364,63 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     }
     // For Sociedad Civil - NO FME required (regulated by Código Civil, not Código de Comercio)
     // No flag needed
+  }
+  
+  // D.1.5 RNIE Validation for companies with foreign shareholders
+  // Per Ley de Inversión Extranjera Art. 32-35, companies with foreign shareholders must register with RNIE
+  const shareholders = profile.companyIdentity?.shareholders || [];
+  const hasForeignShareholders = shareholders.some(s => {
+    const nationality = (s.nationality || '').toUpperCase();
+    return nationality && 
+           !['MEXICANA', 'MEXICANO', 'MEXICO', 'MX', 'MEX'].includes(nationality);
+  });
+  
+  if (hasForeignShareholders) {
+    // Check if RNIE registration exists
+    const hasRNIE = !!(profile as any).rnieConstancia?.folio_ingreso;
+    const hasSREConvenio = !!(profile as any).sreConvenio?.folio;
+    
+    if (!hasRNIE) {
+      flags.push({
+        code: "MISSING_RNIE",
+        level: "warning",
+        message: "Empresa con accionistas extranjeros: Falta Constancia de Inscripción en el Registro Nacional de Inversiones Extranjeras (RNIE). Requerido por Ley de Inversión Extranjera Art. 32.",
+        action_required: "Solicitar acuse de recibo o constancia de inscripción del RNIE a través de fedatario público."
+      });
+      score -= 0.05;
+    }
+    
+    // Calculate foreign ownership percentage
+    let totalShares = 0;
+    let foreignShares = 0;
+    shareholders.forEach(s => {
+      const shares = s.shares || 0;
+      totalShares += shares;
+      const nationality = (s.nationality || '').toUpperCase();
+      if (nationality && !['MEXICANA', 'MEXICANO', 'MEXICO', 'MX', 'MEX'].includes(nationality)) {
+        foreignShares += shares;
+      }
+    });
+    
+    const foreignPercentage = totalShares > 0 ? (foreignShares / totalShares) * 100 : 0;
+    
+    if (foreignPercentage > 49) {
+      flags.push({
+        code: "FOREIGN_OWNERSHIP_HIGH",
+        level: "info",
+        message: `Participación extranjera del ${foreignPercentage.toFixed(1)}% (mayor al 49%). Verificar que la actividad económica permita mayoría extranjera según Ley de Inversión Extranjera.`,
+        action_required: "Verificar que el objeto social no esté restringido a inversión mexicana mayoritaria."
+      });
+    }
+    
+    if (!hasSREConvenio) {
+      flags.push({
+        code: "MISSING_SRE_CONVENIO",
+        level: "info",
+        message: "Empresa con accionistas extranjeros: No se encontró Convenio de Extranjería registrado ante SRE. Recomendado para mayor seguridad jurídica.",
+        action_required: "Verificar si el Convenio de Extranjería fue registrado en la escritura constitutiva."
+      });
+    }
   }
   
   // D.2 Tax Regime validation for commercial capability

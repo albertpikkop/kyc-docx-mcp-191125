@@ -1,0 +1,1455 @@
+{
+  "runId": "f399f644-b004-4a19-808f-89c4a84588c4",
+  "customerId": "pfds-gemini",
+  "createdAt": "2025-11-26T17:02:36.316Z",
+  "documents": [
+    {
+      "id": "65e5764a-649c-45a0-a013-643112e4e104",
+      "customerId": "pfds-gemini",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Acta_Constitutiva_pfds.pdf",
+      "extractedAt": "2025-11-26T17:01:41.972Z",
+      "extractedPayload": {
+        "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2021-08-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "CIUDAD DE MÉXICO",
+          "estado": "CIUDAD DE MÉXICO",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Presidente del Consejo de Administración y Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "pleitos y cobranzas",
+              "actos de administración",
+              "actos de dominio",
+              "títulos de crédito"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "role": "Vocal del Consejo de Administración y Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "pleitos y cobranzas",
+              "actos de administración",
+              "actos de dominio",
+              "títulos de crédito"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "role": "Secretario del Consejo de Administración",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "pleitos y cobranzas",
+              "actos de administración",
+              "actos de dominio",
+              "títulos de crédito"
+            ],
+            "joint_signature_required": true
+          },
+          {
+            "name": "ARTURO DE LA PEÑA LOREDO",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "pleitos y cobranzas",
+              "actos de administración"
+            ],
+            "joint_signature_required": false
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ASHISH PUNJ",
+            "shares": 94,
+            "percentage": 92.16,
+            "share_series": "Serie Uno",
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "shares": 6,
+            "percentage": 5.88,
+            "share_series": "Serie Uno",
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "shares": 1,
+            "percentage": 0.98,
+            "share_series": "Serie Tres",
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "shares": 1,
+            "percentage": 0.98,
+            "share_series": "Serie Tres",
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "La comercialización de toda clase de productos, mediante plataformas electrónicas o cualquier otro medio digital.",
+          "La comercialización, distribución, producción, fabricación, importación y exportación, de toda clase de productos, así como la prestación de toda clase de servicios de logística, a cualquier persona física o moral de naturaleza privada o pública.",
+          "Prestar y recibir toda clase de servicios a empresas y entidades gubernamentales en la República Mexicana o en el Extranjero a los clientes de la Sociedad, llevando a cabo el estudio, desarrollo e integración de todo tipo de planes, programas, métodos y sistemas de asesoría.",
+          "Llevar a cabo por cuenta propia o de terceros programas de capacitación y desarrollo, así como investigaciones científicas para desarrollo tecnológico o investigaciones profesionales.",
+          "Obtener, adquirir, registrar, utilizar o disponer de toda clase de patentes, marcas industriales y de servicio, certificados de invención o nombres comerciales, diseños y dibujos industriales, derechos de autor y cualquier otro tipo de derechos de propiedad industrial, literaria o artística.",
+          "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias, así como celebrar cualquier clase de contratos, con la administración pública sea federal o local o con cualquier particular.",
+          "Dar o tomar dinero en préstamo con o sin garantia, emitir bonos, obligaciones, valores y otros títulos de crédito, así como adquirir legalmente y negociar con bonos, obligaciones, acciones, valores y otros títulos de crédito emitidos por terceros.",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros.",
+          "Formar parte directa o indirectamente de otras sociedades o asociaciones e intervenir en todos los asuntos y derechos relacionados con ellas.",
+          "Establecer sucursales, oficinas, subsidiarias y agencias, así como representar o ser agente de empresas e intermediar en la venta de toda clase de bienes y servicios.",
+          "Adquirir o poseer por cualquier título, usar, dar o tomar en arrendamiento, administrar, vender o disponer en cualquier forma, de todos los bienes muebles o inmuebles, así como derechos reales o personales sobre ellos, que fueren necesarios o convenientes para la realización del objeto de la sociedad.",
+          "Contratar al personal necesario para cumplir con su objeto social.",
+          "En general celebrar toda clase de contratos ya sean civiles, mercantiles o de cualquier naturaleza."
+        ],
+        "notary": {
+          "name": "MAURICIO GÁLVEZ MUÑOZ",
+          "notary_number": "39",
+          "protocol_number": "96053",
+          "protocol_date": "2021-08-30",
+          "office_location": "CIUDAD DE MÉXICO"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Consejo de Administración",
+          "quorum_rules": "Asamblea Ordinaria: 50% de las acciones con derecho a voto. Asamblea Extraordinaria: 75% del capital social.",
+          "voting_rights": "Asamblea Ordinaria: Mayoría de los votos presentes. Asamblea Extraordinaria: Voto de acciones que representen el 51% del capital social con derecho a voto.",
+          "share_transfer_rules": "Las transferencias de acciones requieren aprobación de la Asamblea General Extraordinaria de Accionistas y están sujetas a un derecho de suscripción preferente.",
+          "capital_rules": "El aumento o disminución del capital social debe ser acordado por la Asamblea General Extraordinaria de Accionistas."
+        },
+        "modifications": null
+      },
+      "sourceName": "Acta_Constitutiva_pfds.pdf"
+    },
+    {
+      "id": "f2c23032-5238-463e-a395-d846b01b178c",
+      "customerId": "pfds-gemini",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/SAT_Constancia_pfds.pdf",
+      "extractedAt": "2025-11-26T17:01:54.071Z",
+      "extractedPayload": {
+        "rfc": "PFD210830KQ7",
+        "razon_social": "PFDS",
+        "commercial_name": "PFDS",
+        "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "tax_regime": "Régimen General de Ley Personas Morales",
+        "start_of_operations": "2021-08-30",
+        "status": "ACTIVO",
+        "last_status_change": "2021-08-30",
+        "issue": {
+          "place_municipio": "MIGUEL HIDALGO",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2025-10-14"
+        },
+        "fiscal_address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CALLE HERODOTO Y CIRCUITO INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Servicios de mensajería y paquetería local",
+            "percentage": 60,
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "order": 2,
+            "description": "Servicios de consultoría en computación",
+            "percentage": 40,
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [
+          {
+            "description": "Pago definitivo mensual de IVA.",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración anual de ISR del ejercicio Personas morales.",
+            "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Declaración de proveedores de IVA",
+            "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2021-08-30",
+            "end_date": null
+          },
+          {
+            "description": "Pago provisional mensual de ISR personas morales régimen general",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2022-04-01",
+            "end_date": null
+          },
+          {
+            "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+            "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+            "start_date": "2024-06-01",
+            "end_date": null
+          }
+        ]
+      },
+      "sourceName": "SAT_Constancia_pfds.pdf"
+    },
+    {
+      "id": "13b3d818-5e9b-4f5e-81bf-6a5b5270defd",
+      "customerId": "pfds-gemini",
+      "type": "passport",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Passport_Front_Ashish_Punj_pfds.jpeg",
+      "extractedAt": "2025-11-26T17:01:59.716Z",
+      "extractedPayload": {
+        "full_name": "PUNJ ASHISH",
+        "nationality": "INDIAN",
+        "document_type": "PASAPORTE",
+        "document_number": "T0656276",
+        "date_of_birth": "1975-03-16",
+        "sex": "M",
+        "place_of_birth": "DEHRADUN",
+        "issue_date": "2018-09-10",
+        "expiry_date": "2028-09-09",
+        "issuing_authority": "MEXICO CITY",
+        "issuer_country": "IND",
+        "mrz_line_1": "P<INDUNJ<<ASHISH<<<<<<<<<<<<<<<<<<<<<<",
+        "mrz_line_2": "T0656276<1IND7503164M2809090<<<<<<<<<<<<<<2",
+        "curp": null
+      },
+      "sourceName": "Passport_Front_Ashish_Punj_pfds.jpeg"
+    },
+    {
+      "id": "eb57c3ad-70eb-4e26-8880-8de23b7b2ef9",
+      "customerId": "pfds-gemini",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/FM2_pfds.pdf",
+      "extractedAt": "2025-11-26T17:02:06.155Z",
+      "extractedPayload": {
+        "full_name": "Ashish Punj",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "10495074",
+        "secondary_number": "0000000445543",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": null,
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX"
+      },
+      "sourceName": "FM2_pfds.pdf"
+    },
+    {
+      "id": "e964ea68-e38c-44f3-9fff-6ea62740ec9a",
+      "customerId": "pfds-gemini",
+      "type": "telmex",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Telmex_Recibo_pfds_Octubre_2025.pdf",
+      "extractedAt": "2025-11-26T17:02:22.381Z",
+      "extractedPayload": {
+        "document_type": "telmex_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "Telmex_Recibo_pfds_Octubre_2025.pdf",
+          "pages": 1
+        },
+        "client_name": "PFDS",
+        "client_address": {
+          "street": "GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "client_tax_id": "PFD210830KQ7",
+        "vendor_name": "TELMEX",
+        "vendor_address": {
+          "street": "Parque Via",
+          "ext_number": "198",
+          "int_number": null,
+          "colonia": "Cuauhtémoc",
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": "06500",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": null,
+        "total_due": 1198,
+        "currency": "MXN",
+        "due_date": "2025-11-05",
+        "billing_month": "Octubre",
+        "billing_period_start": "2025-09-01",
+        "billing_period_end": "2025-09-30",
+        "issue_datetime": "2025-10-15T05:18:05",
+        "previous_balance": 1198,
+        "current_charges": 598.99,
+        "service": {
+          "category": "telecom",
+          "telephone_number": "5552607741",
+          "service_number": "5552607741"
+        },
+        "account_reference": "5552607741",
+        "invoice_number": "070125100071838"
+      },
+      "sourceName": "Telmex_Recibo_pfds_Octubre_2025.pdf"
+    },
+    {
+      "id": "b2234de7-d4b5-4756-af8b-3e4709adb9c5",
+      "customerId": "pfds-gemini",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Bank_Estado_Cuenta_pfds_Octubre_2025.pdf",
+      "extractedAt": "2025-11-26T17:02:36.309Z",
+      "extractedPayload": {
+        "bank_name": "kapital",
+        "account_holder_name": "PFDS S.A.P.I. DE C.V.",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Bank_Estado_Cuenta_pfds_Octubre_2025.pdf"
+    },
+    {
+      "id": "658b0064-7715-418a-9bf9-02b7e0541444",
+      "customerId": "pfds-gemini",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Acta_Constitutiva_pfds.pdf",
+      "extractedAt": "2025-11-26T19:02:13.847Z",
+      "extractedPayload": {
+        "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2021-08-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas",
+              "Poder general para pleitos y cobranzas y actos de administración en materia laboral",
+              "Poder general para actos de administración",
+              "Poder general para actos de dominio",
+              "Poder para otorgar y suscribir títulos de crédito",
+              "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+              "Poder para otorgar poderes generales o especiales así como para delegarlos total o parcialmente y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas",
+              "Poder general para pleitos y cobranzas y actos de administración en materia laboral",
+              "Poder general para actos de administración",
+              "Poder general para actos de dominio",
+              "Poder para otorgar y suscribir títulos de crédito",
+              "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+              "Poder para otorgar poderes generales o especiales así como para delegarlos total o parcialmente y revocar poderes"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "ARTURO DE LA PEÑA LOREDO",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas, sin facultad de hacer cesión de bienes",
+              "Poder especial para trámites y gestiones ante dependencias de la Administración Pública Federal y de la Ciudad de México",
+              "Poder general para actos de administración, limitado a trámites ante la Secretaría de Hacienda y Crédito Público"
+            ],
+            "joint_signature_required": null
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ASHISH PUNJ",
+            "shares": 94,
+            "percentage": 92.16,
+            "share_series": "Serie Uno",
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "shares": 6,
+            "percentage": 5.88,
+            "share_series": "Serie Uno",
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "shares": 1,
+            "percentage": 0.98,
+            "share_series": "Serie Tres",
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "shares": 1,
+            "percentage": 0.98,
+            "share_series": "Serie Tres",
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "La comercialización de toda clase de productos, mediante plataformas electrónicas o cualquier otro medio digital.",
+          "La comercialización, distribución, producción, fabricación, importación y exportación, de toda clase de productos, así como la prestación de toda clase de servicios de logística.",
+          "Prestar y recibir toda clase de servicios a empresas y entidades gubernamentales, llevando a cabo el estudio, desarrollo e integración de todo tipo de planes, programas, métodos y sistemas de asesoría.",
+          "Llevar a cabo por cuenta propia o de terceros programas de capacitación y desarrollo, así como investigaciones científicas para desarrollo tecnológico o investigaciones profesionales.",
+          "Obtener, adquirir, registrar, utilizar o disponer de toda clase de patentes, marcas industriales y de servicio, certificados de invención o nombres comerciales, diseños y dibujos industriales, derechos de autor y cualquier otro tipo de derechos de propiedad industrial, literaria o artística.",
+          "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias, así como celebrar cualquier clase de contratos.",
+          "Dar o tomar dinero en préstamo con o sin garantia, emitir bonos, obligaciones, valores y otros títulos de crédito, así como adquirir legalmente y negociar con bonos, obligaciones, acciones, valores y otros títulos de crédito emitidos por terceros.",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros.",
+          "Formar parte directa o indirectamente de otras sociedades o asociaciones e intervenir en todos los asuntos y derechos relacionados con ellas.",
+          "Establecer sucursales, oficinas, subsidiarias y agencias, así como representar o ser agente de empresas e intermediar en la venta de toda clase de bienes y servicios.",
+          "Adquirir o poseer por cualquier título, usar, dar o tomar en arrendamiento, administrar, vender o disponer en cualquier forma, de todos los bienes muebles o inmuebles.",
+          "Contratar al personal necesario para cumplir con su objeto social.",
+          "En general celebrar toda clase de contratos ya sean civiles, mercantiles o de cualquier naturaleza."
+        ],
+        "notary": {
+          "name": "MAURICIO GÁLVEZ MUÑOZ",
+          "notary_number": "39",
+          "protocol_number": "96053",
+          "protocol_date": "2021-08-30",
+          "office_location": "Ciudad de México"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Consejo de Administración",
+          "quorum_rules": "Asamblea Ordinaria requiere 50% del capital social con derecho a voto. Asamblea Extraordinaria requiere 75%.",
+          "voting_rights": "Resoluciones en Asamblea Ordinaria por mayoría de votos presentes. En Asamblea Extraordinaria por el voto de acciones que representen el 51% del capital social con derecho a voto.",
+          "share_transfer_rules": "Restringido. Sujeto a derecho de suscripción preferente, derecho de 'Tag Along', y derecho de 'Drag Along' según los estatutos.",
+          "capital_rules": "Aumentos o disminuciones de capital deben ser acordados en asamblea general extraordinaria de Accionistas."
+        },
+        "modifications": null,
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Acta_Constitutiva_pfds.pdf"
+    },
+    {
+      "id": "87f53998-f84d-4753-8792-188d5f924305",
+      "customerId": "pfds-gemini",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Bank_Estado_Cuenta_pfds_Octubre_2025.pdf",
+      "extractedAt": "2025-11-26T19:02:30.299Z",
+      "extractedPayload": {
+        "bank_name": "kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Bank_Estado_Cuenta_pfds_Octubre_2025.pdf"
+    },
+    {
+      "id": "72806f35-e63d-4ad0-985c-9882618c7dd5",
+      "customerId": "pfds-gemini",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/FM2_pfds.pdf",
+      "extractedAt": "2025-11-26T19:02:44.128Z",
+      "extractedPayload": {
+        "full_name": "Ashish PUNJ",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "0000000445543",
+        "secondary_number": "10495074",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": null,
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX",
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "FM2_pfds.pdf"
+    },
+    {
+      "id": "4f52dc14-aead-4a96-9afe-85ffad74df09",
+      "customerId": "pfds-gemini",
+      "type": "acta",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Acta_Constitutiva_pfds.pdf",
+      "extractedAt": "2025-11-26T19:04:52.712Z",
+      "extractedPayload": {
+        "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "rfc": null,
+        "registro_mercantil": null,
+        "incorporation_date": "2021-08-30",
+        "founding_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "legal_representatives": [
+          {
+            "name": "ASHISH PUNJ",
+            "role": "Presidente del Consejo de Administración y Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas",
+              "Poder general para pleitos y cobranzas y actos de administración en materia laboral",
+              "Poder general para actos de administración",
+              "Poder general para actos de dominio",
+              "Poder para otorgar y suscribir títulos de crédito",
+              "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+              "Poder para otorgar poderes generales o especiales, delegarlos y revocarlos"
+            ],
+            "joint_signature_required": null
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "role": "Vocal del Consejo de Administración y Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas",
+              "Poder general para pleitos y cobranzas y actos de administración en materia laboral",
+              "Poder general para actos de administración",
+              "Poder general para actos de dominio",
+              "Poder para otorgar y suscribir títulos de crédito",
+              "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+              "Poder para otorgar poderes generales o especiales, delegarlos y revocarlos"
+            ],
+            "joint_signature_required": null
+          },
+          {
+            "name": "ARTURO DE LA PEÑA LOREDO",
+            "role": "Apoderado",
+            "has_poder": true,
+            "can_sign_contracts": true,
+            "poder_scope": [
+              "Poder general para pleitos y cobranzas, sin la facultad de hacer cesión de bienes",
+              "Poder especial para trámites y gestiones ante la Administración Pública Federal y de la Ciudad de México",
+              "Poder general para actos de administración, limitado a trámites ante la Secretaría de Hacienda y Crédito Público y el SAT"
+            ],
+            "joint_signature_required": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "role": "Secretario del Consejo de Administración",
+            "has_poder": false,
+            "can_sign_contracts": false,
+            "poder_scope": null,
+            "joint_signature_required": null
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "role": "Comisario",
+            "has_poder": false,
+            "can_sign_contracts": false,
+            "poder_scope": null,
+            "joint_signature_required": null
+          }
+        ],
+        "shareholders": [
+          {
+            "name": "ASHISH PUNJ",
+            "shares": 94,
+            "percentage": 92.16,
+            "share_series": "Serie Uno",
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": true
+          },
+          {
+            "name": "LUCAS JOHN INTRONE",
+            "shares": 6,
+            "percentage": 5.88,
+            "share_series": "Serie Uno",
+            "share_class": "FIJO",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "JOSE RODOLFO CERDAN LEON",
+            "shares": 1,
+            "percentage": 0.98,
+            "share_series": "Serie Tres",
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          },
+          {
+            "name": "MOISES GABRIEL GONZALEZ RANGEL",
+            "shares": 1,
+            "percentage": 0.98,
+            "share_series": "Serie Tres",
+            "share_class": "VARIABLE",
+            "has_voting_rights": true,
+            "share_type": "ORDINARIAS",
+            "is_beneficial_owner": false
+          }
+        ],
+        "corporate_purpose": [
+          "La comercialización de toda clase de productos, mediante plataformas electrónicas o cualquier otro medio digital.",
+          "La comercialización, distribución, producción, fabricación, importación y exportación, de toda clase de productos, así como la prestación de toda clase de servicios de logística, a cualquier persona física o moral de naturaleza privada o pública.",
+          "Prestar y recibir toda clase de servicios a empresas y entidades gubernamentales en la República Mexicana o en el Extranjero a los clientes de la Sociedad, llevando a cabo el estudio, desarrollo e integración de todo tipo de planes, programas, métodos y sistemas de asesoría.",
+          "Llevar a cabo por cuenta propia o de terceros programas de capacitación y desarrollo, así como investigaciones científicas para desarrollo tecnológico o investigaciones profesionales.",
+          "Obtener, adquirir, registrar, utilizar o disponer de toda clase de patentes, marcas industriales y de servicio, certificados de invención o nombres comerciales, diseños y dibujos industriales, derechos de autor y cualquier otro tipo de derechos de propiedad industrial, literaria o artística.",
+          "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias, así como celebrar cualquier clase de contratos, con la administración pública sea federal o local o con cualquier particular.",
+          "Dar o tomar dinero en préstamo con o sin garantia, emitir bonos, obligaciones, valores y otros títulos de crédito, así como adquirir legalmente y negociar con bonos, obligaciones, acciones, valores y otros títulos de crédito emitidos por terceros.",
+          "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros.",
+          "Formar parte directa o indirectamente de otras sociedades o asociaciones e intervenir en todos los asuntos y derechos relacionados con ellas.",
+          "Establecer sucursales, oficinas, subsidiarias y agencias, así como representar o ser agente de empresas e intermediar en la venta de toda clase de bienes y servicios.",
+          "Adquirir o poseer por cualquier título, usar, dar o tomar en arrendamiento, administrar, vender o disponer en cualquier forma, de todos los bienes muebles o inmuebles, así como derechos reales o personales sobre ellos, que fueren necesarios o convenientes para la realización del objeto de la sociedad.",
+          "Contratar al personal necesario para cumplir con su objeto social.",
+          "En general celebrar toda clase de contratos ya sean civiles, mercantiles o de cualquier naturaleza."
+        ],
+        "notary": {
+          "name": "MAURICIO GÁLVEZ MUÑOZ",
+          "notary_number": "39",
+          "protocol_number": "96053",
+          "protocol_date": "2021-08-30",
+          "office_location": "Ciudad de México"
+        },
+        "registry": {
+          "fme": null,
+          "nci": null,
+          "unique_doc_number": null,
+          "registration_city": null,
+          "registration_date": null,
+          "folio": null
+        },
+        "governance": {
+          "board_type": "Consejo de Administración",
+          "quorum_rules": "Asamblea ordinaria requiere 50% del capital social con derecho a voto. Asamblea extraordinaria requiere 75% del capital social.",
+          "voting_rights": "Resoluciones en asamblea ordinaria se adoptan por mayoría de votos presentes. Resoluciones en asamblea extraordinaria se adoptan por el voto de acciones que representen el 51% del capital social con derecho a voto.",
+          "share_transfer_rules": "Toda transmisión de acciones debe ser aprobada por la Asamblea General Extraordinaria de Accionistas y está sujeta a un derecho de suscripción preferente (derecho de tanto) por parte de los demás accionistas.",
+          "capital_rules": "El aumento o disminución del capital social debe ser acordado por la Asamblea General Extraordinaria de Accionistas."
+        },
+        "modifications": null,
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "Acta_Constitutiva_pfds.pdf"
+    },
+    {
+      "id": "66e1fed2-f7b6-4486-bd55-b0347c36dfa3",
+      "customerId": "pfds-gemini",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/Bank_Estado_Cuenta_pfds_Octubre_2025.pdf",
+      "extractedAt": "2025-11-26T19:05:11.597Z",
+      "extractedPayload": {
+        "bank_name": "Kapital",
+        "account_holder_name": "PFDS",
+        "account_number": "001-84119-001-3",
+        "clabe": "128180018411900130",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-01",
+        "statement_period_end": "2025-10-31",
+        "address_on_statement": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Bank_Estado_Cuenta_pfds_Octubre_2025.pdf"
+    },
+    {
+      "id": "68b3589e-c1d8-4025-9f69-80ed6b28a5eb",
+      "customerId": "pfds-gemini",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/FM2_pfds.pdf",
+      "extractedAt": "2025-11-26T19:05:22.640Z",
+      "extractedPayload": {
+        "full_name": "Ashish PUNJ",
+        "nationality": "India",
+        "document_type": "RESIDENTE PERMANENTE",
+        "document_number": "10495074",
+        "secondary_number": "0000000445543",
+        "date_of_birth": "1975-03-16",
+        "curp": "PUXA750316HNENXS02",
+        "sex": "Hombre",
+        "issue_date": "2014-05-15",
+        "expiry_date": null,
+        "issuing_office": "Delegación Federal en Distrito Federal",
+        "issuer_country": "MX",
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "FM2_pfds.pdf"
+    },
+    {
+      "id": "06f31215-22b7-411a-aeca-788817adfcf6",
+      "customerId": "pfds-gemini",
+      "type": "boleta_rpc",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/split/Boleta_RPC_PFDS.pdf",
+      "extractedAt": "2025-11-29T17:05:09.621Z",
+      "extractedPayload": {
+        "numero_unico_documento": "2021002379110064",
+        "libro": "1511",
+        "tipo_acto": "M4 - Constitución de sociedad",
+        "instrumento": "96053",
+        "fecha_instrumento": "2021-08-30",
+        "notario_nombre": "Mauricio Gálvez Muñoz",
+        "notario_numero": "39",
+        "entidad": "Ciudad de México",
+        "municipio": "Álvaro Obregón",
+        "fecha_inscripcion": "2021-10-11",
+        "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+        "administracion": "Colegiada",
+        "capital_social": 10200,
+        "domicilio": "CIUDAD DE MÉXICO",
+        "duracion": "INDEFINIDA",
+        "firmante": "Jose Luis Flores Granados",
+        "objeto_social": "El objeto social será: A.- La comercialización de toda clase de productos, mediante plataformas electrónicas o cualquier otro medio digital.",
+        "tipo_sociedad": "S.A.P.I. DE C.V."
+      },
+      "sourceName": "Boleta_RPC_PFDS.pdf"
+    },
+    {
+      "id": "4913ac57-94ee-40e5-86b7-92ed0a5b728b",
+      "customerId": "pfds-gemini",
+      "type": "rnie_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/split/RNIE_Acuse_PFDS.pdf",
+      "extractedAt": "2025-11-29T17:05:28.481Z",
+      "extractedPayload": {
+        "folio_ingreso": null,
+        "fecha_recepcion": "2021-08-31",
+        "razon_social": "\"PFDS\", SOCIEDAD ANÓNIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+        "entidad": "CIUDAD DE MEXICO",
+        "fundamento_legal": "en términos del artículo 34 de la LIE",
+        "hora_recepcion": null,
+        "instrumento": "96053",
+        "notario_nombre": "MAURICIO GALVEZ MUÑOZ",
+        "notario_numero": "39",
+        "tipo_tramite": "Aviso de Fedatarios Públicos al Registro Nacional de Inversiones Extranjeras"
+      },
+      "sourceName": "RNIE_Acuse_PFDS.pdf"
+    },
+    {
+      "id": "863ba7ec-923d-492d-ab99-f0641f1e4be6",
+      "customerId": "pfds-gemini",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/split/SAT_Constancia_Moises_Gonzalez.pdf",
+      "extractedAt": "2025-11-29T17:06:01.395Z",
+      "extractedPayload": {
+        "rfc": null,
+        "razon_social": "PFDS",
+        "commercial_name": null,
+        "capital_regime": null,
+        "tax_regime": "Información no disponible en el documento",
+        "start_of_operations": null,
+        "status": "Información no disponible en el documento",
+        "last_status_change": null,
+        "issue": {
+          "place_municipio": "Cuauhtémoc",
+          "place_estado": "Ciudad de México",
+          "issue_date": "2021-03-25"
+        },
+        "fiscal_address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": null,
+          "estado": null,
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "economic_activities": [],
+        "tax_obligations": [],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "SAT_Constancia_Moises_Gonzalez.pdf"
+    },
+    {
+      "id": "30f40e30-86a5-473d-aaf1-3a3c25a3ad2d",
+      "customerId": "pfds-gemini",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/split/SAT_Constancia_Jose_Cerdan.pdf",
+      "extractedAt": "2025-11-29T17:06:24.292Z",
+      "extractedPayload": {
+        "rfc": "GORM721218BY2",
+        "razon_social": "MOISES GABRIEL GONZALEZ RANGEL",
+        "commercial_name": null,
+        "capital_regime": null,
+        "tax_regime": "Régimen de Sueldos y Salarios e Ingresos Asimilados a Salarios",
+        "start_of_operations": "1992-11-10",
+        "status": "ACTIVO",
+        "last_status_change": "1996-05-17",
+        "issue": {
+          "place_municipio": "CUAUHTEMOC",
+          "place_estado": "CIUDAD DE MEXICO",
+          "issue_date": "2021-08-25"
+        },
+        "fiscal_address": {
+          "street": "TLAPECHICO",
+          "ext_number": "9 B",
+          "int_number": null,
+          "colonia": "SANTA FE",
+          "municipio": "ALVARO OBREGON",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "01210",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "economic_activities": [
+          {
+            "order": 1,
+            "description": "Otros servicios como máquinas fotográficas que funcionan con monedas, de casilleros que funcionan con monedas, de guarda paquetes",
+            "percentage": 100,
+            "start_date": "1992-11-10",
+            "end_date": null
+          }
+        ],
+        "tax_obligations": [],
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "SAT_Constancia_Jose_Cerdan.pdf"
+    }
+  ],
+  "profile": {
+    "customerId": "pfds-gemini",
+    "addressEvidence": [
+      {
+        "document_type": "telmex_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "Telmex_Recibo_pfds_Octubre_2025.pdf",
+          "pages": 1
+        },
+        "client_name": "PFDS",
+        "client_address": {
+          "street": "GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "client_tax_id": "PFD210830KQ7",
+        "vendor_name": "TELMEX",
+        "vendor_address": {
+          "street": "Parque Via",
+          "ext_number": "198",
+          "int_number": null,
+          "colonia": "Cuauhtémoc",
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": "06500",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": null,
+        "total_due": 1198,
+        "currency": "MXN",
+        "due_date": "2025-11-05",
+        "billing_month": "Octubre",
+        "billing_period_start": "2025-09-01",
+        "billing_period_end": "2025-09-30",
+        "issue_datetime": "2025-10-15T05:18:05",
+        "previous_balance": 1198,
+        "current_charges": 598.99,
+        "service": {
+          "category": "telecom",
+          "telephone_number": "5552607741",
+          "service_number": "5552607741"
+        },
+        "account_reference": "5552607741",
+        "invoice_number": "070125100071838"
+      }
+    ],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "acta",
+        "address": {
+          "street": null,
+          "ext_number": null,
+          "int_number": null,
+          "colonia": null,
+          "municipio": "Ciudad de México",
+          "estado": "Ciudad de México",
+          "cp": null,
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2021-08-30"
+      },
+      {
+        "source": "sat",
+        "address": {
+          "street": "CALLE GUTENBERG",
+          "ext_number": "60",
+          "int_number": "6",
+          "colonia": "VERONICA ANZURES",
+          "municipio": "MIGUEL HIDALGO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "CALLE HERODOTO Y CIRCUITO INTERIOR MELCHOR OCAMPO",
+          "country": "MX"
+        },
+        "date": "2025-10-14"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "GUTENBERG",
+          "ext_number": "60",
+          "int_number": null,
+          "colonia": "VERONICA ANZURES",
+          "municipio": "CIUDAD DE MEXICO",
+          "estado": "CIUDAD DE MEXICO",
+          "cp": "11300",
+          "cross_streets": "HERODOTO Y CIRCUITO INT",
+          "country": "MX"
+        },
+        "date": "2025-10-15T05:18:05"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-29T17:08:01.349Z",
+    "companyIdentity": {
+      "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+      "rfc": null,
+      "registro_mercantil": null,
+      "incorporation_date": "2021-08-30",
+      "founding_address": {
+        "street": null,
+        "ext_number": null,
+        "int_number": null,
+        "colonia": null,
+        "municipio": "Ciudad de México",
+        "estado": "Ciudad de México",
+        "cp": null,
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "legal_representatives": [
+        {
+          "name": "ASHISH PUNJ",
+          "role": "Presidente del Consejo de Administración y Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas",
+            "Poder general para pleitos y cobranzas y actos de administración en materia laboral",
+            "Poder general para actos de administración",
+            "Poder general para actos de dominio",
+            "Poder para otorgar y suscribir títulos de crédito",
+            "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+            "Poder para otorgar poderes generales o especiales, delegarlos y revocarlos"
+          ],
+          "joint_signature_required": null
+        },
+        {
+          "name": "LUCAS JOHN INTRONE",
+          "role": "Vocal del Consejo de Administración y Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas",
+            "Poder general para pleitos y cobranzas y actos de administración en materia laboral",
+            "Poder general para actos de administración",
+            "Poder general para actos de dominio",
+            "Poder para otorgar y suscribir títulos de crédito",
+            "Poder para abrir y cancelar cuentas bancarias y librar cheques contra las mismas",
+            "Poder para otorgar poderes generales o especiales, delegarlos y revocarlos"
+          ],
+          "joint_signature_required": null
+        },
+        {
+          "name": "ARTURO DE LA PEÑA LOREDO",
+          "role": "Apoderado",
+          "has_poder": true,
+          "can_sign_contracts": true,
+          "poder_scope": [
+            "Poder general para pleitos y cobranzas, sin la facultad de hacer cesión de bienes",
+            "Poder especial para trámites y gestiones ante la Administración Pública Federal y de la Ciudad de México",
+            "Poder general para actos de administración, limitado a trámites ante la Secretaría de Hacienda y Crédito Público y el SAT"
+          ],
+          "joint_signature_required": false
+        },
+        {
+          "name": "MOISES GABRIEL GONZALEZ RANGEL",
+          "role": "Secretario del Consejo de Administración",
+          "has_poder": false,
+          "can_sign_contracts": false,
+          "poder_scope": null,
+          "joint_signature_required": null
+        },
+        {
+          "name": "JOSE RODOLFO CERDAN LEON",
+          "role": "Comisario",
+          "has_poder": false,
+          "can_sign_contracts": false,
+          "poder_scope": null,
+          "joint_signature_required": null
+        }
+      ],
+      "shareholders": [
+        {
+          "name": "ASHISH PUNJ",
+          "shares": 94,
+          "percentage": 92.16,
+          "share_series": "Serie Uno",
+          "share_class": "FIJO",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": true
+        },
+        {
+          "name": "LUCAS JOHN INTRONE",
+          "shares": 6,
+          "percentage": 5.88,
+          "share_series": "Serie Uno",
+          "share_class": "FIJO",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": false
+        },
+        {
+          "name": "JOSE RODOLFO CERDAN LEON",
+          "shares": 1,
+          "percentage": 0.98,
+          "share_series": "Serie Tres",
+          "share_class": "VARIABLE",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": false
+        },
+        {
+          "name": "MOISES GABRIEL GONZALEZ RANGEL",
+          "shares": 1,
+          "percentage": 0.98,
+          "share_series": "Serie Tres",
+          "share_class": "VARIABLE",
+          "has_voting_rights": true,
+          "share_type": "ORDINARIAS",
+          "is_beneficial_owner": false
+        }
+      ],
+      "corporate_purpose": [
+        "La comercialización de toda clase de productos, mediante plataformas electrónicas o cualquier otro medio digital.",
+        "La comercialización, distribución, producción, fabricación, importación y exportación, de toda clase de productos, así como la prestación de toda clase de servicios de logística, a cualquier persona física o moral de naturaleza privada o pública.",
+        "Prestar y recibir toda clase de servicios a empresas y entidades gubernamentales en la República Mexicana o en el Extranjero a los clientes de la Sociedad, llevando a cabo el estudio, desarrollo e integración de todo tipo de planes, programas, métodos y sistemas de asesoría.",
+        "Llevar a cabo por cuenta propia o de terceros programas de capacitación y desarrollo, así como investigaciones científicas para desarrollo tecnológico o investigaciones profesionales.",
+        "Obtener, adquirir, registrar, utilizar o disponer de toda clase de patentes, marcas industriales y de servicio, certificados de invención o nombres comerciales, diseños y dibujos industriales, derechos de autor y cualquier otro tipo de derechos de propiedad industrial, literaria o artística.",
+        "Obtener por cualquier título, concesiones, permisos, autorizaciones o licencias, así como celebrar cualquier clase de contratos, con la administración pública sea federal o local o con cualquier particular.",
+        "Dar o tomar dinero en préstamo con o sin garantia, emitir bonos, obligaciones, valores y otros títulos de crédito, así como adquirir legalmente y negociar con bonos, obligaciones, acciones, valores y otros títulos de crédito emitidos por terceros.",
+        "Otorgar avales y obligarse solidariamente, así como constituir garantías a favor de terceros.",
+        "Formar parte directa o indirectamente de otras sociedades o asociaciones e intervenir en todos los asuntos y derechos relacionados con ellas.",
+        "Establecer sucursales, oficinas, subsidiarias y agencias, así como representar o ser agente de empresas e intermediar en la venta de toda clase de bienes y servicios.",
+        "Adquirir o poseer por cualquier título, usar, dar o tomar en arrendamiento, administrar, vender o disponer en cualquier forma, de todos los bienes muebles o inmuebles, así como derechos reales o personales sobre ellos, que fueren necesarios o convenientes para la realización del objeto de la sociedad.",
+        "Contratar al personal necesario para cumplir con su objeto social.",
+        "En general celebrar toda clase de contratos ya sean civiles, mercantiles o de cualquier naturaleza."
+      ],
+      "notary": {
+        "name": "MAURICIO GÁLVEZ MUÑOZ",
+        "notary_number": "39",
+        "protocol_number": "96053",
+        "protocol_date": "2021-08-30",
+        "office_location": "Ciudad de México"
+      },
+      "registry": {
+        "fme": null,
+        "nci": null,
+        "unique_doc_number": null,
+        "registration_city": null,
+        "registration_date": null,
+        "folio": null
+      },
+      "governance": {
+        "board_type": "Consejo de Administración",
+        "quorum_rules": "Asamblea ordinaria requiere 50% del capital social con derecho a voto. Asamblea extraordinaria requiere 75% del capital social.",
+        "voting_rights": "Resoluciones en asamblea ordinaria se adoptan por mayoría de votos presentes. Resoluciones en asamblea extraordinaria se adoptan por el voto de acciones que representen el 51% del capital social con derecho a voto.",
+        "share_transfer_rules": "Toda transmisión de acciones debe ser aprobada por la Asamblea General Extraordinaria de Accionistas y está sujeta a un derecho de suscripción preferente (derecho de tanto) por parte de los demás accionistas.",
+        "capital_rules": "El aumento o disminución del capital social debe ser acordado por la Asamblea General Extraordinaria de Accionistas."
+      },
+      "modifications": null,
+      "_metadata": {
+        "modelUsed": "gemini-2.5-flash",
+        "costUsd": 0.001
+      }
+    },
+    "foundingAddress": {
+      "street": null,
+      "ext_number": null,
+      "int_number": null,
+      "colonia": null,
+      "municipio": "Ciudad de México",
+      "estado": "Ciudad de México",
+      "cp": null,
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "companyTaxProfile": {
+      "rfc": "PFD210830KQ7",
+      "razon_social": "PFDS",
+      "commercial_name": "PFDS",
+      "capital_regime": "SOCIEDAD ANONIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+      "tax_regime": "Régimen General de Ley Personas Morales",
+      "start_of_operations": "2021-08-30",
+      "status": "ACTIVO",
+      "last_status_change": "2021-08-30",
+      "issue": {
+        "place_municipio": "MIGUEL HIDALGO",
+        "place_estado": "CIUDAD DE MEXICO",
+        "issue_date": "2025-10-14"
+      },
+      "fiscal_address": {
+        "street": "CALLE GUTENBERG",
+        "ext_number": "60",
+        "int_number": "6",
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "11300",
+        "cross_streets": "CALLE HERODOTO Y CIRCUITO INTERIOR MELCHOR OCAMPO",
+        "country": "MX"
+      },
+      "economic_activities": [
+        {
+          "order": 1,
+          "description": "Servicios de mensajería y paquetería local",
+          "percentage": 60,
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "order": 2,
+          "description": "Servicios de consultoría en computación",
+          "percentage": 40,
+          "start_date": "2024-06-01",
+          "end_date": null
+        }
+      ],
+      "tax_obligations": [
+        {
+          "description": "Pago definitivo mensual de IVA.",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Declaración anual de ISR del ejercicio Personas morales.",
+          "due_rule": "Dentro de los tres meses siguientes al cierre del ejercicio.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Declaración de proveedores de IVA",
+          "due_rule": "A más tardar el último día del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2021-08-30",
+          "end_date": null
+        },
+        {
+          "description": "Pago provisional mensual de ISR personas morales régimen general",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2022-04-01",
+          "end_date": null
+        },
+        {
+          "description": "Entero de retenciones mensuales de ISR por sueldos y salarios",
+          "due_rule": "A más tardar el día 17 del mes inmediato posterior al periodo que corresponda.",
+          "start_date": "2024-06-01",
+          "end_date": null
+        }
+      ]
+    },
+    "currentFiscalAddress": {
+      "street": "CALLE GUTENBERG",
+      "ext_number": "60",
+      "int_number": "6",
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MEXICO",
+      "cp": "11300",
+      "cross_streets": "CALLE HERODOTO Y CIRCUITO INTERIOR MELCHOR OCAMPO",
+      "country": "MX"
+    },
+    "bankIdentity": {
+      "bank_name": "kapital",
+      "account_holder_name": "PFDS S.A.P.I. DE C.V.",
+      "clabe": "128180018411900130",
+      "clabe_last4": "0130",
+      "address_on_file": {
+        "street": "CALLE GUTENBERG",
+        "ext_number": "60",
+        "int_number": null,
+        "colonia": "VERONICA ANZURES",
+        "municipio": "MIGUEL HIDALGO",
+        "estado": "CIUDAD DE MEXICO",
+        "cp": "11300",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "document_date": "2025-10-31",
+      "age_in_days": 29,
+      "within_90_days": true,
+      "holder_matches_company": true,
+      "address_matches_operational": true
+    },
+    "representativeIdentity": {
+      "full_name": "Ashish PUNJ",
+      "nationality": "India",
+      "document_type": "RESIDENTE PERMANENTE",
+      "document_number": "10495074",
+      "secondary_number": "0000000445543",
+      "date_of_birth": "1975-03-16",
+      "curp": "PUXA750316HNENXS02",
+      "sex": "Hombre",
+      "issue_date": "2014-05-15",
+      "expiry_date": null,
+      "issuing_office": "Delegación Federal en Distrito Federal",
+      "issuer_country": "MX",
+      "_metadata": {
+        "modelUsed": "gemini-2.5-flash",
+        "costUsd": 0.001
+      }
+    },
+    "passportIdentity": {
+      "full_name": "PUNJ ASHISH",
+      "nationality": "INDIAN",
+      "document_type": "PASAPORTE",
+      "document_number": "T0656276",
+      "date_of_birth": "1975-03-16",
+      "sex": "M",
+      "place_of_birth": "DEHRADUN",
+      "issue_date": "2018-09-10",
+      "expiry_date": "2028-09-09",
+      "issuing_authority": "MEXICO CITY",
+      "issuer_country": "IND",
+      "mrz_line_1": "P<INDUNJ<<ASHISH<<<<<<<<<<<<<<<<<<<<<<",
+      "mrz_line_2": "T0656276<1IND7503164M2809090<<<<<<<<<<<<<<2",
+      "curp": null
+    },
+    "currentOperationalAddress": {
+      "street": "CALLE GUTENBERG",
+      "ext_number": "60",
+      "int_number": null,
+      "colonia": "VERONICA ANZURES",
+      "municipio": "MIGUEL HIDALGO",
+      "estado": "CIUDAD DE MEXICO",
+      "cp": "11300",
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "boletaRPC": {
+      "numero_unico_documento": "2021002379110064",
+      "libro": "1511",
+      "tipo_acto": "M4 - Constitución de sociedad",
+      "instrumento": "96053",
+      "fecha_instrumento": "2021-08-30",
+      "notario_nombre": "Mauricio Gálvez Muñoz",
+      "notario_numero": "39",
+      "entidad": "Ciudad de México",
+      "municipio": "Álvaro Obregón",
+      "fecha_inscripcion": "2021-10-11",
+      "razon_social": "PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE",
+      "administracion": "Colegiada",
+      "capital_social": 10200,
+      "domicilio": "CIUDAD DE MÉXICO",
+      "duracion": "INDEFINIDA",
+      "firmante": "Jose Luis Flores Granados",
+      "objeto_social": "El objeto social será: A.- La comercialización de toda clase de productos, mediante plataformas electrónicas o cualquier otro medio digital.",
+      "tipo_sociedad": "S.A.P.I. DE C.V."
+    },
+    "rnieConstancia": {
+      "folio_ingreso": "255237",
+      "fecha_recepcion": "2021-08-31",
+      "razon_social": "\"PFDS\", SOCIEDAD ANÓNIMA PROMOTORA DE INVERSION DE CAPITAL VARIABLE",
+      "entidad": "CIUDAD DE MEXICO",
+      "fundamento_legal": "en términos del artículo 34 de la LIE",
+      "hora_recepcion": "11:29",
+      "instrumento": "96053",
+      "notario_nombre": "MAURICIO GALVEZ MUÑOZ",
+      "notario_numero": "39",
+      "tipo_tramite": "Aviso de Fedatarios Públicos al Registro Nacional de Inversiones Extranjeras"
+    },
+    "_personalSatConstancias": [
+      {
+        "rfc": null,
+        "razon_social": "PFDS"
+      },
+      {
+        "rfc": "GORM721218BY2",
+        "razon_social": "MOISES GABRIEL GONZALEZ RANGEL"
+      }
+    ],
+    "sreConvenio": {
+      "folio": "210831091011",
+      "razon_social": "PFDS",
+      "destinatario": null,
+      "fecha_registro": null,
+      "instrumento": "96053",
+      "notario_nombre": "MAURICIO GÁLVEZ MUÑOZ",
+      "notario_numero": "39",
+      "tipo_aviso": null
+    },
+    "autorizacionDenominacion": {
+      "cud": "A202103260225274610",
+      "denominacion": "PFDS",
+      "fecha_autorizacion": "2021-03-26",
+      "fecha_vencimiento": null,
+      "fundamento_legal": "artículos 15, 16 y 16 A de la Ley de Inversión Extranjera; artículo 34, fracción XII bis de la Ley Orgánica de la Administración Pública Federal; artículo 69 C Bis de la Ley Federal de Procedimiento Administrativo, artículo 38, fracciones XXII y XXIV del Reglamento Interior de la Secretaría de Economía y el artículo 17 del Reglamento para la Autorización de Uso de Denominaciones y Razones Sociales",
+      "solicitante": "ARTURO DE LA PEÑA LOREDO",
+      "tipo_sociedad": null,
+      "vigencia_dias": 180
+    }
+  },
+  "validation": {
+    "customerId": "pfds-gemini",
+    "score": 1,
+    "flags": [
+      {
+        "code": "OTHER",
+        "level": "info",
+        "message": "📋 VALIDATION_CHECKLIST:\n✓ Tipo de Entidad: Persona Moral\n✓ Acta Constitutiva: Verificada (PFDS, SOCIEDAD ANÓNIMA PROMOTORA DE INVERSIÓN DE CAPITAL VARIABLE)\n⚠️ RFC Empresa: No especificado en Acta (se requiere SAT de la empresa para obtener RFC)\n✓ Constancia SAT Empresa: RFC PFD210830KQ7\n✓ Régimen Fiscal: Régimen General de Ley Personas Morales\n📋 SAT Constancias de Socios/Representantes (2 documentos):\n   ✓ PFDS: RFC null (Persona relacionada)\n   ✓ MOISES GABRIEL GONZALEZ RANGEL: RFC GORM721218BY2 (Socio/Representante)\n✓ Identificación: Pasaporte mexicano\n✓ Comprobante de Domicilio: TELMEX a nombre de \"PFDS\"\n✓ Cuenta Bancaria: kapital - PFDS S.A.P.I. DE C.V."
+      }
+    ],
+    "generatedAt": "2025-11-29T17:28:33.123Z"
+  },
+  "processingTimeMs": 111148,
+  "estimatedCostUsd": 0.51,
+  "aiModel": "Gemini 2.5 Pro/Flash"
+}
