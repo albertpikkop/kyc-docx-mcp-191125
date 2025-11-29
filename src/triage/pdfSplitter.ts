@@ -1,8 +1,8 @@
 import { PDFDocument } from "pdf-lib";
 import * as fs from "fs";
 import * as path from "path";
-import { DocumentSegment, DocumentType } from "./documentClassifier";
-import { getStandardizedFilename } from "./namingConvention";
+import { DocumentSegment, DocumentType } from "./documentClassifier.js";
+import { getStandardizedFilename } from "./namingConvention.js";
 
 export interface SplitResult {
   originalFile: string;

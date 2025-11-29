@@ -2790,3 +2790,67 @@ export function buildTrace(profile: KycProfile): TraceSection {
 
   return trace;
 }
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}
+
+              t.latestDate = dates[0]!;
+          }
+      }
+  });
+
+  return trace;
+}

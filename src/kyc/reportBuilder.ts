@@ -698,3 +698,35 @@ export function buildKycReport(
       sections
   };
 }
+
+      sections
+  };
+}
+
+      sections
+  };
+}
+
+      sections
+  };
+}
+
+      sections
+  };
+}
+
+      sections
+  };
+}
+
+      sections
+  };
+}
+
+      sections
+  };
+}
+
+      sections
+  };
+}
