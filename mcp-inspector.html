@@ -3,450 +3,1345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Server Inspector - mx-kyc-mcp</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>MCP Server Inspector - MexKYC</title>
     <style>
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .card {
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .tool-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px 30px;
+            border-bottom: 3px solid #34495e;
         }
-        .tool-card:hover {
-            transform: translateX(4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
         }
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
+        
+        header p {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+        
+        .status-bar {
+            background: #ecf0f1;
+            padding: 10px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+        }
+        
+        .status-dot.connected {
+            background: #27ae60;
+        }
+        
+        .config {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .config-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .config-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .config label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .config input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .config button {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .config button:hover {
+            background: #2980b9;
+        }
+        
+        .tools-section {
+            padding: 30px;
+        }
+        
+        .tools-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .tool {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .tool-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .tool-header:hover {
+            background: #e9ecef;
+        }
+        
+        .tool-header h3 {
+            font-size: 16px;
+            color: #2c3e50;
             font-weight: 600;
         }
-        .badge-required { background: #fee2e2; color: #991b1b; }
-        .badge-optional { background: #dbeafe; color: #1e40af; }
-        .badge-type { background: #f3f4f6; color: #374151; }
-        code {
-            background: #f3f4f6;
-            padding: 0.125rem 0.375rem;
-            border-radius: 0.25rem;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.875rem;
+        
+        .tool-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .tool-status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .tool-status-badge.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .tool-status-badge.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .tool-status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .tool-header .expand-icon {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        
+        .tool-body {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tool-body.expanded {
+            display: block;
+        }
+        
+        .tool-description {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 12px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        
+        .tool-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        
+        .tool-info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tool-info-item strong {
+            color: #2c3e50;
+        }
+        
+        .params {
+            margin-bottom: 15px;
+        }
+        
+        .param {
+            margin-bottom: 15px;
+        }
+        
+        .param label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+        
+        .param label .required {
+            color: #e74c3c;
+        }
+        
+        .param input,
+        .param select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .param .help-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 4px;
+        }
+        
+        .execute-btn {
+            padding: 10px 20px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .execute-btn:hover {
+            background: #229954;
+        }
+        
+        .execute-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.error {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+        
+        .result.success {
+            border-left-color: #27ae60;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .result h4 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-meta {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .result pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .file-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .file-selector select {
+            flex: 1;
+        }
+        
+        .file-selector button {
+            padding: 8px 16px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .file-selector button:hover {
+            background: #7f8c8d;
         }
     </style>
 </head>
 <body>
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="card p-8 mb-8 text-center">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">MCP Server Inspector</h1>
-            <p class="text-xl text-gray-600">mx-kyc-mcp v1.0.0</p>
-            <div class="mt-4 flex justify-center gap-4 text-sm text-gray-500">
-                <span>📡 Protocol: Model Context Protocol (MCP)</span>
-                <span>•</span>
-                <span>🔌 Transport: stdio / SSE</span>
+    <div class="container">
+        <header>
+            <h1>MCP Server Inspector</h1>
+            <p>MexKYC MCP Server v1.0.0 | Model Context Protocol</p>
+        </header>
+        
+        <div class="status-bar">
+            <div class="status-indicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Disconnected</span>
             </div>
+            <button onclick="testConnection()">Test Connection</button>
         </div>
-
-        <!-- Server Information -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Server Information</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                    <div class="text-sm text-gray-500">Name</div>
-                    <div class="text-lg font-semibold text-gray-900">mx-kyc-mcp</div>
+        
+        <div class="config">
+            <div class="config-row">
+                <div style="flex: 1;">
+                    <label>Server URL</label>
+                    <input type="text" id="serverUrl" value="http://localhost:3000" placeholder="http://localhost:3000" onchange="saveConfig()">
                 </div>
-                <div>
-                    <div class="text-sm text-gray-500">Version</div>
-                    <div class="text-lg font-semibold text-gray-900">1.0.0</div>
+                <div style="flex: 1;">
+                    <label>API Key</label>
+                    <input type="text" id="apiKey" placeholder="Enter API key" onchange="saveConfig()">
                 </div>
-                <div>
-                    <div class="text-sm text-gray-500">Protocol</div>
-                    <div class="text-lg font-semibold text-gray-900">MCP</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">Transport</div>
-                    <div class="text-lg font-semibold text-gray-900">stdio / SSE</div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button onclick="saveConfig()">Save Config</button>
                 </div>
             </div>
         </div>
-
-        <!-- Tools -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4 text-white">Available Tools (5)</h2>
+        
+        <!-- Quick Batch Import Section -->
+        <div class="tools-section" style="background: #e8f5e9; border-bottom: 2px solid #27ae60;">
+            <h2 style="color: #27ae60; border-bottom-color: #27ae60;">🚀 Quick Batch Import</h2>
+            <p style="color: #555; margin-bottom: 15px;">Import all documents for a customer in one click, then build & validate.</p>
             
-            <div class="card p-6 mb-4 tool-card">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
-                            1. <code>list_supported_doc_types</code>
-                        </h3>
-                        <p class="text-gray-600">Lists all supported document types and their descriptions</p>
-                    </div>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
+                <button onclick="quickBatchImport('grupo-pounj')" style="padding: 12px 24px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                    📁 Grupo Pounj (6 docs)
+                </button>
+                <button onclick="quickBatchImport('pfds')" style="padding: 12px 24px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                    📁 PFDS (6 docs)
+                </button>
+                <button onclick="quickBatchImport('enrique-cello')" style="padding: 12px 24px; background: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                    📁 Enrique Cello (4 docs)
+                </button>
+            </div>
+            
+            <!-- Supported Documents Preview (Collapsible) -->
+            <div style="background: white; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 15px;">
+                <div onclick="toggleSupportedDocs()" style="padding: 12px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border-radius: 6px 6px 0 0;">
+                    <span style="font-weight: 600; color: #2c3e50;">📑 View Supported Document Types</span>
+                    <span id="supportedDocsToggle" style="color: #7f8c8d;">▼ Show</span>
                 </div>
-                
-                <div class="mb-4 text-sm text-gray-500">No parameters</div>
-                
-                <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
-                    <span class="text-sm text-gray-600 ml-2">Array of document type objects</span>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
-                    <code class="text-sm ml-2">handleListSupportedDocTypes()</code>
+                <div id="supportedDocsPreview" style="display: none; padding: 15px;">
+                    <!-- Will be populated by JS -->
                 </div>
             </div>
             
-            <div class="card p-6 mb-4 tool-card">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
-                            2. <code>import_kyc_document</code>
-                        </h3>
-                        <p class="text-gray-600">Imports a KYC document, extracts structured data, and stores it</p>
-                    </div>
-                </div>
-                
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
-                    <div class="space-y-2">
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">customer_id</code>
-                            <span class="badge badge-type">string</span>
-                            <span class="badge badge-required">Required</span>
-                            <span class="text-sm text-gray-600 ml-auto">Unique customer identifier</span>
-                        </div>
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">doc_type</code>
-                            <span class="badge badge-type">enum</span>
-                            <span class="badge badge-required">Required</span>
-                            <span class="text-sm text-gray-600 ml-auto">Document type (see below)</span>
-                        </div>
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">file_url</code>
-                            <span class="badge badge-type">string</span>
-                            <span class="badge badge-required">Required</span>
-                            <span class="text-sm text-gray-600 ml-auto">URL or path to document file</span>
-                        </div>
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">source_name</code>
-                            <span class="badge badge-type">string</span>
-                            <span class="badge badge-optional">Optional</span>
-                            <span class="text-sm text-gray-600 ml-auto">Human-readable source name</span>
-                        </div>
-                        
-                    </div>
-                </div>
-                
-                
-                <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
-                    <span class="text-sm text-gray-600 ml-2">Import result with customer_id, run_id, doc_id, status</span>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
-                    <code class="text-sm ml-2">handleImportKycDocument()</code>
-                </div>
+            <div id="quickImportStatus" style="display: none; padding: 15px; background: white; border-radius: 6px; border: 1px solid #ddd;">
+                <div id="quickImportProgress"></div>
             </div>
             
-            <div class="card p-6 mb-4 tool-card">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
-                            3. <code>build_kyc_profile</code>
-                        </h3>
-                        <p class="text-gray-600">Aggregates all imported documents into a unified KYC profile</p>
-                    </div>
-                </div>
-                
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
-                    <div class="space-y-2">
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">customer_id</code>
-                            <span class="badge badge-type">string</span>
-                            <span class="badge badge-required">Required</span>
-                            <span class="text-sm text-gray-600 ml-auto">Customer identifier</span>
-                        </div>
-                        
-                    </div>
-                </div>
-                
-                
-                <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
-                    <span class="text-sm text-gray-600 ml-2">Complete KycProfile object</span>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
-                    <code class="text-sm ml-2">handleBuildKycProfile()</code>
-                </div>
-            </div>
-            
-            <div class="card p-6 mb-4 tool-card">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
-                            4. <code>validate_kyc_profile</code>
-                        </h3>
-                        <p class="text-gray-600">Validates a KYC profile and generates validation results</p>
-                    </div>
-                </div>
-                
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
-                    <div class="space-y-2">
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">customer_id</code>
-                            <span class="badge badge-type">string</span>
-                            <span class="badge badge-required">Required</span>
-                            <span class="text-sm text-gray-600 ml-auto">Customer identifier</span>
-                        </div>
-                        
-                    </div>
-                </div>
-                
-                
-                <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
-                    <span class="text-sm text-gray-600 ml-2">KycValidationResult with score (0-1) and flags</span>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
-                    <code class="text-sm ml-2">handleValidateKycProfile()</code>
-                </div>
-            </div>
-            
-            <div class="card p-6 mb-4 tool-card">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
-                            5. <code>get_kyc_report</code>
-                        </h3>
-                        <p class="text-gray-600">Generates a comprehensive KYC report</p>
-                    </div>
-                </div>
-                
-                
-                <div class="mb-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
-                    <div class="space-y-2">
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">customer_id</code>
-                            <span class="badge badge-type">string</span>
-                            <span class="badge badge-required">Required</span>
-                            <span class="text-sm text-gray-600 ml-auto">Customer identifier</span>
-                        </div>
-                        
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">include_trace</code>
-                            <span class="badge badge-type">boolean</span>
-                            <span class="badge badge-optional">Optional</span>
-                            <span class="text-sm text-gray-600 ml-auto">Include traceability section (default: false)</span>
-                        </div>
-                        
-                    </div>
-                </div>
-                
-                
-                <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
-                    <span class="text-sm text-gray-600 ml-2">Complete KYC report JSON</span>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
-                    <code class="text-sm ml-2">handleGetKycReport()</code>
-                </div>
-            </div>
-            
-        </div>
-
-        <!-- Document Types -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Supported Document Types</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>acta</code></div>
-                    <div class="text-sm text-gray-600">Acta Constitutiva (Incorporation Deed) - Extracts Identity, Shareholders, Powers</div>
-                </div>
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>sat_constancia</code></div>
-                    <div class="text-sm text-gray-600">SAT Constancia de Situación Fiscal - Extracts Tax Profile</div>
-                </div>
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>fm2</code></div>
-                    <div class="text-sm text-gray-600">FM2 / Residente Card - Extracts Immigration Profile</div>
-                </div>
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>telmex</code></div>
-                    <div class="text-sm text-gray-600">Telmex Bill - Extracts Proof of Address</div>
-                </div>
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>cfe</code></div>
-                    <div class="text-sm text-gray-600">CFE Electricity Bill - Extracts Proof of Address</div>
-                </div>
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>bank_statement</code></div>
-                    <div class="text-sm text-gray-600">Bank Statement - Extracts Profile & Transactions</div>
-                </div>
-                
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>bank_identity_page</code></div>
-                    <div class="text-sm text-gray-600">Bank Identity Page - Extracts Account Profile from Bank Statement Identity Page</div>
-                </div>
-                
-            </div>
-        </div>
-
-        <!-- Response Format -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Response Format</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-green-700 mb-2">✅ Success</h3>
-                    <pre class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto"><code>{
-  "ok": true,
-  "data": { ... }
-}</code></pre>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-red-700 mb-2">❌ Error</h3>
-                    <pre class="bg-gray-900 text-red-400 p-4 rounded-lg text-sm overflow-x-auto"><code>{
-  "ok": false,
-  "error_code": "ERROR_CODE",
-  "message": "Error message"
-}</code></pre>
+            <!-- Workflow Guide -->
+            <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #ddd; margin-top: 15px;">
+                <div style="font-weight: 600; margin-bottom: 10px; color: #2c3e50;">📋 Workflow Order:</div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <span style="background: #3498db; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px;">1. Batch Import</span>
+                    <span style="color: #999;">→</span>
+                    <span style="background: #9b59b6; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px;">2. Build Profile</span>
+                    <span style="color: #999;">→</span>
+                    <span style="background: #e67e22; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px;">3. Validate</span>
+                    <span style="color: #999;">→</span>
+                    <span style="background: #27ae60; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px;">4. Get Report</span>
                 </div>
             </div>
         </div>
-
-        <!-- Error Codes -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Error Codes</h2>
-            <div class="space-y-2">
-                
-                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
-                    <code class="font-semibold text-red-800">EXTRACTION_FAILED</code>
-                    <span class="text-gray-700">Document extraction failed</span>
-                </div>
-                
-                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
-                    <code class="font-semibold text-red-800">NO_RUN_FOR_CUSTOMER</code>
-                    <span class="text-gray-700">No run found for customer</span>
-                </div>
-                
-                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
-                    <code class="font-semibold text-red-800">PROFILE_BUILD_FAILED</code>
-                    <span class="text-gray-700">Failed to build profile</span>
-                </div>
-                
-                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
-                    <code class="font-semibold text-red-800">FAILED_TO_GENERATE_PROFILE_OR_VALIDATION</code>
-                    <span class="text-gray-700">Unable to generate profile/validation</span>
-                </div>
-                
+        
+        <div class="tools-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Available Tools</h2>
+                <span id="toolsCount" style="color: #7f8c8d; font-size: 14px;">Loading...</span>
             </div>
-        </div>
-
-        <!-- Workflow -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Typical Workflow</h2>
-            <div class="space-y-3">
-                
-                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        1
-                    </div>
-                    <code class="text-gray-800">import_kyc_document → Extract and store document</code>
-                </div>
-                
-                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        2
-                    </div>
-                    <code class="text-gray-800">import_kyc_document → (Repeat for each document)</code>
-                </div>
-                
-                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        3
-                    </div>
-                    <code class="text-gray-800">build_kyc_profile → Aggregate all documents</code>
-                </div>
-                
-                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        4
-                    </div>
-                    <code class="text-gray-800">validate_kyc_profile → Validate and score</code>
-                </div>
-                
-                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        5
-                    </div>
-                    <code class="text-gray-800">get_kyc_report → Generate final report</code>
-                </div>
-                
+            <div id="toolsContainer">
+                <!-- Tools will be populated here -->
             </div>
-        </div>
-
-        <!-- Storage -->
-        <div class="card p-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Storage Structure</h2>
-            <div class="space-y-4">
-                <div>
-                    <div class="text-sm font-semibold text-gray-700 mb-1">Location</div>
-                    <code class="text-sm">data/{customer_id}/runs/*.json</code>
-                </div>
-                <div>
-                    <div class="text-sm font-semibold text-gray-700 mb-1">Reports</div>
-                    <code class="text-sm">data/{customer_id}/reports/*.html</code>
-                </div>
-                <div>
-                    <div class="text-sm font-semibold text-gray-700 mb-2">Run Structure</div>
-                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-x-auto"><code>{
-  "runId": "uuid",
-  "customerId": "string",
-  "createdAt": "ISO timestamp",
-  "documents": [...],
-  "profile": {...},
-  "validation": {...}
-}</code></pre>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="text-center mt-8 text-white text-sm opacity-75">
-            Generated: 11/22/2025, 7:30:04 PM
         </div>
     </div>
+    
+    <script>
+        const SERVER_URL_KEY = 'mcp_inspector_server_url';
+        const API_KEY_KEY = 'mcp_inspector_api_key';
+        const CURRENT_CUSTOMER_KEY = 'mcp_inspector_current_customer';
+        
+        let tools = [];
+        let availableFiles = {};
+        let currentCustomerId = localStorage.getItem(CURRENT_CUSTOMER_KEY) || '';
+        
+        // All supported document types for KYC
+        const ALL_SUPPORTED_DOC_TYPES = [
+            { code: 'acta', name: 'Acta Constitutiva', icon: '🏢', description: 'Company incorporation document' },
+            { code: 'sat_constancia', name: 'SAT Constancia', icon: '📋', description: 'Tax registration certificate' },
+            { code: 'fm2', name: 'FM2/Immigration', icon: '🛂', description: 'Immigration document for foreigners' },
+            { code: 'ine', name: 'INE', icon: '🪪', description: 'Mexican national ID card' },
+            { code: 'passport', name: 'Passport', icon: '📘', description: 'International passport' },
+            { code: 'cfe', name: 'CFE Receipt', icon: '⚡', description: 'Electricity bill (proof of address)' },
+            { code: 'telmex', name: 'Telmex Receipt', icon: '📞', description: 'Phone bill (proof of address)' },
+            { code: 'bank_statement', name: 'Bank Statement', icon: '🏦', description: 'Full bank statement with transactions' },
+            { code: 'bank_identity_page', name: 'Bank Identity Page', icon: '💳', description: 'First page of bank statement (identity)' }
+        ];
+        
+        // Generate document checklist HTML
+        function renderDocumentChecklist(importedDocTypes = []) {
+            const imported = new Set(importedDocTypes);
+            return `
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-top: 15px;">
+                    <div style="font-weight: 600; color: #2c3e50; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>📑 Supported Document Types</span>
+                        <span style="font-size: 12px; color: #7f8c8d;">${imported.size} of ${ALL_SUPPORTED_DOC_TYPES.length} imported</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+                        ${ALL_SUPPORTED_DOC_TYPES.map(doc => {
+                            const isImported = imported.has(doc.code);
+                            return `
+                                <div style="display: flex; align-items: center; padding: 8px 12px; border-radius: 6px; 
+                                    background: ${isImported ? '#d4edda' : 'white'}; 
+                                    border: 1px solid ${isImported ? '#27ae60' : '#ddd'};
+                                    ${isImported ? 'box-shadow: 0 1px 3px rgba(39,174,96,0.2);' : ''}">
+                                    <span style="font-size: 18px; margin-right: 8px;">${isImported ? '✅' : '⬜'}</span>
+                                    <div>
+                                        <div style="font-weight: 500; font-size: 13px; color: ${isImported ? '#155724' : '#666'};">
+                                            ${doc.icon} ${doc.name}
+                                        </div>
+                                        <div style="font-size: 11px; color: ${isImported ? '#155724' : '#999'};">
+                                            ${doc.description}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Set current customer and auto-populate all customer_id fields
+        function setCurrentCustomer(customerId) {
+            currentCustomerId = customerId;
+            localStorage.setItem(CURRENT_CUSTOMER_KEY, customerId);
+            
+            // Auto-populate all customer_id input fields (multiple selector patterns)
+            const selectors = [
+                'input[id*="customer_id"]',
+                'input[id$="-customer_id"]',
+                'input[placeholder*="customer"]'
+            ];
+            
+            selectors.forEach(selector => {
+                document.querySelectorAll(selector).forEach(input => {
+                    if (input.id.includes('customer_id') || input.placeholder.toLowerCase().includes('customer')) {
+                        input.value = customerId;
+                        input.style.background = '#e8f5e9';  // Highlight auto-filled
+                        input.style.borderColor = '#27ae60';
+                    }
+                });
+            });
+            
+            // Also update by iterating through all tools
+            tools.forEach(tool => {
+                const input = document.getElementById(`param-${tool.name}-customer_id`);
+                if (input) {
+                    input.value = customerId;
+                    input.style.background = '#e8f5e9';
+                    input.style.borderColor = '#27ae60';
+                }
+            });
+            
+            // Update the current customer display
+            updateCurrentCustomerDisplay();
+            
+            console.log(`✅ Set current customer: ${customerId}, updated ${document.querySelectorAll('input[id*="customer_id"]').length} fields`);
+        }
+        
+        // Show current customer prominently
+        function updateCurrentCustomerDisplay() {
+            let display = document.getElementById('currentCustomerDisplay');
+            if (!display) {
+                display = document.createElement('div');
+                display.id = 'currentCustomerDisplay';
+                display.style.cssText = 'background: #3498db; color: white; padding: 8px 15px; border-radius: 4px; font-weight: 600; display: inline-block;';
+                const statusBar = document.querySelector('.status-bar');
+                if (statusBar) {
+                    statusBar.appendChild(display);
+                }
+            }
+            if (currentCustomerId) {
+                display.innerHTML = `📋 Current: <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 3px;">${currentCustomerId}</span>`;
+                display.style.display = 'inline-block';
+            } else {
+                display.style.display = 'none';
+            }
+        }
+        
+        // Load saved config
+        function loadConfig() {
+            const savedUrl = localStorage.getItem(SERVER_URL_KEY);
+            const savedKey = localStorage.getItem(API_KEY_KEY);
+            if (savedUrl) document.getElementById('serverUrl').value = savedUrl;
+            if (savedKey) document.getElementById('apiKey').value = savedKey;
+        }
+        
+        // Save config
+        function saveConfig() {
+            const url = document.getElementById('serverUrl').value;
+            const key = document.getElementById('apiKey').value;
+            localStorage.setItem(SERVER_URL_KEY, url);
+            localStorage.setItem(API_KEY_KEY, key);
+            // Auto-reload tools if connected
+            if (document.getElementById('statusDot').classList.contains('connected')) {
+                loadTools();
+            }
+        }
+        
+        // Get server URL and API key
+        function getServerUrl() {
+            return document.getElementById('serverUrl').value || 'http://localhost:3000';
+        }
+        
+        function getApiKey() {
+            return document.getElementById('apiKey').value || '';
+        }
+        
+        // Customer document presets
+        const CUSTOMER_DOCS = {
+            'grupo-pounj': [
+                { doc_type: 'acta', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/Acta_Constitutiva_grupo-pounj.pdf' },
+                { doc_type: 'sat_constancia', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/SAT_Constancia_grupo-pounj.pdf' },
+                { doc_type: 'fm2', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/FM2_grupo-pounj.pdf' },
+                { doc_type: 'passport', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/Passport_Front_Ashish_Punj_grupo-pounj.jpeg' },
+                { doc_type: 'cfe', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/CFE_Recibo_grupo-pounj_Octubre_2025.pdf' },
+                { doc_type: 'bank_identity_page', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/grupo-pounj/Bank_Estado_Cuenta_grupo-pounj_Octubre_2025.pdf' }
+            ],
+            'pfds': [
+                { doc_type: 'acta', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/pfds/Acta_Constitutiva_pfds.pdf' },
+                { doc_type: 'sat_constancia', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/pfds/SAT_Constancia_pfds.pdf' },
+                { doc_type: 'fm2', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/pfds/FM2_pfds.pdf' },
+                { doc_type: 'passport', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/pfds/Passport_Front_Ashish_Punj_pfds.jpeg' },
+                { doc_type: 'telmex', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/pfds/Telmex_Recibo_pfds_Octubre_2025.pdf' },
+                { doc_type: 'bank_identity_page', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/pfds/Bank_Estado_Cuenta_pfds_Octubre_2025.pdf' }
+            ],
+            'enrique-cello': [
+                { doc_type: 'sat_constancia', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/enrique-cello/SAT_Constancia_enrique-cello.pdf' },
+                { doc_type: 'ine', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/enrique-cello/INE_enrique-cello.pdf' },
+                { doc_type: 'cfe', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/enrique-cello/CFE_Recibo_enrique-cello_Octubre_2025.pdf' },
+                { doc_type: 'bank_identity_page', file_url: 'file:///Users/ashishpunj/Desktop/mcp-docs/enrique-cello/Bank_Estado_Cuenta_enrique-cello_Octubre_2025.pdf' }
+            ]
+        };
+        
+        // Quick batch import with one click
+        async function quickBatchImport(customerId) {
+            const statusDiv = document.getElementById('quickImportStatus');
+            const progressDiv = document.getElementById('quickImportProgress');
+            const docs = CUSTOMER_DOCS[customerId];
+            
+            if (!docs) {
+                alert('Unknown customer: ' + customerId);
+                return;
+            }
+            
+            statusDiv.style.display = 'block';
+            
+            // Show which documents are being imported
+            const docTypesBeingImported = docs.map(d => d.doc_type);
+            progressDiv.innerHTML = `
+                <div style="font-weight: 600; color: #2c3e50;">⏳ Importing ${docs.length} documents for ${customerId}...</div>
+                <div style="margin-top: 10px; color: #7f8c8d;">This may take 1-2 minutes. AI is extracting data from each document.</div>
+                
+                <!-- Show documents being processed -->
+                <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${docs.map(d => {
+                        const docInfo = ALL_SUPPORTED_DOC_TYPES.find(t => t.code === d.doc_type) || { icon: '📄', name: d.doc_type };
+                        return `<span style="background: #fff3cd; border: 1px solid #ffc107; padding: 4px 10px; border-radius: 20px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                            <span class="loading" style="width: 12px; height: 12px; border-width: 2px;"></span>
+                            ${docInfo.icon} ${docInfo.name}
+                        </span>`;
+                    }).join('')}
+                </div>
+            `;
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${getServerUrl()}/mcp/tools/batch_import_documents`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': getApiKey()
+                    },
+                    body: JSON.stringify({
+                        customer_id: customerId,
+                        documents: docs
+                    })
+                });
+                
+                const data = await response.json();
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+                
+                if (data.ok) {
+                    const successCount = data.data.success_count;
+                    const failedCount = data.data.failed_count;
+                    const importedDocs = data.data.results || [];
+                    
+                    // Extract successfully imported doc types
+                    const importedDocTypes = importedDocs
+                        .filter(r => r.status === 'success')
+                        .map(r => r.doc_type);
+                    
+                    // Set current customer and auto-populate all fields
+                    setCurrentCustomer(customerId);
+                    
+                    progressDiv.innerHTML = `
+                        <div style="font-weight: 600; color: #27ae60; font-size: 16px;">✅ Import Complete for ${customerId.toUpperCase()}</div>
+                        <div style="margin-top: 10px;">
+                            <span style="background: #d4edda; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">✓ ${successCount} succeeded</span>
+                            ${failedCount > 0 ? `<span style="background: #f8d7da; padding: 4px 8px; border-radius: 4px;">✗ ${failedCount} failed</span>` : ''}
+                            <span style="color: #7f8c8d; margin-left: 10px;">⏱️ ${duration}s</span>
+                        </div>
+                        
+                        <!-- Document Checklist showing what was imported -->
+                        ${renderDocumentChecklist(importedDocTypes)}
+                        
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                            <div style="font-weight: 600; margin-bottom: 10px;">🎯 Next Steps (customer_id auto-populated):</div>
+                            <button onclick="runBuildProfile('${customerId}')" style="padding: 8px 16px; background: #9b59b6; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                                2. Build Profile
+                            </button>
+                            <button onclick="runValidateProfile('${customerId}')" style="padding: 8px 16px; background: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                                3. Validate
+                            </button>
+                            <button onclick="runGetReport('${customerId}')" style="padding: 8px 16px; background: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                4. Get Report
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    progressDiv.innerHTML = `<div style="color: #e74c3c;">❌ Error: ${data.message || 'Import failed'}</div>`;
+                }
+            } catch (error) {
+                progressDiv.innerHTML = `<div style="color: #e74c3c;">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Quick action buttons for next steps
+        async function runBuildProfile(customerId) {
+            const progressDiv = document.getElementById('quickImportProgress');
+            progressDiv.innerHTML += `<div style="margin-top: 10px; color: #9b59b6;">⏳ Building profile...</div>`;
+            
+            try {
+                const response = await fetch(`${getServerUrl()}/mcp/tools/build_kyc_profile`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+                    body: JSON.stringify({ customer_id: customerId })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    const company = data.data.companyIdentity?.razon_social || data.data.companyTaxProfile?.razon_social || customerId;
+                    progressDiv.innerHTML += `<div style="color: #27ae60;">✅ Profile built for: ${company}</div>`;
+                } else {
+                    progressDiv.innerHTML += `<div style="color: #e74c3c;">❌ Build failed: ${data.message}</div>`;
+                }
+            } catch (e) {
+                progressDiv.innerHTML += `<div style="color: #e74c3c;">❌ Error: ${e.message}</div>`;
+            }
+        }
+        
+        async function runValidateProfile(customerId) {
+            const progressDiv = document.getElementById('quickImportProgress');
+            progressDiv.innerHTML += `<div style="margin-top: 10px; color: #e67e22;">⏳ Validating profile...</div>`;
+            
+            try {
+                const response = await fetch(`${getServerUrl()}/mcp/tools/validate_kyc_profile`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+                    body: JSON.stringify({ customer_id: customerId })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    const score = data.data.score_percent;
+                    const status = data.data.overall_status;
+                    const statusColor = status === 'APPROVED' ? '#27ae60' : status === 'REJECTED' ? '#e74c3c' : '#e67e22';
+                    progressDiv.innerHTML += `<div style="color: ${statusColor};">✅ Validation: ${score}% - ${status}</div>`;
+                } else {
+                    progressDiv.innerHTML += `<div style="color: #e74c3c;">❌ Validation failed: ${data.message}</div>`;
+                }
+            } catch (e) {
+                progressDiv.innerHTML += `<div style="color: #e74c3c;">❌ Error: ${e.message}</div>`;
+            }
+        }
+        
+        async function runGetReport(customerId) {
+            const progressDiv = document.getElementById('quickImportProgress');
+            progressDiv.innerHTML += `<div style="margin-top: 10px; color: #27ae60;">⏳ Generating report...</div>`;
+            
+            try {
+                const response = await fetch(`${getServerUrl()}/mcp/tools/get_kyc_report`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
+                    body: JSON.stringify({ customer_id: customerId })
+                });
+                const data = await response.json();
+                if (data.ok) {
+                    progressDiv.innerHTML += `<div style="color: #27ae60;">✅ Report generated! Scroll down to see details in the tools section.</div>`;
+                    // Also show a summary
+                    if (data.data.sections) {
+                        progressDiv.innerHTML += `<details style="margin-top: 10px;"><summary style="cursor: pointer; font-weight: 600;">📄 View Report Summary</summary><pre style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 11px; margin-top: 10px;">${JSON.stringify(data.data, null, 2)}</pre></details>`;
+                    }
+                } else {
+                    progressDiv.innerHTML += `<div style="color: #e74c3c;">❌ Report failed: ${data.message}</div>`;
+                }
+            } catch (e) {
+                progressDiv.innerHTML += `<div style="color: #e74c3c;">❌ Error: ${e.message}</div>`;
+            }
+        }
+        
+        // Test connection
+        async function testConnection() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            try {
+                statusText.textContent = 'Testing...';
+                const response = await fetch(`${getServerUrl()}/mcp/tools`, {
+                    headers: {
+                        'X-API-Key': getApiKey()
+                    }
+                });
+                
+                if (response.ok) {
+                    statusDot.classList.add('connected');
+                    statusText.textContent = 'Connected';
+                    await loadTools();
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                statusDot.classList.remove('connected');
+                statusText.textContent = `Disconnected: ${error.message}`;
+            }
+        }
+        
+        // Load tools
+        async function loadTools() {
+            try {
+                const response = await fetch(`${getServerUrl()}/mcp/tools`, {
+                    headers: {
+                        'X-API-Key': getApiKey()
+                    }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                tools = data.tools || [];
+                document.getElementById('toolsCount').textContent = `${tools.length} ${tools.length === 1 ? 'tool' : 'tools'} available`;
+                renderTools();
+                
+                // Load available files for import_kyc_document
+                await loadAvailableFiles();
+            } catch (error) {
+                console.error('Failed to load tools:', error);
+            }
+        }
+        
+        // Load available files
+        async function loadAvailableFiles() {
+            try {
+                const response = await fetch(`${getServerUrl()}/mcp/documents`, {
+                    headers: {
+                        'X-API-Key': getApiKey()
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Server returns { documents: { company: [{ name, path, ... }] } }
+                    // Convert to format expected by inspector: { company: [{ name, url }] }
+                    availableFiles = {};
+                    if (data.documents) {
+                        Object.keys(data.documents).forEach(company => {
+                            availableFiles[company] = data.documents[company]
+                                .filter(file => file.suggestedDocType !== 'skip')
+                                .map(file => ({
+                                    name: file.name,
+                                    url: `file://${file.path}`
+                                }));
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load files:', error);
+            }
+        }
+        
+        // Track tool execution status
+        const toolStatus = {};
+        
+        // Render tools
+        function renderTools() {
+            const container = document.getElementById('toolsContainer');
+            container.innerHTML = '';
+            
+            if (tools.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No tools available. Check server connection.</p>';
+                return;
+            }
+            
+            tools.forEach(tool => {
+                const status = toolStatus[tool.name] || { status: 'idle', lastExecuted: null };
+                const statusBadge = status.status === 'success' ? 
+                    '<span class="tool-status-badge success">✓ Executed</span>' :
+                    status.status === 'error' ?
+                    '<span class="tool-status-badge error">✗ Error</span>' :
+                    status.status === 'executing' ?
+                    '<span class="tool-status-badge pending">⏳ Running...</span>' :
+                    '';
+                
+                const toolDiv = document.createElement('div');
+                toolDiv.className = 'tool';
+                toolDiv.innerHTML = `
+                    <div class="tool-header" onclick="toggleTool('${tool.name}')">
+                        <div>
+                            <h3>${tool.name}</h3>
+                            <div class="tool-status" id="status-${tool.name}">
+                                ${statusBadge}
+                                ${status.lastExecuted ? `<span>Last: ${new Date(status.lastExecuted).toLocaleTimeString()}</span>` : ''}
+                            </div>
+                        </div>
+                        <span class="expand-icon" id="icon-${tool.name}">▼</span>
+                    </div>
+                    <div class="tool-body" id="body-${tool.name}">
+                        <div class="tool-description">
+                            <strong>What it does:</strong> ${tool.description || 'No description available'}
+                        </div>
+                        <div class="tool-info" id="info-${tool.name}"></div>
+                        <div class="params" id="params-${tool.name}"></div>
+                        <button class="execute-btn" onclick="executeTool('${tool.name}')" id="btn-${tool.name}">▶ Execute Tool</button>
+                        <div id="result-${tool.name}"></div>
+                    </div>
+                `;
+                container.appendChild(toolDiv);
+                
+                // Render parameters and info
+                renderToolParams(tool);
+                renderToolInfo(tool);
+            });
+        }
+        
+        // Render tool info (parameter count, etc.)
+        function renderToolInfo(tool) {
+            const infoDiv = document.getElementById(`info-${tool.name}`);
+            if (!infoDiv) return;
+            
+            const schema = tool.inputSchema || tool.parameters || {};
+            const paramCount = schema.properties ? Object.keys(schema.properties).length : 0;
+            const requiredCount = schema.required ? schema.required.length : 0;
+            
+            infoDiv.innerHTML = `
+                <div class="tool-info-item">
+                    <strong>Parameters:</strong> ${paramCount} ${paramCount === 1 ? 'parameter' : 'parameters'}
+                </div>
+                <div class="tool-info-item">
+                    <strong>Required:</strong> ${requiredCount} ${requiredCount === 1 ? 'field' : 'fields'}
+                </div>
+            `;
+        }
+        
+        // Render tool parameters
+        function renderToolParams(tool) {
+            const paramsDiv = document.getElementById(`params-${tool.name}`);
+            // Support both 'parameters' (server format) and 'inputSchema' (MCP standard)
+            const schema = tool.inputSchema || tool.parameters || {};
+            if (!schema.properties) {
+                paramsDiv.innerHTML = '<p style="color: #7f8c8d; font-size: 13px;">This tool has no parameters.</p>';
+                return;
+            }
+            
+            const properties = schema.properties;
+            const required = schema.required || [];
+            
+            Object.keys(properties).forEach(paramName => {
+                const param = properties[paramName];
+                const isRequired = required.includes(paramName);
+                const paramDiv = document.createElement('div');
+                paramDiv.className = 'param';
+                
+                let inputHtml = '';
+                
+                // Special handling for doc_type enum
+                if (paramName === 'doc_type' && param.enum) {
+                    inputHtml = `<select id="param-${tool.name}-${paramName}">`;
+                    param.enum.forEach(val => {
+                        inputHtml += `<option value="${val}">${val}</option>`;
+                    });
+                    inputHtml += '</select>';
+                }
+                // Special handling for file_url with file selector
+                else if (paramName === 'file_url') {
+                    inputHtml = `
+                        <div class="file-selector">
+                            <select id="file-selector-${tool.name}" onchange="selectFile('${tool.name}')">
+                                <option value="">-- Select File --</option>
+                            </select>
+                            <button onclick="browseFiles('${tool.name}')">Browse</button>
+                        </div>
+                        <input type="text" id="param-${tool.name}-${paramName}" placeholder="${param.description || paramName}">
+                    `;
+                }
+                // Regular input with examples
+                else {
+                    const inputType = param.type === 'number' ? 'number' : 'text';
+                    let placeholder = param.description || paramName;
+                    
+                    // Add example values for common parameters
+                    if (paramName === 'customer_id') {
+                        placeholder = 'e.g., pfds, grupo-pounj, enrique-cello';
+                    } else if (paramName === 'language') {
+                        placeholder = 'e.g., en (English) or es (Spanish)';
+                    } else if (paramName === 'include_trace') {
+                        placeholder = 'true or false';
+                    }
+                    
+                    inputHtml = `<input type="${inputType}" id="param-${tool.name}-${paramName}" placeholder="${placeholder}">`;
+                }
+                
+                paramDiv.innerHTML = `
+                    <label>
+                        ${paramName}
+                        ${isRequired ? '<span class="required">*</span>' : ''}
+                    </label>
+                    ${inputHtml}
+                    ${param.description ? `<div class="help-text">${param.description}</div>` : ''}
+                `;
+                
+                paramsDiv.appendChild(paramDiv);
+                
+                // Auto-populate customer_id with current customer
+                if (paramName === 'customer_id' && currentCustomerId) {
+                    const input = document.getElementById(`param-${tool.name}-${paramName}`);
+                    if (input) {
+                        input.value = currentCustomerId;
+                        input.style.background = '#e8f5e9';  // Highlight auto-filled
+                    }
+                }
+            });
+            
+            // Populate file selector if this is import_kyc_document
+            if (tool.name === 'import_kyc_document') {
+                populateFileSelector(tool.name);
+            }
+        }
+        
+        // Populate file selector
+        function populateFileSelector(toolName) {
+            const selector = document.getElementById(`file-selector-${toolName}`);
+            if (!selector) return;
+            
+            selector.innerHTML = '<option value="">-- Select File --</option>';
+            
+            Object.keys(availableFiles).forEach(company => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = company;
+                availableFiles[company].forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file.url;
+                    option.textContent = file.name;
+                    optgroup.appendChild(option);
+                });
+                selector.appendChild(optgroup);
+            });
+        }
+        
+        // Select file
+        function selectFile(toolName) {
+            const selector = document.getElementById(`file-selector-${toolName}`);
+            const input = document.getElementById(`param-${toolName}-file_url`);
+            if (selector && input) {
+                input.value = selector.value;
+            }
+        }
+        
+        // Browse files (reload)
+        async function browseFiles(toolName) {
+            await loadAvailableFiles();
+            populateFileSelector(toolName);
+        }
+        
+        // Toggle tool expansion
+        function toggleTool(toolName) {
+            const body = document.getElementById(`body-${toolName}`);
+            const icon = document.getElementById(`icon-${toolName}`);
+            
+            if (body.classList.contains('expanded')) {
+                body.classList.remove('expanded');
+                icon.textContent = '▼';
+            } else {
+                body.classList.add('expanded');
+                icon.textContent = '▲';
+                
+                // Auto-populate customer_id when tool is expanded
+                if (currentCustomerId) {
+                    const customerInput = document.getElementById(`param-${toolName}-customer_id`);
+                    if (customerInput && !customerInput.value) {
+                        customerInput.value = currentCustomerId;
+                        customerInput.style.background = '#e8f5e9';
+                        customerInput.style.borderColor = '#27ae60';
+                    }
+                }
+            }
+        }
+        
+        // Execute tool
+        async function executeTool(toolName) {
+            const resultDiv = document.getElementById(`result-${toolName}`);
+            const executeBtn = document.getElementById(`btn-${toolName}`);
+            const statusDiv = document.getElementById(`status-${toolName}`);
+            const startTime = Date.now();
+            
+            // Update status
+            toolStatus[toolName] = { status: 'executing', lastExecuted: null };
+            if (statusDiv) {
+                statusDiv.innerHTML = '<span class="tool-status-badge pending">⏳ Running...</span>';
+            }
+            
+            resultDiv.innerHTML = '<div class="result"><h4>⏳ Executing tool...</h4><div class="loading"></div><p style="margin-top: 10px; color: #7f8c8d; font-size: 13px;">Processing request...</p></div>';
+            executeBtn.disabled = true;
+            executeBtn.textContent = '⏳ Executing...';
+            
+            try {
+                // Collect parameters
+                const params = {};
+                const tool = tools.find(t => t.name === toolName);
+                
+                // Support both 'parameters' (server format) and 'inputSchema' (MCP standard)
+                const schema = tool.inputSchema || tool.parameters || {};
+                if (schema.properties) {
+                    Object.keys(schema.properties).forEach(paramName => {
+                        const input = document.getElementById(`param-${toolName}-${paramName}`);
+                        if (input && input.value) {
+                            const paramType = schema.properties[paramName].type;
+                            if (paramType === 'number' || input.type === 'number') {
+                                params[paramName] = parseFloat(input.value);
+                            } else if (paramType === 'boolean') {
+                                params[paramName] = input.value === 'true' || input.checked;
+                            } else {
+                                params[paramName] = input.value;
+                            }
+                        }
+                    });
+                }
+                
+                // Execute tool - send params directly (not wrapped in 'params')
+                const response = await fetch(`${getServerUrl()}/mcp/tools/${toolName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': getApiKey()
+                    },
+                    body: JSON.stringify(params)
+                });
+                
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    // If response is not JSON, treat as text
+                    const text = await response.text();
+                    data = { message: text };
+                }
+                
+                const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                
+                if (response.ok) {
+                    // Update status
+                    toolStatus[toolName] = { status: 'success', lastExecuted: Date.now() };
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            <span class="tool-status-badge success">✓ Executed</span>
+                            <span>Last: ${new Date().toLocaleTimeString()}</span>
+                        `;
+                    }
+                    
+                    // Check if API returned an error (ok: false in response body)
+                    if (data.ok === false) {
+                        resultDiv.innerHTML = `
+                            <div class="result error">
+                                <h4>❌ Tool Error</h4>
+                                <p style="margin: 8px 0; color: #721c24; font-weight: 600;">${data.error_code || 'ERROR'}</p>
+                                <p style="margin: 8px 0; color: #721c24;">${data.message || 'Unknown error'}</p>
+                                <pre style="margin-top: 10px; max-height: 400px; overflow-y: auto; background: #f8d7da; padding: 12px; border-radius: 4px; color: #721c24;">${JSON.stringify(data, null, 2)}</pre>
+                                <div class="result-meta">
+                                    ⏱️ Execution time: ${executionTime}s | 📅 ${new Date().toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                        toolStatus[toolName] = { status: 'error', lastExecuted: Date.now() };
+                        if (statusDiv) {
+                            statusDiv.innerHTML = `
+                                <span class="tool-status-badge error">✗ Error</span>
+                                <span>Last: ${new Date().toLocaleTimeString()}</span>
+                            `;
+                        }
+                        return;
+                    }
+                    
+                    // Build a rich display of the response data
+                    let dataDisplay = '';
+                    
+                    // Check if response has data array (like list_supported_doc_types)
+                    if (data.data && Array.isArray(data.data)) {
+                        dataDisplay = `
+                            <div class="data-table-container" style="margin-top: 12px; background: #ffffff; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px; max-height: 300px; overflow-y: auto;">
+                                <div style="font-weight: 600; margin-bottom: 8px; color: #2c3e50;">📊 ${data.data.length} items returned:</div>
+                                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                    <thead>
+                                        <tr style="background: #f1f3f4;">
+                                            ${Object.keys(data.data[0] || {}).map(k => `<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; color: #2c3e50; font-weight: 600;">${k}</th>`).join('')}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.data.map((item, idx) => `
+                                            <tr style="border-bottom: 1px solid #e9ecef; background: ${idx % 2 === 0 ? '#fff' : '#f8f9fa'};">
+                                                ${Object.values(item).map(v => `<td style="padding: 10px; color: #333;">${v}</td>`).join('')}
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+                    
+                    // Extract cost info if model was used (check multiple paths)
+                    let costInfo = '';
+                    let modelUsed = data.data?.model_used || data.model_used || null;
+                    let costUsd = data.data?.cost_usd || data.cost_usd || null;
+                    
+                    // Check nested _metadata
+                    if (data.data?._metadata?.modelUsed) {
+                        modelUsed = data.data._metadata.modelUsed;
+                    }
+                    if (data.data?._metadata?.costUsd) {
+                        costUsd = data.data._metadata.costUsd;
+                    }
+                    
+                    // Build cost info display
+                    if (modelUsed || costUsd) {
+                        const displayModel = modelUsed || 'gemini-2.5-flash';
+                        const displayCost = costUsd ? `$${Number(costUsd).toFixed(4)}` : '~$0.001';
+                        costInfo = `<span style="background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-left: 10px; font-weight: 500;">🤖 ${displayModel} | 💰 ${displayCost}</span>`;
+                    }
+                    
+                    // Always show the full JSON response - this is an inspector, we need to see everything
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h4>✅ Success ${costInfo}</h4>
+                            ${dataDisplay}
+                            <div style="margin-top: 12px;">
+                                <div style="font-weight: 600; margin-bottom: 8px; color: #2c3e50;">📋 Full Response:</div>
+                                <pre style="max-height: 500px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 4px; border: 1px solid #dee2e6; font-size: 12px; color: #212529;">${JSON.stringify(data, null, 2)}</pre>
+                            </div>
+                            <div class="result-meta">
+                                ⏱️ Execution time: ${executionTime}s | 📅 ${new Date().toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Update status
+                    toolStatus[toolName] = { status: 'error', lastExecuted: Date.now() };
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            <span class="tool-status-badge error">✗ Error</span>
+                            <span>Last: ${new Date().toLocaleTimeString()}</span>
+                        `;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h4>❌ Execution Failed</h4>
+                            <p style="margin: 8px 0; color: #721c24;">${data.error || data.message || 'Unknown error occurred'}</p>
+                            <details style="margin-top: 10px;">
+                                <summary style="cursor: pointer; color: #e74c3c; font-size: 13px; font-weight: 600;">🔍 View error details</summary>
+                                <pre style="margin-top: 10px; max-height: 400px; overflow-y: auto;">${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                            <div class="result-meta">
+                                ⏱️ Execution time: ${executionTime}s | 📅 ${new Date().toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                // Update status
+                toolStatus[toolName] = { status: 'error', lastExecuted: Date.now() };
+                if (statusDiv) {
+                    statusDiv.innerHTML = `
+                        <span class="tool-status-badge error">✗ Error</span>
+                        <span>Last: ${new Date().toLocaleTimeString()}</span>
+                    `;
+                }
+                
+                const executionTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h4>❌ Network Error</h4>
+                        <p style="margin: 8px 0; color: #721c24;">${error.message}</p>
+                        <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d;">
+                            Check that the server is running and the API key is correct.
+                        </p>
+                        <div class="result-meta">
+                            ⏱️ Execution time: ${executionTime}s | 📅 ${new Date().toLocaleString()}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                executeBtn.disabled = false;
+                executeBtn.textContent = '▶ Execute Tool';
+            }
+        }
+        
+        // Toggle supported documents preview
+        function toggleSupportedDocs() {
+            const preview = document.getElementById('supportedDocsPreview');
+            const toggle = document.getElementById('supportedDocsToggle');
+            
+            if (preview.style.display === 'none') {
+                preview.style.display = 'block';
+                toggle.textContent = '▲ Hide';
+                // Populate if empty
+                if (!preview.innerHTML.trim()) {
+                    preview.innerHTML = renderDocumentChecklist([]);  // Empty = show all as unchecked
+                }
+            } else {
+                preview.style.display = 'none';
+                toggle.textContent = '▼ Show';
+            }
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            testConnection();
+            // Restore current customer display
+            if (currentCustomerId) {
+                updateCurrentCustomerDisplay();
+            }
+            // Pre-populate supported docs preview
+            const previewContainer = document.getElementById('supportedDocsPreview');
+            if (previewContainer) {
+                previewContainer.innerHTML = renderDocumentChecklist([]);
+            }
+        });
+    </script>
 </body>
 </html>

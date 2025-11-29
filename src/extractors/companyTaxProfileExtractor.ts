@@ -4,111 +4,112 @@ import { logExtractorError } from '../utils/logging.js';
 import { routeExtraction, ExtractionResult } from '../utils/modelRouter.js';
 
 const EXTRACTION_INSTRUCTIONS = `
-You are a STRICT KYC data extractor for Mexican SAT Constancia de Situación Fiscal documents.
-Your job is to extract data EXACTLY as printed - ZERO HALLUCINATIONS, ZERO INFERENCE.
+You are extracting data from a Mexican SAT "Constancia de Situación Fiscal" document.
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║  🚨 CRITICAL: TAX REGIME EXTRACTION - READ THIS FIRST 🚨                      ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  The tax_regime field is THE MOST IMPORTANT field to extract correctly.      ║
+║                                                                               ║
+║  WHERE TO FIND IT:                                                            ║
+║  Look for a TABLE with columns: "Régimen" | "Fecha Inicio" | "Fecha Fin"      ║
+║  This table is usually in the MIDDLE of the document, after the address.     ║
+║                                                                               ║
+║  COMMON VALUES YOU WILL SEE:                                                  ║
+║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
+║  │ "Sin obligaciones fiscales"                    ← No business activity   │  ║
+║  │ "Sueldos y Salarios e Ingresos Asimilados"    ← Employee               │  ║
+║  │ "Régimen Simplificado de Confianza"           ← RESICO                 │  ║
+║  │ "Actividades Empresariales y Profesionales"   ← Business owner         │  ║
+║  │ "Arrendamiento"                               ← Rental income          │  ║
+║  │ "General de Ley Personas Morales"             ← Corporation            │  ║
+║  └─────────────────────────────────────────────────────────────────────────┘  ║
+║                                                                               ║
+║  🚫 DO NOT HALLUCINATE: If the table shows "Sin obligaciones fiscales",       ║
+║     then tax_regime = "Sin obligaciones fiscales". Period.                    ║
+║                                                                               ║
+║  🚫 DO NOT CONFUSE: The document may have section HEADERS like               ║
+║     "Datos del contribuyente persona física con actividad empresarial"       ║
+║     This is a HEADER, not the tax_regime. IGNORE headers.                    ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
 
 ═══════════════════════════════════════════════════════════════════════════════
-ANTI-HALLUCINATION RULES (MANDATORY):
-═══════════════════════════════════════════════════════════════════════════════
-1. ONLY extract text that is PHYSICALLY PRINTED on the document
-2. If a field is not visible, set to null - NEVER guess or infer
-3. NEVER use placeholder values like "N/A", "--", "Unknown", or empty strings ""
-4. NEVER transform, calculate, or reconstruct data
-5. Copy text EXACTLY as shown, including accents, capitalization, and spacing
-6. Dates must be converted to YYYY-MM-DD format ONLY
-
-═══════════════════════════════════════════════════════════════════════════════
-ENTITY TYPE DETECTION (Critical for Classification):
-═══════════════════════════════════════════════════════════════════════════════
-Detect the entity type from the document:
-
-TYPE 1 - PERSONA MORAL (Corporate Entity):
-  - RFC pattern: 3 letters + 6 digits + 3 homoclave (e.g., "PFD210830KQ7")
-  - Has company name in "Razón Social" (e.g., "PFDS SAPI DE CV")
-  - May have "Régimen Capital" section
-  - Has registered economic activities
-  
-TYPE 2 - PERSONA FÍSICA CON ACTIVIDAD EMPRESARIAL (Individual with Business):
-  - RFC pattern: 4 letters + 6 digits + 3 homoclave (e.g., "GAPA750101ABC")
-  - Has person's name in "Razón Social"
-  - Has registered economic activities in the table
-  - Tax regime shows business activity (e.g., "Actividades Empresariales", "RESICO", "RIF")
-  
-TYPE 3 - PERSONA FÍSICA SIN OBLIGACIONES FISCALES (Individual without Tax Obligations):
-  - RFC pattern: 4 letters + 6 digits + 3 homoclave (e.g., "CEDE981004E67")
-  - Has person's name in "Razón Social" (e.g., "ENRIQUE DE CELLO DIAZ")
-  - Tax regime shows: "Sin obligaciones fiscales"
-  - Economic activities table is EMPTY or shows "Sin obligaciones fiscales"
-  - Tax obligations shows ONLY "Sin obligaciones fiscales"
-
-═══════════════════════════════════════════════════════════════════════════════
-FIELD EXTRACTION RULES:
+DOCUMENT STRUCTURE (Visual Guide):
 ═══════════════════════════════════════════════════════════════════════════════
 
-1. RFC (CRITICAL):
-   - Extract the 12-13 character code EXACTLY as printed
-   - Located prominently near the top of the document
-   - Format: ABC123456XYZ (Persona Moral) or ABCD123456XYZ (Persona Física)
-   - NEVER reconstruct from name + date
+A typical Constancia has these sections IN ORDER:
 
-2. RAZÓN SOCIAL / DENOMINACIÓN:
-   - For companies: Extract company name (e.g., "PFDS SAPI DE CV")
-   - For individuals: Extract full name (e.g., "ENRIQUE DE CELLO DIAZ")
-   - Extract EXACTLY as printed, including accents
+┌─────────────────────────────────────────┐
+│ HEADER: SAT logo, "Constancia de        │
+│ Situación Fiscal"                       │
+├─────────────────────────────────────────┤
+│ RFC: XXXX######XXX                      │  ← Extract this
+│ CURP: (if persona física)               │
+│ Nombre/Razón Social: [NAME]             │  ← Extract this
+├─────────────────────────────────────────┤
+│ DOMICILIO FISCAL                        │
+│ Calle, Número, Colonia, CP, etc.        │  ← Extract all parts
+├─────────────────────────────────────────┤
+│ ★ REGÍMENES (TABLE) ★                   │
+│ ┌────────────────────┬─────────┬──────┐ │
+│ │ Régimen            │ F.Inicio│ F.Fin│ │
+│ ├────────────────────┼─────────┼──────┤ │
+│ │ Sin obligaciones   │ 2017-09 │      │ │  ← THIS IS tax_regime!
+│ │ fiscales           │         │      │ │
+│ └────────────────────┴─────────┴──────┘ │
+├─────────────────────────────────────────┤
+│ OBLIGACIONES (TABLE)                    │
+│ Same content as Regímenes for           │
+│ "Sin obligaciones fiscales" cases       │  ← Verify matches
+├─────────────────────────────────────────┤
+│ ACTIVIDADES ECONÓMICAS (TABLE)          │
+│ [Empty if Sin obligaciones]             │  ← Should be empty
+└─────────────────────────────────────────┘
 
-3. TAX REGIME (tax_regime) - CRITICAL FOR CLASSIFICATION:
-   - Extract the EXACT text from "Régimen" or "Régimen Fiscal" field
-   - Common values:
-     * "Sin obligaciones fiscales" - Individual with no business activity
-     * "Régimen Simplificado de Confianza" - RESICO
-     * "Actividades Empresariales y Profesionales" - Business activities
-     * "Arrendamiento" - Rental income
-   - If multiple regimes listed, extract all
+═══════════════════════════════════════════════════════════════════════════════
+EXTRACTION RULES:
+═══════════════════════════════════════════════════════════════════════════════
 
-4. STATUS:
-   - Extract from "Situación del contribuyente" or "Estatus" field
-   - Usually "ACTIVO" or "CANCELADO"
+1. RFC: 12-13 alphanumeric characters at the top
 
-5. FISCAL ADDRESS:
-   - This is the CANONICAL fiscal address - extract ALL components:
-   - street: Street name only (e.g., "INDEPENDENCIA")
-   - ext_number: External number (e.g., "2")
-   - int_number: Internal number if present (e.g., "LT 10", "DEPTO 5")
-   - colonia: Neighborhood name (e.g., "COPALERA")
-   - municipio: Municipality/delegation (e.g., "CHIMALHUACAN")
-   - estado: State (e.g., "MEXICO", "CIUDAD DE MEXICO")
-   - cp: Postal code 5 digits (e.g., "56337")
-   - country: Always set to "MX"
+2. razon_social: The name after "Nombre" or "Razón Social"
 
-6. ECONOMIC ACTIVITIES (economic_activities):
-   - Extract from "Actividades Económicas" table
-   - For each activity: description, percentage, start_date, end_date
-   - If table is EMPTY or only shows "Sin obligaciones fiscales": return empty array []
-   - NEVER invent activities
+3. tax_regime: 
+   ⚠️ LOOK AT THE "REGÍMENES" TABLE ROWS, NOT THE HEADERS
+   ⚠️ Copy the EXACT text from the first column of the table
+   ⚠️ If it says "Sin obligaciones fiscales" → tax_regime = "Sin obligaciones fiscales"
 
-7. TAX OBLIGATIONS (tax_obligations):
+4. status: "ACTIVO" or "CANCELADO" from "Situación del contribuyente"
+
+5. fiscal_address: Extract all parts (street, ext_number, int_number, colonia, municipio, estado, cp)
+
+6. economic_activities: 
+   - If table is empty → return []
+   - If shows activities → extract each row
+
+7. tax_obligations:
    - Extract from "Obligaciones" table
-   - For each: description, due_rule, start_date, end_date
-   - If shows only "Sin obligaciones fiscales": return array with single entry
-   - NEVER invent obligations
-
-8. DATES:
-   - start_of_operations: From "Fecha de inicio de operaciones"
-   - last_status_change: From "Fecha del último cambio de estado"
-   - issue.issue_date: From "Lugar y fecha de emisión" section
-   - ALL dates must be YYYY-MM-DD format
+   - This should MATCH the tax_regime for "Sin obligaciones" cases
 
 ═══════════════════════════════════════════════════════════════════════════════
-VALIDATION CHECKLIST (Must pass ALL):
+VALIDATION - MUST BE CONSISTENT:
 ═══════════════════════════════════════════════════════════════════════════════
-□ RFC matches pattern (12-13 alphanumeric characters)
-□ Status is either "ACTIVO" or "CANCELADO"
-□ All dates are YYYY-MM-DD format
-□ No placeholder values anywhere
-□ tax_regime field is populated with exact printed text
-□ For "Sin obligaciones fiscales": economic_activities should be empty []
 
-Return ONLY valid JSON matching the schema. Zero hallucinations.
+IF tax_obligations contains "Sin obligaciones fiscales":
+  THEN tax_regime MUST = "Sin obligaciones fiscales"
+  AND economic_activities MUST = []
+
+This is a HARD RULE. If your extraction violates this, you have made an error.
+
+═══════════════════════════════════════════════════════════════════════════════
+OUTPUT FORMAT:
+═══════════════════════════════════════════════════════════════════════════════
+
+Return valid JSON only. No markdown. No explanation.
+If a field is not found, use null (not "", not "N/A", not "/").
+Dates must be YYYY-MM-DD format.
 `;
 
 export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
@@ -134,6 +135,17 @@ export async function extractCompanyTaxProfile(fileUrl: string): Promise<any> {
     // Ensure country is set to "MX" for fiscal_address
     if (normalizedProfile.fiscal_address) {
       normalizedProfile.fiscal_address.country = "MX";
+    }
+
+    // CRITICAL: Cross-validate tax_regime against tax_obligations
+    // If obligations show "Sin obligaciones fiscales", the regime MUST match
+    const hasNoObligations = normalizedProfile.tax_obligations?.some(
+      (o: any) => o.description?.toLowerCase().includes('sin obligaciones')
+    );
+    if (hasNoObligations && normalizedProfile.tax_regime) {
+      // Override any hallucinated regime - the obligations are authoritative
+      normalizedProfile.tax_regime = 'Sin obligaciones fiscales';
+      console.log('⚠️ Cross-validation: tax_regime corrected to match tax_obligations');
     }
 
     // Attach metadata

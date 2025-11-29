@@ -1,0 +1,48 @@
+{
+  "runId": "01b22b36-bb49-44e7-8a41-0896feb24aa1",
+  "customerId": "alex-karam-1764263187",
+  "createdAt": "2025-11-27T17:06:47.224Z",
+  "documents": [
+    {
+      "id": "42a15354-f7bf-433a-90aa-9112f142daaa",
+      "customerId": "alex-karam-1764263187",
+      "type": "ine",
+      "fileUrl": "file:///Users/ashishpunj/Desktop/mcp-docs/alex-karam/INE_alex-karam.pdf",
+      "extractedAt": "2025-11-27T17:06:47.224Z",
+      "extractedPayload": {
+        "full_name": "ARROYO MARTINEZ ELOISA",
+        "curp": "AOME701030MDFRRL01",
+        "clave_elector": "ARMREL70103009M101",
+        "address": {
+          "colonia": "SANTA URSULA XITLA",
+          "country": "MX",
+          "cp": "14420",
+          "estado": "D.F.",
+          "municipio": "TLALPAN",
+          "street": null
+        },
+        "issuer_country": "MX",
+        "card_version": null,
+        "cic": "1174153336",
+        "date_of_birth": "1970-10-30",
+        "document_type": "IFE",
+        "emission_year": "2014",
+        "estado_registro": "MEX",
+        "localidad": "0001",
+        "mrz_line1": "IDMEX1174153336<<3909124797403",
+        "mrz_line2": "7010309M2412311MEX<01<<23314<4",
+        "mrz_line3": "ARROYO<MARTINEZ<<ELOISA<<<<<<<",
+        "nationality": null,
+        "ocr_number": "3909124797403",
+        "seccion": "3909",
+        "sex": "M",
+        "vigencia_year": "2024",
+        "_metadata": {
+          "modelUsed": "gemini-2.5-flash",
+          "costUsd": 0.001
+        }
+      },
+      "sourceName": "INE_alex-karam.pdf"
+    }
+  ]
+}

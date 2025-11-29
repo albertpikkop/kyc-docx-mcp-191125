@@ -1,0 +1,353 @@
+{
+  "runId": "8bd134da-bf11-4684-9945-5110f99ab965",
+  "customerId": "enrique-cello-gemini",
+  "createdAt": "2025-11-25T16:37:39.687Z",
+  "documents": [
+    {
+      "id": "01c38cb6-5e4c-4ec3-9334-e68ea13b560b",
+      "customerId": "enrique-cello-gemini",
+      "type": "sat_constancia",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/Constancia de Situacion Fiscal.pdf",
+      "extractedAt": "2025-11-25T16:37:00.686Z",
+      "extractedPayload": {
+        "rfc": "CEDE981004E67",
+        "razon_social": "ENRIQUE DE CELLO DIAZ",
+        "commercial_name": null,
+        "capital_regime": null,
+        "tax_regime": "SIN OBLIGACIONES FISCALES",
+        "start_of_operations": "2017-09-05",
+        "status": "ACTIVO",
+        "last_status_change": "2017-11-02",
+        "issue": {
+          "place_municipio": "CHIMALHUACAN",
+          "place_estado": "MEXICO",
+          "issue_date": "2025-09-29"
+        },
+        "fiscal_address": {
+          "street": "INDEPENDENCIA",
+          "ext_number": "2",
+          "int_number": "LT 10",
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEXICO",
+          "cp": "56337",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "economic_activities": [],
+        "tax_obligations": [
+          {
+            "description": "Sin obligaciones fiscales",
+            "due_rule": null,
+            "start_date": "2017-09-05",
+            "end_date": null
+          }
+        ]
+      },
+      "sourceName": "Constancia de Situacion Fiscal.pdf"
+    },
+    {
+      "id": "454d1a91-b0e8-4ac6-8e28-0c4d0108a120",
+      "customerId": "enrique-cello-gemini",
+      "type": "fm2",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/INE Enrique De Cello.pdf",
+      "extractedAt": "2025-11-25T16:37:11.295Z",
+      "extractedPayload": {
+        "full_name": "DE CELLO DIAZ ENRIQUE",
+        "nationality": "MEXICANA",
+        "document_type": "INE",
+        "document_number": "2775551185",
+        "secondary_number": "CLDZEN98100409H300",
+        "date_of_birth": "1998-10-04",
+        "curp": "CEDE981004HDFLZN05",
+        "sex": "Hombre",
+        "issue_date": "2016-01-01",
+        "expiry_date": "2035-12-31",
+        "issuing_office": "INE",
+        "issuer_country": "MX"
+      },
+      "sourceName": "INE Enrique De Cello.pdf"
+    },
+    {
+      "id": "6473ae16-8655-42aa-aaf6-d5b5bc4a25b1",
+      "customerId": "enrique-cello-gemini",
+      "type": "cfe",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/Comprobante (1).pdf",
+      "extractedAt": "2025-11-25T16:37:33.292Z",
+      "extractedPayload": {
+        "document_type": "cfe_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "Comprobante (1).pdf",
+          "pages": 1
+        },
+        "client_name": "DE CELLO CEBALLOS CRISOFORO",
+        "client_address": {
+          "street": "CDA INDEPENDENCIA",
+          "ext_number": "MZ 2 LT10",
+          "int_number": null,
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEX.",
+          "cp": "56337",
+          "cross_streets": "FRIJOL Y CORREGIDORA",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": null,
+          "colonia": "Col. Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814010",
+        "total_due": 655,
+        "currency": "MXN",
+        "due_date": "2025-11-03",
+        "billing_month": "18 AGO 25 - 17 OCT 25",
+        "billing_period_start": "2025-08-18",
+        "billing_period_end": "2025-10-17",
+        "issue_datetime": "2025-10-22",
+        "previous_balance": null,
+        "current_charges": 655.11,
+        "service": {
+          "category": "electricity",
+          "telephone_number": null,
+          "service_number": "145121118040"
+        },
+        "account_reference": "26DM27D012612740",
+        "invoice_number": null
+      },
+      "sourceName": "Comprobante (1).pdf"
+    },
+    {
+      "id": "58055565-6145-4044-ae17-54c4ecb97bd3",
+      "customerId": "enrique-cello-gemini",
+      "type": "bank_identity_page",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/enrique-cello/Octubre_E.pdf",
+      "extractedAt": "2025-11-25T16:37:39.685Z",
+      "extractedPayload": {
+        "bank_name": "BanCoppel",
+        "account_holder_name": "ENRIQUE DE CELLO DIAZ",
+        "account_number": "10420998894",
+        "clabe": "137180104209988942",
+        "currency": "MXN",
+        "statement_period_start": "2025-10-04",
+        "statement_period_end": "2025-11-03",
+        "address_on_statement": {
+          "street": "CDA INDEPENDENCIA",
+          "ext_number": "MZA 2",
+          "int_number": null,
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "ESTADO DE MEXICO",
+          "cp": "56337",
+          "cross_streets": null,
+          "country": "MX"
+        }
+      },
+      "sourceName": "Octubre_E.pdf"
+    }
+  ],
+  "profile": {
+    "customerId": "enrique-cello-gemini",
+    "addressEvidence": [
+      {
+        "document_type": "cfe_bill",
+        "evidence_meta": {
+          "issuer_country": "MX",
+          "original_filename": "Comprobante (1).pdf",
+          "pages": 1
+        },
+        "client_name": "DE CELLO CEBALLOS CRISOFORO",
+        "client_address": {
+          "street": "CDA INDEPENDENCIA",
+          "ext_number": "MZ 2 LT10",
+          "int_number": null,
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEX.",
+          "cp": "56337",
+          "cross_streets": "FRIJOL Y CORREGIDORA",
+          "country": "MX"
+        },
+        "client_tax_id": null,
+        "vendor_name": "Comisión Federal de Electricidad",
+        "vendor_address": {
+          "street": "Av. Paseo de la Reforma",
+          "ext_number": "164",
+          "int_number": null,
+          "colonia": "Col. Juárez",
+          "municipio": "Cuauhtémoc",
+          "estado": "Ciudad de México",
+          "cp": "06600",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "vendor_tax_id": "CFE370814010",
+        "total_due": 655,
+        "currency": "MXN",
+        "due_date": "2025-11-03",
+        "billing_month": "18 AGO 25 - 17 OCT 25",
+        "billing_period_start": "2025-08-18",
+        "billing_period_end": "2025-10-17",
+        "issue_datetime": "2025-10-22",
+        "previous_balance": null,
+        "current_charges": 655.11,
+        "service": {
+          "category": "electricity",
+          "telephone_number": null,
+          "service_number": "145121118040"
+        },
+        "account_reference": "26DM27D012612740",
+        "invoice_number": null
+      }
+    ],
+    "bankAccounts": [],
+    "historical_addresses": [
+      {
+        "source": "sat",
+        "address": {
+          "street": "INDEPENDENCIA",
+          "ext_number": "2",
+          "int_number": "LT 10",
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEXICO",
+          "cp": "56337",
+          "cross_streets": null,
+          "country": "MX"
+        },
+        "date": "2025-09-29"
+      },
+      {
+        "source": "proof_of_address",
+        "address": {
+          "street": "CDA INDEPENDENCIA",
+          "ext_number": "MZ 2 LT10",
+          "int_number": null,
+          "colonia": "COPALERA",
+          "municipio": "CHIMALHUACAN",
+          "estado": "MEX.",
+          "cp": "56337",
+          "cross_streets": "FRIJOL Y CORREGIDORA",
+          "country": "MX"
+        },
+        "date": "2025-10-22"
+      }
+    ],
+    "lastUpdatedAt": "2025-11-25T16:37:39.685Z",
+    "companyTaxProfile": {
+      "rfc": "CEDE981004E67",
+      "razon_social": "ENRIQUE DE CELLO DIAZ",
+      "commercial_name": null,
+      "capital_regime": null,
+      "tax_regime": "SIN OBLIGACIONES FISCALES",
+      "start_of_operations": "2017-09-05",
+      "status": "ACTIVO",
+      "last_status_change": "2017-11-02",
+      "issue": {
+        "place_municipio": "CHIMALHUACAN",
+        "place_estado": "MEXICO",
+        "issue_date": "2025-09-29"
+      },
+      "fiscal_address": {
+        "street": "INDEPENDENCIA",
+        "ext_number": "2",
+        "int_number": "LT 10",
+        "colonia": "COPALERA",
+        "municipio": "CHIMALHUACAN",
+        "estado": "MEXICO",
+        "cp": "56337",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "economic_activities": [],
+      "tax_obligations": [
+        {
+          "description": "Sin obligaciones fiscales",
+          "due_rule": null,
+          "start_date": "2017-09-05",
+          "end_date": null
+        }
+      ]
+    },
+    "currentFiscalAddress": {
+      "street": "INDEPENDENCIA",
+      "ext_number": "2",
+      "int_number": "LT 10",
+      "colonia": "COPALERA",
+      "municipio": "CHIMALHUACAN",
+      "estado": "MEXICO",
+      "cp": "56337",
+      "cross_streets": null,
+      "country": "MX"
+    },
+    "bankIdentity": {
+      "bank_name": "BanCoppel",
+      "account_holder_name": "ENRIQUE DE CELLO DIAZ",
+      "clabe": "137180104209988942",
+      "clabe_last4": "8942",
+      "address_on_file": {
+        "street": "CDA INDEPENDENCIA",
+        "ext_number": "MZA 2",
+        "int_number": null,
+        "colonia": "COPALERA",
+        "municipio": "CHIMALHUACAN",
+        "estado": "ESTADO DE MEXICO",
+        "cp": "56337",
+        "cross_streets": null,
+        "country": "MX"
+      },
+      "document_date": "2025-11-03",
+      "age_in_days": 22,
+      "within_90_days": true,
+      "holder_matches_company": true,
+      "address_matches_operational": true
+    },
+    "representativeIdentity": {
+      "full_name": "DE CELLO DIAZ ENRIQUE",
+      "nationality": "MEXICANA",
+      "document_type": "INE",
+      "document_number": "2775551185",
+      "secondary_number": "CLDZEN98100409H300",
+      "date_of_birth": "1998-10-04",
+      "curp": "CEDE981004HDFLZN05",
+      "sex": "Hombre",
+      "issue_date": "2016-01-01",
+      "expiry_date": "2035-12-31",
+      "issuing_office": "INE",
+      "issuer_country": "MX"
+    },
+    "currentOperationalAddress": {
+      "street": "CDA INDEPENDENCIA",
+      "ext_number": "MZA 2",
+      "int_number": null,
+      "colonia": "COPALERA",
+      "municipio": "CHIMALHUACAN",
+      "estado": "ESTADO DE MEXICO",
+      "cp": "56337",
+      "cross_streets": null,
+      "country": "MX"
+    }
+  },
+  "validation": {
+    "customerId": "enrique-cello-gemini",
+    "score": 1,
+    "flags": [
+      {
+        "code": "TAX_REGIME_NO_COMMERCE",
+        "level": "warning",
+        "message": "Régimen Fiscal: \"Sin obligaciones fiscales\". Esta persona NO puede emitir facturas ni realizar actividad empresarial. Apto solo para relaciones personales/no comerciales.",
+        "action_required": "Si se requiere para actividad comercial, el cliente debe cambiar su régimen fiscal ante SAT (RESICO o Actividad Empresarial)."
+      }
+    ],
+    "generatedAt": "2025-11-25T16:37:39.687Z"
+  }
+}

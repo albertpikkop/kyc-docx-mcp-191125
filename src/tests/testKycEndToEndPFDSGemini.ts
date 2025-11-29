@@ -94,15 +94,16 @@ function resolveFixture(fileName: string): string {
 }
 
 const docs = [
-  { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_PFDS_SAPI.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
-  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("Constancia_PFDS.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
-  { type: "passport" as DocumentType,       fileUrl: resolveFixture("New passport - Sep 18 2018 - 12-33 PM - p1 copy.jpeg"), instructions: PASSPORT_INSTRUCTIONS, schema: PassportIdentitySchema },
-  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2 (1).pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
-  { type: "telmex" as DocumentType,         fileUrl: resolveFixture("Recibo-Oct (2).pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
-  { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("Esatdo_De_Cuenta_Octubre_2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
+  { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_pfds.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
+  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("SAT_Constancia_pfds.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
+  { type: "passport" as DocumentType,       fileUrl: resolveFixture("Passport_Front_Ashish_Punj_pfds.jpeg"), instructions: PASSPORT_INSTRUCTIONS, schema: PassportIdentitySchema },
+  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2_pfds.pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
+  { type: "telmex" as DocumentType,         fileUrl: resolveFixture("Telmex_Recibo_pfds_Octubre_2025.pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
+  { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("Bank_Estado_Cuenta_pfds_Octubre_2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
 ];
 
 async function main() {
+  const startTime = Date.now(); // Track processing time for transparency
   console.log(`Starting Gemini KYC Run for customer: ${customerId}`);
   
   const kycDocuments: KycDocument[] = [];
@@ -169,7 +170,26 @@ async function main() {
             const profile = extractedPayload.immigration_profile || extractedPayload;
             if (profile.issuer_country === "MEXICO" || profile.issuer_country === "MEX") profile.issuer_country = "MX";
             if (profile.curp) profile.curp = sanitizeCurp(profile.curp);
-            profile.document_type = "FM2"; // Ensure correct document type
+            
+            // CRITICAL: Reclassify document based on characteristics
+            // Post-2012 documents without expiry are Residente Permanente (not FM2)
+            const docType = (profile.document_type || '').toUpperCase();
+            const issueDate = profile.issue_date;
+            const expiryDate = profile.expiry_date;
+            const issueYear = issueDate ? new Date(issueDate).getFullYear() : 0;
+            
+            if (docType === 'FM2' || docType.includes('FM2') || !profile.document_type) {
+              if (issueYear >= 2012 && !expiryDate) {
+                profile.document_type = 'RESIDENTE PERMANENTE';
+                console.log('📋 Document reclassified: FM2 → RESIDENTE PERMANENTE (post-2012, no expiry = permanent)');
+              } else if (issueYear >= 2012 && expiryDate) {
+                profile.document_type = 'RESIDENTE TEMPORAL';
+                console.log('📋 Document reclassified: FM2 → RESIDENTE TEMPORAL (post-2012, has expiry)');
+              } else {
+                profile.document_type = 'FM2'; // Legacy FM2
+              }
+            }
+            
             extractedPayload = profile;
             representativeIdentity = extractedPayload;
         } else if (doc.type === 'telmex' || doc.type === 'cfe') {
@@ -220,21 +240,37 @@ async function main() {
   console.log("Validating KYC Profile...");
   const validation = validateKycProfile(profile);
 
+  const processingTimeMs = Date.now() - startTime;
+  const estimatedCostUsd = 0.51; // Approximate cost per run (6 docs including Acta)
+
   const run: KycRun = {
     runId: crypto.randomUUID(),
     customerId,
     createdAt: new Date().toISOString(),
     documents: kycDocuments,
     profile,
-    validation
+    validation,
+    // Transparency metrics for investors
+    processingTimeMs,
+    estimatedCostUsd,
+    aiModel: 'Gemini 2.5 Pro/Flash'
   };
 
   console.log("Saving Run and Generating Report...");
+  console.log(`⏱️  Processing time: ${(processingTimeMs / 1000).toFixed(1)}s | 💰 Est. cost: $${estimatedCostUsd.toFixed(2)}`);
   const reportUrl = await saveRun(run);
   
   if (reportUrl) {
       console.log(`\n✅ Visual Report Generated!`);
       console.log(`📄 Report URL: ${reportUrl}`);
+      try {
+          const { exec } = await import('child_process');
+          const { promisify } = await import('util');
+          const execAsync = promisify(exec);
+          await execAsync(`open "${reportUrl}"`);
+      } catch (error) {
+          console.log(`\n💡 Tip: Copy and paste this URL into your browser.`);
+      }
   }
 }
 

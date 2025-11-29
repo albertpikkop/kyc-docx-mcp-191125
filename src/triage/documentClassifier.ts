@@ -2,7 +2,7 @@ import { z } from "zod";
 import * as fs from "fs";
 import * as path from "path";
 import { PDFDocument } from "pdf-lib";
-import { getGeminiClient } from "../modelGemini";
+import { getGeminiClient } from "../modelGemini.js";
 
 export type DocumentType = 
   | 'sat_constancia' 
@@ -138,8 +138,8 @@ export async function classifyPage(
       pageNumber: pageIndex + 1,
       documentType: validated.document_type as DocumentType,
       confidence: validated.confidence,
-      extractedName: validated.extracted_name,
-      extractedRfc: validated.extracted_rfc,
+      extractedName: validated.extracted_name ?? undefined,
+      extractedRfc: validated.extracted_rfc ?? undefined,
       isFirstPage: validated.is_first_page,
       isLastPage: validated.is_last_page,
       pageCount: validated.total_pages_in_doc || 1,

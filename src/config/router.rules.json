@@ -1,5 +1,14 @@
 {
-  "default": { "primary": "gemini", "fallback": "gpt" },
-  "bank_statement.profile": { "primary": "gemini", "fallback": "gpt" },
-  "bank_statement.transactions": { "primary": "gemini", "fallback": "gpt" }
+  "default": { "primary": "gemini" },
+  "acta": { "primary": "gemini" },
+  "sat_constancia": { "primary": "gemini" },
+  "fm2": { "primary": "gemini" },
+  "ine": { "primary": "gemini" },
+  "passport": { "primary": "gemini" },
+  "telmex": { "primary": "gemini" },
+  "cfe": { "primary": "gemini" },
+  "bank_statement": { "primary": "gemini" },
+  "bank_statement.profile": { "primary": "gemini" },
+  "bank_statement.transactions": { "primary": "gemini" },
+  "bank_identity_page": { "primary": "gemini" }
 }

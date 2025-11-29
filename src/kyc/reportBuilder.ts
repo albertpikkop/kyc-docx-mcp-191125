@@ -133,10 +133,109 @@ export function buildKycReport(
           } else {
               hechosBody += `- **Domicilio Fundacional (Histórico):** No especificado en la escritura.\n`;
           }
+          
+          // ========== NOTARY INFORMATION ==========
+          if (id.notary) {
+              hechosBody += `\n**Datos Notariales:**\n`;
+              hechosBody += `- **Notario:** ${id.notary.name || 'N/A'}\n`;
+              hechosBody += `- **Notaría No.:** ${id.notary.notary_number || 'N/A'}\n`;
+              hechosBody += `- **Escritura/Protocolo No.:** ${id.notary.protocol_number || 'N/A'}\n`;
+              hechosBody += `- **Fecha de Protocolo:** ${id.notary.protocol_date || 'N/A'}\n`;
+              hechosBody += `- **Lugar de Otorgamiento:** ${id.notary.office_location || 'N/A'}\n`;
+          }
+          
+          // ========== REGISTRY / FOLIO MERCANTIL ==========
+          if (id.registry) {
+              hechosBody += `\n**Inscripción en Registro Público de Comercio:**\n`;
+              if (id.registry.fme) {
+                  hechosBody += `- **Folio Mercantil Electrónico (FME):** ${id.registry.fme}\n`;
+              }
+              if (id.registry.folio) {
+                  hechosBody += `- **Folio Mercantil:** ${id.registry.folio}\n`;
+              }
+              if (id.registry.nci) {
+                  hechosBody += `- **NCI (Número de Control Interno):** ${id.registry.nci}\n`;
+              }
+              if (id.registry.unique_doc_number) {
+                  hechosBody += `- **Número Único de Documento:** ${id.registry.unique_doc_number}\n`;
+              }
+              if (id.registry.registration_city) {
+                  hechosBody += `- **Ciudad de Inscripción:** ${id.registry.registration_city}\n`;
+              }
+              if (id.registry.registration_date) {
+                  hechosBody += `- **Fecha de Inscripción:** ${id.registry.registration_date}\n`;
+              }
+              // If no registry info at all
+              if (!id.registry.fme && !id.registry.folio && !id.registry.nci) {
+                  hechosBody += `- *Pendiente de inscripción o datos no disponibles en el Acta.*\n`;
+              }
+          }
       } else {
           hechosBody += "- *No se encontró Acta Constitutiva.*\n";
       }
       hechosBody += "\n";
+      
+      // ========== BOLETA RPC (FME from dedicated document) ==========
+      const boletaRPC = (profile as any).boletaRPC;
+      if (boletaRPC) {
+          hechosBody += "### 1.5 Boleta de Inscripción RPC\n";
+          if (boletaRPC.numero_unico_documento) {
+              hechosBody += `- **FME (Número Único de Documento):** ${boletaRPC.numero_unico_documento}\n`;
+          }
+          if (boletaRPC.libro) {
+              hechosBody += `- **Libro:** ${boletaRPC.libro}\n`;
+          }
+          if (boletaRPC.fecha_inscripcion) {
+              hechosBody += `- **Fecha de Inscripción:** ${boletaRPC.fecha_inscripcion}\n`;
+          }
+          if (boletaRPC.tipo_acto) {
+              hechosBody += `- **Tipo de Acto:** ${boletaRPC.tipo_acto}\n`;
+          }
+          if (boletaRPC.razon_social) {
+              hechosBody += `- **Razón Social Registrada:** ${boletaRPC.razon_social}\n`;
+          }
+          if (boletaRPC.capital_social) {
+              hechosBody += `- **Capital Social Registrado:** $${boletaRPC.capital_social.toLocaleString('es-MX')} MXN\n`;
+          }
+          if (boletaRPC.duracion) {
+              hechosBody += `- **Duración:** ${boletaRPC.duracion}\n`;
+          }
+          hechosBody += "\n";
+      }
+      
+      // ========== RNIE (Foreign Investment Registry) ==========
+      const rnieConstancia = (profile as any).rnieConstancia;
+      if (rnieConstancia) {
+          hechosBody += "### 1.6 Registro Nacional de Inversiones Extranjeras (RNIE)\n";
+          if (rnieConstancia.folio_ingreso) {
+              hechosBody += `- **Folio de Ingreso RNIE:** ${rnieConstancia.folio_ingreso}\n`;
+          }
+          if (rnieConstancia.fecha_recepcion) {
+              hechosBody += `- **Fecha de Recepción:** ${rnieConstancia.fecha_recepcion}\n`;
+          }
+          if (rnieConstancia.tipo_tramite) {
+              hechosBody += `- **Tipo de Trámite:** ${rnieConstancia.tipo_tramite}\n`;
+          }
+          if (rnieConstancia.razon_social) {
+              hechosBody += `- **Razón Social:** ${rnieConstancia.razon_social}\n`;
+          }
+          hechosBody += `- **Fundamento Legal:** Ley de Inversión Extranjera Art. 32-35\n`;
+          hechosBody += "\n";
+      }
+      
+      // ========== SRE Convenio de Extranjería ==========
+      const sreConvenio = (profile as any).sreConvenio;
+      if (sreConvenio && sreConvenio.folio) {
+          hechosBody += "### 1.7 Convenio de Extranjería (SRE)\n";
+          hechosBody += `- **Folio SRE:** ${sreConvenio.folio}\n`;
+          if (sreConvenio.fecha_registro) {
+              hechosBody += `- **Fecha de Registro:** ${sreConvenio.fecha_registro}\n`;
+          }
+          if (sreConvenio.tipo_aviso) {
+              hechosBody += `- **Tipo de Aviso:** ${sreConvenio.tipo_aviso}\n`;
+          }
+          hechosBody += "\n";
+      }
   }
 
   // 2. Perfil Fiscal (SAT)
@@ -218,8 +317,8 @@ export function buildKycReport(
           hechosBody += `- **Número / Number:** ${options.redacted ? maskString(passport.document_number || "", 4) : (passport.document_number || "N/A")}\n`;
           hechosBody += `- **Nacionalidad / Nationality:** ${passport.nationality || "N/A"}\n`;
           hechosBody += `- **País Emisor / Issuer:** ${passport.issuer_country || "N/A"}\n`;
-          if (passport.date_of_birth || passport.birth_date) {
-              hechosBody += `- **Fecha de Nacimiento / DOB:** ${passport.date_of_birth || passport.birth_date}\n`;
+          if (passport.date_of_birth) {
+              hechosBody += `- **Fecha de Nacimiento / DOB:** ${passport.date_of_birth}\n`;
           }
           if (passport.issue_date) {
               hechosBody += `- **Fecha de Expedición / Issue Date:** ${passport.issue_date}\n`;

@@ -1,0 +1,31 @@
+{
+  "runId": "9e0175a8-feaf-408b-baf5-e16e8dfb4fdd",
+  "customerId": "pfds-passport-gemini-test",
+  "createdAt": "2025-11-26T04:37:17.418Z",
+  "documents": [
+    {
+      "id": "0540ecc3-51bf-4b95-9103-80cf1ae35bd6",
+      "customerId": "pfds-passport-gemini-test",
+      "type": "passport",
+      "fileUrl": "/Users/ashishpunj/Desktop/mcp-docs/pfds/New passport - Sep 18 2018 - 12-33 PM - p1 copy.jpeg",
+      "extractedAt": "2025-11-26T04:37:17.418Z",
+      "extractedPayload": {
+        "full_name": "PUNJ ASHISH",
+        "nationality": "INDIAN",
+        "document_type": "PASSPORT",
+        "document_number": "T0656276",
+        "date_of_birth": "1975-03-16",
+        "sex": "M",
+        "place_of_birth": "DEHRADUN",
+        "issue_date": "2018-09-10",
+        "expiry_date": "2028-09-09",
+        "issuing_authority": null,
+        "issuer_country": "IN",
+        "mrz_line_1": "P<INDPUNJ<<ASHISH<<<<<<<<<<<<<<<<<<<<<<<<",
+        "mrz_line_2": "T0656276<1IND7503164M2809090<<<<<<<<<<<<<<04",
+        "curp": null
+      },
+      "sourceName": "New passport - Sep 18 2018 - 12-33 PM - p1 copy.jpeg"
+    }
+  ]
+}

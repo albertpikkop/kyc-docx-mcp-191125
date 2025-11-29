@@ -1,5 +1,5 @@
-import { canonicalizeName } from "../core/canonicalizer";
-import { DocumentType } from "./documentClassifier";
+import { canonicalizeName } from "../core/canonicalizer.js";
+import { DocumentType } from "./documentClassifier.js";
 
 /**
  * Standardizes filenames for KYC documents
@@ -51,4 +51,5 @@ export function getStandardizedFilename(
 
   return `${prefix}_${identifier}.pdf`;
 }
+
 

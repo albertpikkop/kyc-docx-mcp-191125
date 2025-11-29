@@ -230,10 +230,10 @@ export async function extractCompanyIdentity(fileUrl: string): Promise<any> {
         const rfcDatePart = rfcMatch[2];
         
         // Extract initials from company name (first letter of first 3 significant words)
-        const words = razonSocial.split(/\s+/).filter(w => 
+        const words = razonSocial.split(/\s+/).filter((w: string) => 
           w.length > 2 && !['DE', 'LA', 'EL', 'LOS', 'LAS', 'SA', 'SC', 'CV', 'SAPI', 'SAS'].includes(w)
         );
-        const calculatedInitials = words.slice(0, 3).map(w => w[0]).join('');
+        const calculatedInitials = words.slice(0, 3).map((w: string) => w[0]).join('');
         
         // Extract date from incorporation_date (YYYY-MM-DD -> YYMMDD)
         const dateParts = incDate.split('-');

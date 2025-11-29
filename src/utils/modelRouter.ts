@@ -18,7 +18,7 @@ interface RouterConfig {
 }
 
 let rules: RouterConfig = {
-  default: { primary: 'gemini', fallback: 'gpt' }
+  default: { primary: 'gemini' }  // Gemini only - no GPT fallback
 };
 
 // Load rules
@@ -31,7 +31,7 @@ try {
   console.warn('Failed to load router rules, using defaults', error);
 }
 
-export type ModelType = 'gemini-2.5-flash' | 'gpt-5.1';
+export type ModelType = 'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gpt-5.1';
 
 export interface ExtractionResult {
   data: any;

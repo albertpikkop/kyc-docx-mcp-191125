@@ -80,209 +80,291 @@ function generateHtml(): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCP Server Inspector - mx-kyc-mcp</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
         }
-        .tool-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .tool-card:hover {
-            transform: translateX(4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            border-bottom: 3px solid #34495e;
+        }
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        header p {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+        .content {
+            padding: 20px;
+        }
+        h2 {
+            font-size: 20px;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            color: #2c3e50;
+        }
+        h3 {
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+            color: #34495e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: #fff;
+        }
+        table th {
+            background-color: #34495e;
+            color: #fff;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #2c3e50;
+        }
+        table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        table tr:hover {
+            background-color: #f0f0f0;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            color: #c7254e;
+        }
+        pre {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid #1a252f;
+        }
+        pre code {
+            background-color: transparent;
+            color: #ecf0f1;
+            padding: 0;
+            border: none;
+        }
+        .info-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .error-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
         }
         .badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
             font-weight: 600;
+            margin-right: 5px;
         }
-        .badge-required { background: #fee2e2; color: #991b1b; }
-        .badge-optional { background: #dbeafe; color: #1e40af; }
-        .badge-type { background: #f3f4f6; color: #374151; }
-        code {
-            background: #f3f4f6;
-            padding: 0.125rem 0.375rem;
-            border-radius: 0.25rem;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.875rem;
+        .badge-required {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .badge-optional {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .badge-type {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        ul {
+            margin: 10px 0 10px 20px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        .tool-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fafafa;
+        }
+        .tool-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="card p-8 mb-8 text-center">
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">MCP Server Inspector</h1>
-            <p class="text-xl text-gray-600">mx-kyc-mcp v1.0.0</p>
-            <div class="mt-4 flex justify-center gap-4 text-sm text-gray-500">
-                <span>📡 Protocol: Model Context Protocol (MCP)</span>
-                <span>•</span>
-                <span>🔌 Transport: stdio / SSE</span>
-            </div>
-        </div>
+    <div class="container">
+        <header>
+            <h1>MCP Server Inspector</h1>
+            <p>mx-kyc-mcp v1.0.0 | Protocol: Model Context Protocol (MCP) | Transport: stdio / SSE</p>
+        </header>
+        
+        <div class="content">
+            <h2>Server Information</h2>
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td><strong>Name</strong></td>
+                    <td>mx-kyc-mcp</td>
+                </tr>
+                <tr>
+                    <td><strong>Version</strong></td>
+                    <td>1.0.0</td>
+                </tr>
+                <tr>
+                    <td><strong>Protocol</strong></td>
+                    <td>Model Context Protocol (MCP)</td>
+                </tr>
+                <tr>
+                    <td><strong>Transport</strong></td>
+                    <td>stdio / SSE</td>
+                </tr>
+            </table>
 
-        <!-- Server Information -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Server Information</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                    <div class="text-sm text-gray-500">Name</div>
-                    <div class="text-lg font-semibold text-gray-900">mx-kyc-mcp</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">Version</div>
-                    <div class="text-lg font-semibold text-gray-900">1.0.0</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">Protocol</div>
-                    <div class="text-lg font-semibold text-gray-900">MCP</div>
-                </div>
-                <div>
-                    <div class="text-sm text-gray-500">Transport</div>
-                    <div class="text-lg font-semibold text-gray-900">stdio / SSE</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tools -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4 text-white">Available Tools (${tools.length})</h2>
+            <h2>Available Tools (${tools.length})</h2>
             ${tools.map((tool, index) => `
-            <div class="card p-6 mb-4 tool-card">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-1">
-                            ${index + 1}. <code>${tool.name}</code>
-                        </h3>
-                        <p class="text-gray-600">${tool.description}</p>
-                    </div>
-                </div>
-                
+            <div class="tool-section">
+                <h3>${index + 1}. ${tool.name}</h3>
+                <p><strong>Description:</strong> ${tool.description}</p>
                 ${tool.parameters.length > 0 ? `
-                <div class="mb-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">Parameters</h4>
-                    <div class="space-y-2">
-                        ${tool.parameters.map(param => `
-                        <div class="flex items-start gap-2 p-2 bg-gray-50 rounded">
-                            <code class="font-semibold">${param.name}</code>
-                            <span class="badge badge-type">${param.type}</span>
-                            ${param.required ? '<span class="badge badge-required">Required</span>' : '<span class="badge badge-optional">Optional</span>'}
-                            <span class="text-sm text-gray-600 ml-auto">${param.description}</span>
-                        </div>
-                        `).join('')}
-                    </div>
-                </div>
-                ` : '<div class="mb-4 text-sm text-gray-500">No parameters</div>'}
-                
-                <div class="mb-2">
-                    <span class="text-sm font-semibold text-gray-700">Returns:</span>
-                    <span class="text-sm text-gray-600 ml-2">${tool.returns}</span>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-700">Handler:</span>
-                    <code class="text-sm ml-2">${tool.handler}</code>
-                </div>
+                <h4>Parameters:</h4>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                    ${tool.parameters.map(param => `
+                    <tr>
+                        <td><code>${param.name}</code></td>
+                        <td><span class="badge badge-type">${param.type}</span></td>
+                        <td>${param.required ? '<span class="badge badge-required">Required</span>' : '<span class="badge badge-optional">Optional</span>'}</td>
+                        <td>${param.description}</td>
+                    </tr>
+                    `).join('')}
+                </table>
+                ` : '<p><strong>Parameters:</strong> None</p>'}
+                <p><strong>Returns:</strong> ${tool.returns}</p>
+                <p><strong>Handler:</strong> <code>${tool.handler}</code></p>
             </div>
             `).join('')}
-        </div>
 
-        <!-- Document Types -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Supported Document Types</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2>Supported Document Types</h2>
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
                 ${Object.entries(SUPPORTED_DOCS).map(([type, desc]) => `
-                <div class="p-4 border border-gray-200 rounded-lg">
-                    <div class="font-semibold text-gray-900 mb-1"><code>${type}</code></div>
-                    <div class="text-sm text-gray-600">${desc}</div>
-                </div>
+                <tr>
+                    <td><code>${type}</code></td>
+                    <td>${desc}</td>
+                </tr>
                 `).join('')}
-            </div>
-        </div>
+            </table>
 
-        <!-- Response Format -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Response Format</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="text-lg font-semibold text-green-700 mb-2">✅ Success</h3>
-                    <pre class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto"><code>{
+            <h2>Response Format</h2>
+            <div class="success-box">
+                <h3>Success Response</h3>
+                <pre><code>{
   "ok": true,
   "data": { ... }
 }</code></pre>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold text-red-700 mb-2">❌ Error</h3>
-                    <pre class="bg-gray-900 text-red-400 p-4 rounded-lg text-sm overflow-x-auto"><code>{
+            </div>
+            <div class="error-box">
+                <h3>Error Response</h3>
+                <pre><code>{
   "ok": false,
   "error_code": "ERROR_CODE",
   "message": "Error message"
 }</code></pre>
-                </div>
             </div>
-        </div>
 
-        <!-- Error Codes -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Error Codes</h2>
-            <div class="space-y-2">
+            <h2>Error Codes</h2>
+            <table>
+                <tr>
+                    <th>Error Code</th>
+                    <th>Description</th>
+                </tr>
                 ${errorCodes.map(err => `
-                <div class="flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded">
-                    <code class="font-semibold text-red-800">${err.code}</code>
-                    <span class="text-gray-700">${err.description}</span>
-                </div>
+                <tr>
+                    <td><code>${err.code}</code></td>
+                    <td>${err.description}</td>
+                </tr>
                 `).join('')}
-            </div>
-        </div>
+            </table>
 
-        <!-- Workflow -->
-        <div class="card p-6 mb-8">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Typical Workflow</h2>
-            <div class="space-y-3">
+            <h2>Typical Workflow</h2>
+            <ol>
                 ${[
                     "import_kyc_document → Extract and store document",
                     "import_kyc_document → (Repeat for each document)",
                     "build_kyc_profile → Aggregate all documents",
                     "validate_kyc_profile → Validate and score",
                     "get_kyc_report → Generate final report"
-                ].map((step, index) => `
-                <div class="flex items-center gap-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
-                        ${index + 1}
-                    </div>
-                    <code class="text-gray-800">${step}</code>
-                </div>
-                `).join('')}
-            </div>
-        </div>
+                ].map(step => `<li><code>${step}</code></li>`).join('')}
+            </ol>
 
-        <!-- Storage -->
-        <div class="card p-6">
-            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Storage Structure</h2>
-            <div class="space-y-4">
-                <div>
-                    <div class="text-sm font-semibold text-gray-700 mb-1">Location</div>
-                    <code class="text-sm">data/{customer_id}/runs/*.json</code>
-                </div>
-                <div>
-                    <div class="text-sm font-semibold text-gray-700 mb-1">Reports</div>
-                    <code class="text-sm">data/{customer_id}/reports/*.html</code>
-                </div>
-                <div>
-                    <div class="text-sm font-semibold text-gray-700 mb-2">Run Structure</div>
-                    <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm overflow-x-auto"><code>{
+            <h2>Storage Structure</h2>
+            <div class="info-box">
+                <p><strong>Location:</strong> <code>data/{customer_id}/runs/*.json</code></p>
+                <p><strong>Reports:</strong> <code>data/{customer_id}/reports/*.html</code></p>
+                <p><strong>Run Structure:</strong></p>
+                <pre><code>{
   "runId": "uuid",
   "customerId": "string",
   "createdAt": "ISO timestamp",
@@ -290,14 +372,12 @@ function generateHtml(): string {
   "profile": {...},
   "validation": {...}
 }</code></pre>
-                </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="text-center mt-8 text-white text-sm opacity-75">
+        <footer>
             Generated: ${new Date().toLocaleString()}
-        </div>
+        </footer>
     </div>
 </body>
 </html>`;

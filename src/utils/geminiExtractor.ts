@@ -1,12 +1,32 @@
 // import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as fs from 'fs';
+import { fileURLToPath } from 'url';
 import { GEMINI_MODEL, getGeminiClient, MODEL_TIERS } from '../modelGemini.js';
 import { toGeminiSchema } from './schemaNormalizer.js';
 import { metrics } from '../mcp/health.js';
 
+/**
+ * Normalize file URL or path to a regular filesystem path
+ * Handles file:// URLs and regular paths
+ */
+function normalizeFilePath(filePathOrUrl: string): string {
+  if (filePathOrUrl.startsWith('file://')) {
+    // Convert file:// URL to path
+    try {
+      return fileURLToPath(filePathOrUrl);
+    } catch (e) {
+      // Fallback: just strip the file:// prefix
+      return filePathOrUrl.replace('file://', '');
+    }
+  }
+  return filePathOrUrl;
+}
+
 // Configuration
 const MAX_FILE_SIZE_BYTES = 18 * 1024 * 1024; // 18MB (Gemini API limit is 20MB for inline data)
-const REQUEST_TIMEOUT_MS = 60000; // 60s (increased for larger files)
+const BASE_TIMEOUT_MS = 60000; // 60s base timeout
+const LARGE_FILE_TIMEOUT_MS = 180000; // 180s for files > 5MB (Acta Constitutiva can be 7MB+)
+const LARGE_FILE_THRESHOLD = 5 * 1024 * 1024; // 5MB threshold
 const MAX_RETRIES = 3;
 
 export interface GeminiError extends Error {
@@ -25,7 +45,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
  * Extract data using Gemini with hardening
  */
 export async function extractWithGemini(
-  filePath: string,
+  filePathOrUrl: string,
   mimeType: string,
   schema: any,
   instructions: string,
@@ -33,11 +53,21 @@ export async function extractWithGemini(
 ): Promise<any> {
   const startTime = Date.now();
   
-  // 1. Size Guard
+  // Normalize file:// URLs to regular paths
+  const filePath = normalizeFilePath(filePathOrUrl);
+  console.log(`📂 Processing file: ${filePath}`);
+  
+  // 1. Size Guard & Timeout Selection
+  let requestTimeoutMs = BASE_TIMEOUT_MS;
   try {
     const stats = fs.statSync(filePath);
     if (stats.size > MAX_FILE_SIZE_BYTES) {
-      throw new Error(`File too large for Gemini: ${(stats.size / 1024 / 1024).toFixed(2)}MB. Limit: 10MB.`);
+      throw new Error(`File too large for Gemini: ${(stats.size / 1024 / 1024).toFixed(2)}MB. Limit: 18MB.`);
+    }
+    // Use longer timeout for large files (Acta Constitutiva can be 7MB+)
+    if (stats.size > LARGE_FILE_THRESHOLD) {
+      requestTimeoutMs = LARGE_FILE_TIMEOUT_MS;
+      console.log(`📁 Large file detected (${(stats.size / 1024 / 1024).toFixed(1)}MB), using ${requestTimeoutMs/1000}s timeout`);
     }
   } catch (error) {
     if (error instanceof Error && error.message.includes('File too large')) {
@@ -109,9 +139,9 @@ If a field is not visible or cannot be extracted, set it to null.
         requestPart
       ]);
 
-      // 4. Timeout
+      // 4. Timeout (dynamic based on file size)
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Gemini request timed out')), REQUEST_TIMEOUT_MS);
+        setTimeout(() => reject(new Error('Gemini request timed out')), requestTimeoutMs);
       });
 
       const result = await Promise.race([resultPromise, timeoutPromise]);

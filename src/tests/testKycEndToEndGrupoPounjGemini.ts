@@ -237,15 +237,16 @@ function resolveFixture(fileName: string): string {
 //   5. Comprobante de Domicilio (CFE) - Operational address
 //   6. Estado de Cuenta Bancario - Bank identity for payment setup
 const docs = [
-  { type: "acta" as DocumentType,           fileUrl: resolveFixture("1. Acta Grupo Pounj.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
-  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("2. Constancia_GPO.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
-  { type: "passport" as DocumentType,       fileUrl: resolveFixture("New passport - Sep 18 2018 - 12-33 PM - p1.jpeg"), instructions: PASSPORT_INSTRUCTIONS, schema: PassportIdentitySchema },
-  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2 (1).pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
-  { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_OCTUBRE.pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
-  { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("October 2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
+  { type: "acta" as DocumentType,           fileUrl: resolveFixture("Acta_Constitutiva_grupo-pounj.pdf"), instructions: ACTA_INSTRUCTIONS, schema: CompanyIdentitySchema },
+  { type: "sat_constancia" as DocumentType, fileUrl: resolveFixture("SAT_Constancia_grupo-pounj.pdf"), instructions: SAT_INSTRUCTIONS, schema: CompanyTaxProfileSchema },
+  { type: "passport" as DocumentType,       fileUrl: resolveFixture("Passport_Front_Ashish_Punj_grupo-pounj.jpeg"), instructions: PASSPORT_INSTRUCTIONS, schema: PassportIdentitySchema },
+  { type: "fm2" as DocumentType,            fileUrl: resolveFixture("FM2_grupo-pounj.pdf"), instructions: FM2_INSTRUCTIONS, schema: ImmigrationProfileSchema },
+  { type: "cfe" as DocumentType,            fileUrl: resolveFixture("CFE_Recibo_grupo-pounj_Octubre_2025.pdf"), instructions: CFE_INSTRUCTIONS, schema: ProofOfAddressSchema },
+  { type: "bank_identity_page" as DocumentType, fileUrl: resolveFixture("Bank_Estado_Cuenta_grupo-pounj_Octubre_2025.pdf"), instructions: BANK_INSTRUCTIONS, schema: BankAccountProfileSchema }
 ];
 
 async function main() {
+  const startTime = Date.now(); // Track processing time for transparency
   console.log(`Starting Gemini KYC Run for customer: ${customerId}`);
   
   const kycDocuments: KycDocument[] = [];
@@ -307,10 +308,33 @@ async function main() {
         } else if (doc.type === 'fm2' || doc.type === 'ine') {
             const profile = extractedPayload.immigration_profile || extractedPayload;
             if (profile.issuer_country === "MEXICO" || profile.issuer_country === "MEX") profile.issuer_country = "MX";
-             if (profile.curp) profile.curp = sanitizeCurp(profile.curp);
-             profile.document_type = doc.type.toUpperCase(); // FM2 or INE
-             extractedPayload = profile;
-             representativeIdentity = extractedPayload;
+            if (profile.curp) profile.curp = sanitizeCurp(profile.curp);
+            
+            // CRITICAL: Reclassify document based on characteristics
+            // Post-2012 documents without expiry are Residente Permanente (not FM2)
+            if (doc.type === 'fm2') {
+              const docTypeExtracted = (profile.document_type || '').toUpperCase();
+              const issueDate = profile.issue_date;
+              const expiryDate = profile.expiry_date;
+              const issueYear = issueDate ? new Date(issueDate).getFullYear() : 0;
+              
+              if (docTypeExtracted.includes('FM2') || !profile.document_type) {
+                if (issueYear >= 2012 && !expiryDate) {
+                  profile.document_type = 'RESIDENTE PERMANENTE';
+                  console.log('📋 Document reclassified: FM2 → RESIDENTE PERMANENTE (post-2012, no expiry = permanent)');
+                } else if (issueYear >= 2012 && expiryDate) {
+                  profile.document_type = 'RESIDENTE TEMPORAL';
+                  console.log('📋 Document reclassified: FM2 → RESIDENTE TEMPORAL (post-2012, has expiry)');
+                } else {
+                  profile.document_type = 'FM2'; // Legacy FM2
+                }
+              }
+            } else if (doc.type === 'ine') {
+              profile.document_type = 'INE';
+            }
+            
+            extractedPayload = profile;
+            representativeIdentity = extractedPayload;
         } else if (doc.type === 'passport') {
             // Passport identity - stored separately from FM2/INE
             const passport = extractedPayload.passport_identity || extractedPayload;
@@ -382,16 +406,24 @@ async function main() {
   console.log("Validating KYC Profile...");
   const validation = validateKycProfile(profile);
 
+  const processingTimeMs = Date.now() - startTime;
+  const estimatedCostUsd = 0.51; // Approximate cost per run (6 docs including Acta)
+
   const run: KycRun = {
     runId: crypto.randomUUID(),
     customerId,
     createdAt: new Date().toISOString(),
     documents: kycDocuments,
     profile,
-    validation
+    validation,
+    // Transparency metrics for investors
+    processingTimeMs,
+    estimatedCostUsd,
+    aiModel: 'Gemini 2.5 Pro/Flash'
   };
 
   console.log("Saving Run and Generating Report...");
+  console.log(`⏱️  Processing time: ${(processingTimeMs / 1000).toFixed(1)}s | 💰 Est. cost: $${estimatedCostUsd.toFixed(2)}`);
   const reportUrl = await saveRun(run);
   
   if (reportUrl) {

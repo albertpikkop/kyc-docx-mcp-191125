@@ -87,14 +87,56 @@ FIELD-BY-FIELD EXTRACTION GUIDANCE:
     - Extract the years EXACTLY as printed.
     - If only year is shown, extract just the year.
 
+11. CLAVE DE ELECTOR (clave_elector) - BACK SIDE:
+    - Extract the 18-character voter ID (Clave de Elector) EXACTLY as printed.
+    - Format: LLLLLLNNNNNNNNLNNN (letters and numbers mixed)
+    - Example: "CLDZEN98100409H300"
+    - Look for this on the back side of the card.
+
+12. SECCIÓN ELECTORAL (seccion) - BACK SIDE:
+    - Extract the 4-digit electoral section number (Sección).
+    - Look for a field labeled "SECCIÓN" or numbers near the clave de elector.
+    - Example: "0940" or "2834"
+
+13. ESTADO DE REGISTRO (estado_registro) - BACK SIDE:
+    - Extract the 3-letter state code where the voter is registered.
+    - Examples: "MEX" (Estado de México), "DIF" (Ciudad de México), "JAL" (Jalisco)
+    - Usually appears near the section number.
+
+14. LOCALIDAD (localidad) - BACK SIDE:
+    - Extract the locality number if present.
+    - Usually appears near section and state registration.
+
+15. MRZ DATA (Machine Readable Zone) - BACK SIDE:
+    - The MRZ consists of 3 lines of machine-readable text on the back.
+    - mrz_line1: First line starts with "IDMEX" followed by encoded data.
+    - mrz_line2: Second line contains numbers and check digits.
+    - mrz_line3: Third line contains the encoded name.
+    - Extract each line EXACTLY as printed, including all characters and chevrons (<).
+    - Example mrz_line1: "IDMEX2775551185<<<<<<<<<<<<<<"
+    - Example mrz_line2: "9810040H2512311MEX<<<<<<<<<04"
+    - Example mrz_line3: "DE<CELLO<DIAZ<<ENRIQUE<<<<<<"
+
+16. DOCUMENT TYPE (document_type):
+    - Determine if this is "INE" (current) or "IFE" (legacy pre-2014).
+    - Look for "INE" or "IFE" logos/text on the card.
+
+17. CARD VERSION (card_version):
+    - Identify the card version if visible (e.g., 'E', 'F', 'G').
+    - Look for version indicators on the card.
+
 BACK SIDE EXTRACTION CHECKLIST (MANDATORY):
 - Did I flip to and examine the BACK SIDE of the document? (This is a 2-page PDF - page 2 is the back)
 - Did I search for "IDMEX" text on the back side?
-- If I found "IDMEX", did I extract the complete 9-digit CIC number that follows it?
+- If I found "IDMEX", did I extract the complete 10-digit CIC number that follows it?
 - Did I check ALL areas of the back side: top, bottom, left, right, center?
 - Did I look for OCR numbers (may appear as vertical or horizontal text)?
-- Did I extract the complete CIC (all 9 digits) if "IDMEX" was visible?
+- Did I extract the complete CIC (all 10 digits) if "IDMEX" was visible?
 - Did I extract any OCR numbers or machine-readable codes visible on the back side?
+- Did I extract the SECCIÓN (electoral section) number?
+- Did I extract the ESTADO_REGISTRO (state registration code)?
+- Did I extract the LOCALIDAD number if visible?
+- Did I extract all 3 MRZ lines if visible?
 - REMEMBER: The back side is page 2 of the PDF - make sure you examined it!
 
 VALIDATION CHECKLIST BEFORE SUBMITTING:
