@@ -48,8 +48,14 @@ EXTRACT THE FOLLOWING DEEP KYC DATA:
      c) Apoderados (legal representatives with powers) - these are the ones who can sign contracts
    
    - Extract legal representatives with STRICT authority analysis:
-   - can_sign_contracts: TRUE ONLY if the person is explicitly designated as "Apoderado" (general or special) AND explicit powers are granted in their clause.
+   - can_sign_contracts: TRUE ONLY if the person is explicitly designated as "Apoderado" (general or special) AND has explicit powers to sign contracts (typically UNRESTRICTED Actos de Administración or Actos de Dominio).
    - If someone is ONLY listed as "Secretario", "Comisario", "Vocal", or "Consejo" WITHOUT an explicit "Apoderado" designation, set can_sign_contracts to FALSE.
+   
+   - LIMITED POWERS RULE (CRITICAL):
+     * If "Actos de Administración" contains limiting words like "limitado", "solo", "únicamente", "exclusivamente", or specifies a narrow scope (e.g., "limitado a trámites fiscales", "solo ante SAT"), then SET can_sign_contracts to FALSE.
+     * "Pleitos y Cobranzas" alone is NOT enough to sign contracts.
+     * "Poder Especial" for specific procedures (e.g., "gestiones administrativas") is NOT enough to sign general commercial contracts.
+     * To sign contracts, they need FULL/GENERAL Actos de Administración or Actos de Dominio.
    
    - CRITICAL MULTI-PAGE POWER EXTRACTION:
      * Powers for each apoderado may be spread across MULTIPLE PAGES or separated by line breaks.

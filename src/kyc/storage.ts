@@ -587,14 +587,22 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
   const getPowerScope = (rep: any): { scope: string; label: string; color: string } => {
       if (!rep || !rep.poder_scope) return { scope: 'none', label: 'Sin Poderes', color: 'gray' };
       const scope = Array.isArray(rep.poder_scope) ? rep.poder_scope.join(' ').toUpperCase() : String(rep.poder_scope).toUpperCase();
+      
+      // Check for explicit limitations first
+      const isLimited = scope.includes('LIMITADO') || scope.includes('SOLO') || 
+                        scope.includes('ÚNICAMENTE') || scope.includes('UNICAMENTE') || 
+                        scope.includes('EXCLUSIVAMENTE') || scope.includes('EN MATERIA LABORAL') || scope.includes('EN EL ÁREA LABORAL') || scope.includes('EN EL AREA LABORAL') ||
+                        scope.includes('APODERADO ESPECIAL');
+
       const hasPleitos = /PLEITOS?/.test(scope);
       const hasAdmin = /ADMINISTRACI[ÓO]N/.test(scope);
       const hasDominio = /DOMINIO/.test(scope);
       const hasTitulos = /T[ÍI]TULOS?/.test(scope);
-      if (hasPleitos && hasAdmin && hasDominio && hasTitulos) {
+      
+      if (hasPleitos && hasAdmin && hasDominio && hasTitulos && !isLimited) {
           return { scope: 'full', label: 'Poderes Amplios', color: 'green' };
       } else if (hasPleitos || hasAdmin || hasDominio || hasTitulos) {
-          return { scope: 'limited', label: 'Poderes Limitados', color: 'yellow' };
+          return { scope: 'limited', label: isLimited ? 'Poderes Limitados' : 'Poderes Parciales', color: 'yellow' };
       }
       return { scope: 'none', label: 'Sin Poderes', color: 'gray' };
   };
@@ -1021,8 +1029,8 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
                                             </div>
                                         </div>
                                     ` : ''}
-                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e5e7eb; font-size: 11px; color: ${r.can_sign_contracts ? '#059669' : '#9ca3af'};">
-                                        ${r.can_sign_contracts ? '✅ Puede firmar contratos en nombre de la sociedad' : '⚠️ Verificar alcance de poderes'}
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e5e7eb; font-size: 11px; color: ${(r.can_sign_contracts && power.scope === 'full') ? '#059669' : '#b45309'};">
+                                        ${(r.can_sign_contracts && power.scope === 'full') ? '✅ Puede firmar contratos en nombre de la sociedad' : '⚠️ Poderes LIMITADOS - Verificar alcance para firmar contratos'}
                                         ${r.joint_signature_required ? ' • Requiere firma mancomunada' : ' • Firma individual'}
                                     </div>
                                 </div>
@@ -1963,7 +1971,7 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <span class="text-sm text-gray-600">${new Date(run.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span class="text-sm text-gray-600 font-medium">${new Date(run.createdAt).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' })}</span>
                     <button onclick="printReport()" class="fluent-button text-white px-4 py-2 rounded-lg text-sm font-medium transition-all no-print whitespace-nowrap">
                         🖨️ ${t.nav.print}
                     </button>
@@ -2240,7 +2248,7 @@ async function generateExcelReport(run: KycRun): Promise<string> {
     [],
     ['Company Name / Nombre de la Empresa', companyName],
     ['RFC', rfc],
-    ['Report Date / Fecha del Reporte', new Date(run.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })],
+    ['Report Date / Fecha del Reporte', new Date(run.createdAt).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, timeZoneName: 'short' })],
     ['Score / Puntuación', `${(validation.score * 100).toFixed(0)}%`],
     ['Estatus', validation.score >= 0.9 ? t.header.approved : (validation.score >= 0.7 ? t.header.reviewNeeded : t.header.rejected)],
     ['Flags Count / Conteo de Banderas', validation.flags.length],

@@ -486,16 +486,11 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       const powersText = (rep.poder_scope || []).join(' ').toUpperCase();
       
       // Check for explicit labels: person must be explicitly labeled as "apoderado especial" or "apoderado limitado"
-      // NOT just if the word "especial" appears in power clauses (which could refer to granting powers to others)
       const isExplicitlyEspecial = roleUpper.includes("APODERADO ESPECIAL") || 
                                    roleUpper.includes("ESPECIAL APODERADO") ||
                                    roleUpper.includes("APODERADO LIMITADO") ||
                                    roleUpper.includes("LIMITADO APODERADO");
-      // CRITICAL: Only check for "poderes especiales" as a label in the ROLE.
-      // Checking in powersText is risky because "otorgar poderes generales y especiales" is a common FULL power attribute.
-      // We trust the 4 canonical powers check to determine fullness.
-      const hasEspecialPowersLabel = false; // Disable text body check for "PODERES ESPECIALES" to avoid false positives on substitution clauses
-      // Do NOT check for "PODER ESPECIAL" as it appears in power descriptions like "Poder especial para actos de dirección"
+      const hasEspecialPowersLabel = false; 
       const isExplicitlyLimited = isExplicitlyEspecial || hasEspecialPowersLabel;
       
       if (isExplicitlyLimited) {
@@ -508,11 +503,33 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       const hasDomino = POWER_PATTERNS.dominio.test(powersText);
       const hasTitulos = POWER_PATTERNS.titulosCredito.test(powersText);
 
+      // --- NEW: CHECK FOR LIMITED ADMINISTRATIVE POWERS (Article 2554 CCF) ---
+      // Even if they have "Actos de Administración", if it's limited (e.g., "solo ante SAT"), 
+      // they CANNOT sign general commercial contracts.
+      let hasRestrictedAdmin = false;
+      if (hasAdmin) {
+        // Check for limiting keywords in the same sentence/context as "actos de administración"
+        // This is a heuristic check on the full text
+        const adminClause = (rep.poder_scope || []).find(p => POWER_PATTERNS.administracion.test(p.toUpperCase())) || "";
+        const adminUpper = adminClause.toUpperCase();
+        
+        if (adminUpper.includes("LIMITADO") || adminUpper.includes("SOLO") || 
+            adminUpper.includes("UNICAMENTE") || adminUpper.includes("ÚNICAMENTE") || 
+            adminUpper.includes("EXCLUSIVAMENTE") || adminUpper.includes("EN MATERIA LABORAL") || adminUpper.includes("EN EL ÁREA LABORAL") || adminUpper.includes("EN EL AREA LABORAL")) {
+            hasRestrictedAdmin = true;
+            limitations.push("⚠️ Administrative powers are RESTRICTED (cannot sign general contracts).");
+        }
+      }
+
       if (hasPleitos) matchedPhrases.push("PLEITOS Y COBRANZAS");
       else missingPowers.push("Pleitos y Cobranzas");
 
-      if (hasAdmin) matchedPhrases.push("ACTOS DE ADMINISTRACIÓN");
-      else missingPowers.push("Actos de Administración");
+      if (hasAdmin) {
+          if (hasRestrictedAdmin) matchedPhrases.push("ACTOS DE ADMINISTRACIÓN (LIMITADO)");
+          else matchedPhrases.push("ACTOS DE ADMINISTRACIÓN");
+      } else {
+          missingPowers.push("Actos de Administración");
+      }
 
       if (hasDomino) matchedPhrases.push("ACTOS DE DOMINIO");
       else missingPowers.push("Actos de Dominio");
@@ -521,27 +538,19 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       else missingPowers.push("Títulos de Crédito");
       
       // STRICT CLASSIFICATION LOGIC:
-      // 1. Only classify if can_sign_contracts is TRUE (extractor determined they have powers)
-      // 2. FULL = ALL 4 canonical powers AND NOT explicitly labeled as "especial"
-      // 3. LIMITED = Some powers OR explicitly labeled as "especial" OR missing any canonical power
-      // 4. NONE = No powers OR officer roles without apoderado designation
-      
       if (!rep.can_sign_contracts) {
-          // No powers granted - set to none
           scope = "none";
           limitations.push("No 'Apoderado' designation found in extraction.");
       } else {
-          // Check if this is an officer role WITHOUT apoderado designation
           const isOfficerOnly = (roleUpper.includes("SECRETARIO") || roleUpper.includes("VOCAL") || 
                                  roleUpper.includes("COMISARIO") || roleUpper.includes("CONSEJO")) &&
                                 !roleUpper.includes("APODERADO");
           
           if (isOfficerOnly) {
-              // Officers without explicit apoderado designation have NO powers
               scope = "none";
               limitations.push("Officer role (Secretario/Vocal) without explicit Apoderado grant.");
-          } else if (isExplicitlyLimited) {
-              // Explicitly labeled as "especial" or "limitado" OR has "poderes especiales" = LIMITED
+          } else if (isExplicitlyLimited || hasRestrictedAdmin) {
+              // Explicitly labeled as "especial"/"limitado" OR has restricted administrative powers = LIMITED
               scope = "limited";
           } else if (hasPleitos && hasAdmin && hasDomino && hasTitulos) {
               // ALL 4 canonical powers AND not explicitly limited = FULL
