@@ -503,21 +503,45 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
       const hasDomino = POWER_PATTERNS.dominio.test(powersText);
       const hasTitulos = POWER_PATTERNS.titulosCredito.test(powersText);
 
-      // --- NEW: CHECK FOR LIMITED ADMINISTRATIVE POWERS (Article 2554 CCF) ---
+      // --- CHECK FOR LIMITED ADMINISTRATIVE POWERS (Article 2554 CCF) ---
       // Even if they have "Actos de Administración", if it's limited (e.g., "solo ante SAT"), 
       // they CANNOT sign general commercial contracts.
+      // IMPORTANT: If person has BOTH a limited admin power AND a general admin power, they have FULL admin authority.
       let hasRestrictedAdmin = false;
       if (hasAdmin) {
-        // Check for limiting keywords in the same sentence/context as "actos de administración"
-        // This is a heuristic check on the full text
-        const adminClause = (rep.poder_scope || []).find(p => POWER_PATTERNS.administracion.test(p.toUpperCase())) || "";
-        const adminUpper = adminClause.toUpperCase();
+        // Find ALL admin-related clauses
+        const adminClauses = (rep.poder_scope || []).filter(p => POWER_PATTERNS.administracion.test(p.toUpperCase()));
         
-        if (adminUpper.includes("LIMITADO") || adminUpper.includes("SOLO") || 
-            adminUpper.includes("UNICAMENTE") || adminUpper.includes("ÚNICAMENTE") || 
-            adminUpper.includes("EXCLUSIVAMENTE") || adminUpper.includes("EN MATERIA LABORAL") || adminUpper.includes("EN EL ÁREA LABORAL") || adminUpper.includes("EN EL AREA LABORAL")) {
+        // Check if there's at least ONE unrestricted admin power
+        // Unrestricted = "Poder general para actos de administración" WITHOUT limiting keywords
+        const RESTRICTING_KEYWORDS = ["LIMITADO", "SOLO", "UNICAMENTE", "ÚNICAMENTE", "EXCLUSIVAMENTE"];
+        // Note: "EN MATERIA LABORAL" by itself is an ADDITIONAL power, not a restriction
+        // It only restricts if it's the ONLY form of admin power AND contains other restricting words
+        
+        const hasUnrestrictedAdmin = adminClauses.some(clause => {
+            const upper = clause.toUpperCase();
+            // A clause is unrestricted if it matches admin pattern AND has NO restricting keywords
+            const hasRestriction = RESTRICTING_KEYWORDS.some(kw => upper.includes(kw));
+            // "EN MATERIA LABORAL" alone is NOT a restriction if it's a separate/additional power
+            // But "limitado a materia laboral" IS a restriction
+            const isLaborOnly = (upper.includes("EN MATERIA LABORAL") || upper.includes("EN EL ÁREA LABORAL") || upper.includes("EN EL AREA LABORAL")) 
+                               && !upper.includes("PLEITOS"); // If combined with pleitos, it's an additional power, not the main admin
+            return !hasRestriction && !isLaborOnly;
+        });
+        
+        // Only flag as restricted if ALL admin powers are restricted (no unrestricted one exists)
+        if (!hasUnrestrictedAdmin) {
             hasRestrictedAdmin = true;
-            limitations.push("⚠️ Administrative powers are RESTRICTED (cannot sign general contracts).");
+            // Determine the specific restriction
+            const restrictedClause = adminClauses.find(c => {
+                const u = c.toUpperCase();
+                return u.includes("LIMITADO") || u.includes("SOLO") || u.includes("UNICAMENTE") || u.includes("ÚNICAMENTE") || u.includes("EXCLUSIVAMENTE");
+            });
+            if (restrictedClause) {
+                limitations.push(`⚠️ Administrative powers are RESTRICTED: "${restrictedClause}"`);
+            } else {
+                limitations.push("⚠️ Administrative powers are RESTRICTED (cannot sign general contracts).");
+            }
         }
       }
 

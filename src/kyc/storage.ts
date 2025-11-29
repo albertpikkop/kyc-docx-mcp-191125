@@ -586,19 +586,43 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
   // Determine power scope for matched rep
   const getPowerScope = (rep: any): { scope: string; label: string; color: string } => {
       if (!rep || !rep.poder_scope) return { scope: 'none', label: 'Sin Poderes', color: 'gray' };
-      const scope = Array.isArray(rep.poder_scope) ? rep.poder_scope.join(' ').toUpperCase() : String(rep.poder_scope).toUpperCase();
+      const poderArray = Array.isArray(rep.poder_scope) ? rep.poder_scope : [String(rep.poder_scope)];
+      const scope = poderArray.join(' ').toUpperCase();
       
-      // Check for explicit limitations first
-      const isLimited = scope.includes('LIMITADO') || scope.includes('SOLO') || 
-                        scope.includes('ÚNICAMENTE') || scope.includes('UNICAMENTE') || 
-                        scope.includes('EXCLUSIVAMENTE') || scope.includes('EN MATERIA LABORAL') || scope.includes('EN EL ÁREA LABORAL') || scope.includes('EN EL AREA LABORAL') ||
-                        scope.includes('APODERADO ESPECIAL');
-
+      // Check for canonical powers
       const hasPleitos = /PLEITOS?/.test(scope);
       const hasAdmin = /ADMINISTRACI[ÓO]N/.test(scope);
       const hasDominio = /DOMINIO/.test(scope);
       const hasTitulos = /T[ÍI]TULOS?/.test(scope);
       
+      // --- FIXED: Check if there's an UNRESTRICTED "Actos de Administración" power ---
+      // Someone can have BOTH "admin en materia laboral" (additional) AND "admin general" (full)
+      // We should only flag as limited if ALL admin powers are restricted
+      const RESTRICTING_KEYWORDS = ['LIMITADO', 'SOLO', 'ÚNICAMENTE', 'UNICAMENTE', 'EXCLUSIVAMENTE'];
+      
+      // Find all admin-related clauses
+      const adminClauses = poderArray.filter(p => /ADMINISTRACI[ÓO]N/i.test(p));
+      
+      // Check if there's at least one unrestricted admin power
+      const hasUnrestrictedAdmin = adminClauses.some(clause => {
+          const upper = clause.toUpperCase();
+          const hasRestriction = RESTRICTING_KEYWORDS.some(kw => upper.includes(kw));
+          // "EN MATERIA LABORAL" alone is NOT a restriction if it's a separate/additional power
+          // (e.g., "Poder general para pleitos y cobranzas y actos de administración en materia laboral")
+          // But "limitado a materia laboral" IS a restriction
+          const isLaborOnlyPower = (upper.includes('EN MATERIA LABORAL') || upper.includes('EN EL ÁREA LABORAL') || upper.includes('EN EL AREA LABORAL'))
+                                   && !upper.includes('PLEITOS'); // If combined with pleitos, it's an additional power
+          return !hasRestriction && !isLaborOnlyPower;
+      });
+      
+      // Only flag as limited if there's NO unrestricted admin power
+      const isAdminLimited = hasAdmin && !hasUnrestrictedAdmin;
+      
+      // Check for explicit "Apoderado Especial" designation
+      const isExplicitlyEspecial = scope.includes('APODERADO ESPECIAL');
+      
+      const isLimited = isAdminLimited || isExplicitlyEspecial;
+
       if (hasPleitos && hasAdmin && hasDominio && hasTitulos && !isLimited) {
           return { scope: 'full', label: 'Poderes Amplios', color: 'green' };
       } else if (hasPleitos || hasAdmin || hasDominio || hasTitulos) {
