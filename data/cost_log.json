@@ -10708,5 +10708,33 @@
     "estimatedCost": 0.765,
     "documentCount": 9,
     "reportType": "kyc_full"
+  },
+  {
+    "runId": "53be4b32-b63b-4ce9-b90b-7a5932487d12",
+    "customerId": "pfds",
+    "timestamp": "2025-11-30T02:31:50.891Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 240000,
+      "completion_tokens": 8000,
+      "total_tokens": 248000
+    },
+    "estimatedCost": 0.68,
+    "documentCount": 8,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "5edddd86-a388-459b-9290-25a6acc9bfb4",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-30T02:31:57.387Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 240000,
+      "completion_tokens": 8000,
+      "total_tokens": 248000
+    },
+    "estimatedCost": 0.68,
+    "documentCount": 8,
+    "reportType": "kyc_full"
   }
 ]

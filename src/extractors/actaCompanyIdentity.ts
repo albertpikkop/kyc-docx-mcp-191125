@@ -100,8 +100,34 @@ EXTRACT THE FOLLOWING DEEP KYC DATA:
    - Quorum/Voting: Summarize rules if stated.
    - Share transfer: Summarize restrictions (e.g., "derecho de tanto").
 
-8. MODIFICATIONS:
-   - List any capital changes, management changes, or bylaws amendments mentioned in the document.
+8. COMISARIOS (STATUTORY EXAMINERS) - CRITICAL:
+   - Mexican S.A. companies MUST have a Comisario (per Ley General de Sociedades Mercantiles Art. 164-171).
+   - The Comisario is a supervisory/audit role, NOT a signing authority.
+   - Look for phrases like: "Se designa como Comisario a...", "Comisario Propietario:", "Comisario Suplente:".
+   - Extract:
+     * name: Full name of the Comisario
+     * tipo: "PROPIETARIO" (primary) or "SUPLENTE" (alternate/backup)
+     * appointment_date: Date appointed (usually same as incorporation date)
+     * is_active: true (unless explicitly replaced in a later modification)
+   - The Comisario is typically found in the section about corporate governance or officer appointments.
+   - DO NOT confuse Comisario with Administrador or Apoderado - they have different roles:
+     * Administrador/Apoderado = Can sign contracts and represent the company
+     * Comisario = Supervises management, reviews financials, reports to shareholders (CANNOT sign contracts)
+
+9. CAPITAL SOCIAL (SHARE CAPITAL):
+   - Extract the capital structure:
+     * total_amount: Total capital in MXN (e.g., 50000 for "CINCUENTA MIL PESOS")
+     * currency: "MXN"
+     * fixed_capital: Fixed portion if S.A. de C.V. (capital fijo)
+     * variable_capital: Variable portion if S.A. de C.V. (capital variable)
+     * total_shares: Total number of shares
+     * share_par_value: Value per share (total_amount / total_shares)
+   - Look for phrases like: "Capital social de...", "dividido en ... acciones", "con un valor nominal de..."
+   - Convert text numbers to digits (e.g., "CINCUENTA MIL PESOS" = 50000)
+
+10. MODIFICATIONS:
+   - List any capital changes, management changes, Comisario changes, or bylaws amendments mentioned in the document.
+   - If a Comisario is replaced, note the old and new Comisario names.
 
 Do not invent information. Return strictly valid JSON matching the schema.
 `;

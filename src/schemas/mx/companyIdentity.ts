@@ -96,6 +96,48 @@ const GovernanceSchema = {
   required: ["board_type", "quorum_rules", "voting_rights", "share_transfer_rules", "capital_rules"]
 };
 
+// Comisario (Statutory Examiner) - Required role in Mexican S.A. per LGSM
+const ComisarioSchema = {
+  type: "object",
+  additionalProperties: false,
+  description: "Comisario (Statutory Examiner) - supervisory role required by Mexican corporate law",
+  properties: {
+    name: { type: "string", description: "Full name of the Comisario" },
+    tipo: { 
+      type: "string", 
+      description: "Type: 'PROPIETARIO' (primary) or 'SUPLENTE' (alternate)", 
+      nullable: true 
+    },
+    appointment_date: { 
+      type: "string", 
+      description: "Date appointed (YYYY-MM-DD), typically same as incorporation date", 
+      nullable: true 
+    },
+    is_active: { 
+      type: "boolean", 
+      description: "Whether still active (true unless explicitly replaced in a modification)", 
+      nullable: true 
+    }
+  },
+  required: ["name", "tipo", "appointment_date", "is_active"]
+};
+
+// Capital Social structure
+const CapitalSocialSchema = {
+  type: "object",
+  additionalProperties: false,
+  description: "Capital social (share capital) information",
+  properties: {
+    total_amount: { type: "number", description: "Total capital amount in MXN", nullable: true },
+    currency: { type: "string", description: "Currency code (typically MXN)", nullable: true },
+    fixed_capital: { type: "number", description: "Fixed capital portion (capital fijo)", nullable: true },
+    variable_capital: { type: "number", description: "Variable capital portion (capital variable)", nullable: true },
+    total_shares: { type: "number", description: "Total number of shares", nullable: true },
+    share_par_value: { type: "number", description: "Par value per share (valor nominal)", nullable: true }
+  },
+  required: ["total_amount", "currency", "fixed_capital", "variable_capital", "total_shares", "share_par_value"]
+};
+
 export const CompanyIdentitySchema = {
   type: "object",
   additionalProperties: false,
@@ -127,6 +169,18 @@ export const CompanyIdentitySchema = {
     notary: NotarySchema,
     registry: RegistrySchema,
     governance: GovernanceSchema,
+    
+    // NEW: Comisarios (Statutory Examiners) - Required for S.A. per LGSM Art. 164-171
+    comisarios: {
+      type: "array",
+      items: ComisarioSchema,
+      description: "Comisarios (statutory examiners) - supervisory role required by Mexican corporate law for S.A.",
+      nullable: true
+    },
+    
+    // NEW: Capital Social structure
+    capital_social: CapitalSocialSchema,
+    
     modifications: {
       type: "array",
       items: { type: "string" },
@@ -146,6 +200,8 @@ export const CompanyIdentitySchema = {
     "notary",
     "registry",
     "governance",
+    "comisarios",
+    "capital_social",
     "modifications"
   ]
 };
