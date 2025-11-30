@@ -38,7 +38,10 @@
     "client:reports": "tsx src/scripts/generateReports.ts",
     "archive:client": "tsx scripts/archive_client_runs.ts",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "banana": "tsx scripts/nanoBananaGenerator.ts",
+    "banana:all": "tsx scripts/nanoBananaGenerator.ts --all",
+    "banana:list": "tsx scripts/nanoBananaGenerator.ts --list"
   },
   "keywords": [
     "mexkyc",
