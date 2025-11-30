@@ -540,7 +540,7 @@ export function resolveSignatories(profile: KycProfile): SignatoryInfo[] {
             if (restrictedClause) {
                 limitations.push(`⚠️ Administrative powers are RESTRICTED: "${restrictedClause}"`);
             } else {
-                limitations.push("⚠️ Administrative powers are RESTRICTED (cannot sign general contracts).");
+            limitations.push("⚠️ Administrative powers are RESTRICTED (cannot sign general contracts).");
             }
         }
       }

@@ -623,7 +623,7 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
       const isExplicitlyEspecial = scope.includes('APODERADO ESPECIAL');
       
       const isLimited = isAdminLimited || isExplicitlyEspecial;
-
+      
       if (hasPleitos && hasAdmin && hasDominio && hasTitulos && !isLimited) {
           return { scope: 'full', label: 'Poderes Amplios', color: 'green' };
       } else if (hasPleitos || hasAdmin || hasDominio || hasTitulos) {
