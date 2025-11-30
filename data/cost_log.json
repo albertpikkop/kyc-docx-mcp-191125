@@ -10624,5 +10624,89 @@
     "estimatedCost": 0.765,
     "documentCount": 9,
     "reportType": "kyc_full"
+  },
+  {
+    "runId": "d2237063-15a1-4875-94f4-97108a7ebd6a",
+    "customerId": "pfds",
+    "timestamp": "2025-11-30T01:20:30.509Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 240000,
+      "completion_tokens": 8000,
+      "total_tokens": 248000
+    },
+    "estimatedCost": 0.68,
+    "documentCount": 8,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "986691b2-f26c-4f84-8db0-100b869531d3",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-30T01:21:00.071Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 270000,
+      "completion_tokens": 9000,
+      "total_tokens": 279000
+    },
+    "estimatedCost": 0.765,
+    "documentCount": 9,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "06dbad43-5e8d-41c1-b407-1153825c82fd",
+    "customerId": "pfds",
+    "timestamp": "2025-11-30T01:26:01.722Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 240000,
+      "completion_tokens": 8000,
+      "total_tokens": 248000
+    },
+    "estimatedCost": 0.68,
+    "documentCount": 8,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "769e2b76-b2b8-4c44-abdb-7686dc5820fd",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-30T01:26:53.730Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 270000,
+      "completion_tokens": 9000,
+      "total_tokens": 279000
+    },
+    "estimatedCost": 0.765,
+    "documentCount": 9,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "641ba49f-6b6c-4296-96d3-6443cdf157d7",
+    "customerId": "pfds",
+    "timestamp": "2025-11-30T01:33:45.049Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 240000,
+      "completion_tokens": 8000,
+      "total_tokens": 248000
+    },
+    "estimatedCost": 0.68,
+    "documentCount": 8,
+    "reportType": "kyc_full"
+  },
+  {
+    "runId": "311fbc08-255a-481b-9cf5-baa368db2cd1",
+    "customerId": "grupo-pounj",
+    "timestamp": "2025-11-30T01:35:00.848Z",
+    "model": "gpt-5.1",
+    "usage": {
+      "prompt_tokens": 270000,
+      "completion_tokens": 9000,
+      "total_tokens": 279000
+    },
+    "estimatedCost": 0.765,
+    "documentCount": 9,
+    "reportType": "kyc_full"
   }
 ]

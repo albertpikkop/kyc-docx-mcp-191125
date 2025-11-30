@@ -13,6 +13,44 @@ import {
 import { KycRun, KycProfile } from '../types.js';
 
 /**
+ * Spanish/English word equivalents for company name matching
+ */
+const WORD_EQUIVALENTS: Record<string, string[]> = {
+  'GRUPO': ['GRUPO', 'GROUP'],
+  'GROUP': ['GRUPO', 'GROUP'],
+  'SERVICIOS': ['SERVICIOS', 'SERVICES'],
+  'SERVICES': ['SERVICIOS', 'SERVICES'],
+  'SOLUCIONES': ['SOLUCIONES', 'SOLUTIONS'],
+  'SOLUTIONS': ['SOLUCIONES', 'SOLUTIONS'],
+  'COMERCIAL': ['COMERCIAL', 'COMMERCIAL'],
+  'COMMERCIAL': ['COMERCIAL', 'COMMERCIAL'],
+  'INTERNACIONAL': ['INTERNACIONAL', 'INTERNATIONAL'],
+  'INTERNATIONAL': ['INTERNACIONAL', 'INTERNATIONAL'],
+  'CONSULTORES': ['CONSULTORES', 'CONSULTANTS', 'CONSULTING'],
+  'CONSULTANTS': ['CONSULTORES', 'CONSULTANTS', 'CONSULTING'],
+};
+
+/**
+ * Check if two words are equivalent (including Spanish/English variations)
+ */
+function wordsAreEquivalent(word1: string, word2: string): boolean {
+  const w1 = word1.toUpperCase();
+  const w2 = word2.toUpperCase();
+  
+  // Direct match
+  if (w1 === w2) return true;
+  
+  // Substring match (for abbreviations like POUNJ)
+  if (w1.includes(w2) || w2.includes(w1)) return true;
+  
+  // Check equivalents table
+  const equivalents1 = WORD_EQUIVALENTS[w1] || [w1];
+  const equivalents2 = WORD_EQUIVALENTS[w2] || [w2];
+  
+  return equivalents1.some(e1 => equivalents2.includes(e1));
+}
+
+/**
  * Check compliance of a KYC run against the Persona Moral template
  */
 export function checkTemplateCompliance(run: KycRun): TemplateComplianceResult {
@@ -296,12 +334,32 @@ function checkRule(
       const companyName = (companyIdentity?.razon_social || companyTaxProfile?.razon_social || '').toUpperCase();
       if (!companyName) return false;
       
+      // Extract key words from company name (remove common suffixes)
+      const companyShort = companyName.split(',')[0].trim();
+      const companyWords = companyShort
+        .replace(/S\.?A\.?P?\.?I?\.?\s*(DE\s*)?C\.?V\.?/gi, '')
+        .replace(/SOCIEDAD\s+AN[ÓO]NIMA/gi, '')
+        .trim()
+        .split(/\s+/)
+        .filter(w => w.length > 2);
+      
       return proofsOfAddress.some(poa => {
-        const poaName = (poa.client_name || '').toUpperCase();
-        // Check if the company name appears in the POA client name
-        // Handle variations like "PFDS" vs "PFDS, S.A.P.I. DE C.V."
-        const companyShort = companyName.split(',')[0].trim();
-        return poaName.includes(companyShort) || companyShort.includes(poaName);
+        const poaName = (poa.client_name || '').toUpperCase().trim();
+        const poaWords = poaName.split(/\s+/).filter(w => w.length > 2);
+        
+        // Check if names match directly
+        if (poaName.includes(companyShort) || companyShort.includes(poaName)) {
+          return true;
+        }
+        
+        // Check if key words match using word equivalents
+        const matchingWords = companyWords.filter(cw => 
+          poaWords.some(pw => wordsAreEquivalent(cw, pw))
+        );
+        
+        // POA name must match company name (strict for critical compliance)
+        // At least 70% of company words must appear in POA name
+        return matchingWords.length >= companyWords.length * 0.7;
       });
     }
       
@@ -324,10 +382,31 @@ function checkRule(
       const companyName = (companyIdentity?.razon_social || companyTaxProfile?.razon_social || '').toUpperCase();
       if (!companyName) return false;
       
+      // Extract key words from company name (remove common suffixes)
+      const companyShort = companyName.split(',')[0].trim();
+      const companyWords = companyShort
+        .replace(/S\.?A\.?P?\.?I?\.?\s*(DE\s*)?C\.?V\.?/gi, '')
+        .replace(/SOCIEDAD\s+AN[ÓO]NIMA/gi, '')
+        .trim()
+        .split(/\s+/)
+        .filter(w => w.length > 2);
+      
       return bankAccounts.some(ba => {
-        const holderName = (ba.account_holder_name || '').toUpperCase();
-        const companyShort = companyName.split(',')[0].trim();
-        return holderName.includes(companyShort) || companyShort.includes(holderName);
+        const holderName = (ba.account_holder_name || '').toUpperCase().trim();
+        const holderWords = holderName.split(/\s+/).filter(w => w.length > 2);
+        
+        // Check if names match directly
+        if (holderName.includes(companyShort) || companyShort.includes(holderName)) {
+          return true;
+        }
+        
+        // Check if key words match using word equivalents (handles "GRUPO POUNJ" ≈ "POUNJ GROUP")
+        const matchingWords = companyWords.filter(cw => 
+          holderWords.some(hw => wordsAreEquivalent(cw, hw))
+        );
+        
+        // If most key words match, consider it a match
+        return matchingWords.length >= Math.min(companyWords.length, holderWords.length) * 0.7;
       });
     }
       

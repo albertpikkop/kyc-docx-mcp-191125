@@ -2556,11 +2556,13 @@ export function validateKycProfile(profile: KycProfile): KycValidationResult {
     // Acta Constitutiva
     if (hasActaConstitutiva) {
       checklist.push(`✓ Acta Constitutiva: Verificada (${checklistCompanyName})`);
+      // RFC comes from SAT, NOT from Acta (RFC is assigned by SAT after incorporation)
+      // Only show Acta RFC if it's there (rare - usually in modification deeds)
       if (companyRfcFromActa) {
-        checklist.push(`✓ RFC Empresa (del Acta): ${companyRfcFromActa}`);
-      } else {
-        checklist.push(`⚠️ RFC Empresa: No especificado en Acta (se requiere SAT de la empresa para obtener RFC)`);
+        checklist.push(`✓ RFC Empresa (referido en Acta): ${companyRfcFromActa}`);
       }
+      // NOTE: We don't show a warning if RFC is not in Acta - that's NORMAL
+      // The RFC validation happens in the SAT Constancia section below
       if (profile.companyIdentity?.registry?.folio || profile.companyIdentity?.registry?.fme) {
         checklist.push(`✓ Registro Público: Folio ${profile.companyIdentity.registry.folio || profile.companyIdentity.registry.fme}`);
       }
