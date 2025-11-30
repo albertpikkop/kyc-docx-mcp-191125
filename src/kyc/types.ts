@@ -281,6 +281,33 @@ export interface KycValidationResult {
   score: number;               // 0–1
   flags: KycValidationFlag[];
   generatedAt: string;
+  /** Template compliance results (Persona Moral only) */
+  templateCompliance?: TemplateComplianceResult;
+}
+
+/** Template compliance result for Persona Moral */
+export interface TemplateComplianceResult {
+  templateName: string;
+  templateVersion: string;
+  overallScore: number;
+  maxScore: number;
+  percentComplete: number;
+  requirements: RequirementComplianceResult[];
+  criticalIssues: string[];
+  warnings: string[];
+  recommendations: string[];
+}
+
+export interface RequirementComplianceResult {
+  id: string;
+  name: string;
+  nameEs: string;
+  status: 'passed' | 'failed' | 'partial' | 'not_applicable';
+  score: number;
+  maxScore: number;
+  details: string;
+  detailsEs: string;
+  evidence?: string[];
 }
 
 export interface BankIdentity {

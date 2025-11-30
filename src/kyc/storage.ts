@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 import { logRunCost, calculateRunCost } from './costTracker.js';
 import { classifyEntityType, getClientOnboardingLabel, EntityType } from './validation.js';
 import { generateCitationsHtml } from './citationEngine.js';
+import { checkTemplateCompliance, TemplateComplianceResult } from './templates/index.js';
 
 // Root directory for data, relative to this file
 // src/kyc/storage.ts -> ../../data/
@@ -650,6 +651,13 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
   // Get the proper onboarding label based on entity type
   const clientOnboardingLabel = getClientOnboardingLabel(entityTypeClassification);
   
+  // ========== TEMPLATE COMPLIANCE (Persona Moral only) ==========
+  // Check compliance against the PFDS golden standard template
+  let templateCompliance: TemplateComplianceResult | null = null;
+  if (!isPersonaFisica) {
+    templateCompliance = checkTemplateCompliance(run);
+  }
+  
   // Determine if the verified person CAN SIGN
   // For Persona Física: If identity is verified, they CAN sign (they are the business)
   // For Persona Moral: Need to match against Acta and have powers
@@ -1095,6 +1103,76 @@ export async function generateVisualReport(run: KycRun): Promise<string> {
                 </div>
             </div>
         </div>
+        
+        ${templateCompliance ? `
+        <!-- Template Compliance Card (Persona Moral Only) -->
+        <div class="exec-card" style="grid-column: span 2;">
+            <div class="exec-card-header" style="background: ${templateCompliance.percentComplete >= 90 ? 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)' : templateCompliance.percentComplete >= 70 ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)'};">
+                <span class="exec-icon">📋</span>
+                <span class="exec-title">Template Compliance / Cumplimiento de Plantilla</span>
+                <span style="margin-left: auto; font-size: 1.5rem; font-weight: 700; color: ${templateCompliance.percentComplete >= 90 ? '#166534' : templateCompliance.percentComplete >= 70 ? '#92400e' : '#991b1b'};">
+                    ${templateCompliance.percentComplete}%
+                </span>
+            </div>
+            <div class="exec-card-body">
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
+                    Comparado con: <strong>${templateCompliance.templateName}</strong> (v${templateCompliance.templateVersion})
+                </div>
+                
+                <!-- Requirements Grid -->
+                <div style="display: grid; gap: 8px;">
+                    ${templateCompliance.requirements.map(req => `
+                        <div style="display: flex; align-items: center; padding: 8px 12px; background: ${req.status === 'passed' ? '#f0fdf4' : req.status === 'partial' ? '#fffbeb' : '#fef2f2'}; border-radius: 6px; border-left: 4px solid ${req.status === 'passed' ? '#22c55e' : req.status === 'partial' ? '#f59e0b' : '#ef4444'};">
+                            <span style="font-size: 1.2rem; margin-right: 10px;">
+                                ${req.status === 'passed' ? '✅' : req.status === 'partial' ? '⚠️' : '❌'}
+                            </span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 13px; color: #374151;">
+                                    ${req.requirement.nameEs}
+                                </div>
+                                <div style="font-size: 11px; color: #6b7280;">
+                                    ${req.detailsEs} (${req.score}/${req.maxScore} pts)
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${templateCompliance.criticalIssues.length > 0 ? `
+                <div style="margin-top: 16px; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;">
+                    <div style="font-weight: 600; color: #991b1b; margin-bottom: 8px; font-size: 13px;">
+                        🚨 Problemas Críticos (${templateCompliance.criticalIssues.length})
+                    </div>
+                    ${templateCompliance.criticalIssues.map(issue => `
+                        <div style="font-size: 12px; color: #7f1d1d; margin-bottom: 4px;">• ${issue}</div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${templateCompliance.warnings.length > 0 ? `
+                <div style="margin-top: 12px; padding: 12px; background: #fffbeb; border-radius: 8px; border: 1px solid #fde68a;">
+                    <div style="font-weight: 600; color: #92400e; margin-bottom: 8px; font-size: 13px;">
+                        ⚠️ Advertencias (${templateCompliance.warnings.length})
+                    </div>
+                    ${templateCompliance.warnings.map(warn => `
+                        <div style="font-size: 12px; color: #78350f; margin-bottom: 4px;">• ${warn}</div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                ${templateCompliance.recommendations.length > 0 && templateCompliance.percentComplete < 100 ? `
+                <div style="margin-top: 12px; padding: 12px; background: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+                    <div style="font-weight: 600; color: #1e40af; margin-bottom: 8px; font-size: 13px;">
+                        💡 Recomendaciones
+                    </div>
+                    ${templateCompliance.recommendations.slice(0, 3).map(rec => `
+                        <div style="font-size: 12px; color: #1e3a8a; margin-bottom: 4px;">• ${rec}</div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+        ` : ''}
     </div>
   `);
 
