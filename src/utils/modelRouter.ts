@@ -31,7 +31,7 @@ try {
   console.warn('Failed to load router rules, using defaults', error);
 }
 
-export type ModelType = 'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gpt-5.1';
+export type ModelType = 'gemini-3.0-pro' | 'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gpt-5.1';
 
 export interface ExtractionResult {
   data: any;
@@ -76,7 +76,8 @@ async function executeExtraction(
   instructions: string
 ): Promise<ExtractionResult> {
   // Map internal model name to specific model ID for reporting
-  const modelName: ModelType = model === 'gemini' ? 'gemini-2.5-flash' : 'gpt-5.1';
+  // Default to Gemini 3.0 Pro for best extraction quality
+  const modelName: ModelType = model === 'gemini' ? 'gemini-3.0-pro' : 'gpt-5.1';
 
   if (model === 'gemini') {
     // Determine mime type from file extension or checking file
